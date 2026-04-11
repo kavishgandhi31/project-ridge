@@ -1,0 +1,46 @@
+# Pre-commit hooks — run automatically on every `git commit`.
+#
+# One-time install (once per clone):
+#     uv run pre-commit install
+#
+# Manual run against every file in the repo:
+#     uv run pre-commit run --all-files
+#
+# Bypass (use sparingly):
+#     git commit --no-verify
+
+repos:
+  # Standard file hygiene hooks maintained by the pre-commit project.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  # Ruff — same lint + format rules as `uv run ruff check/format`,
+  # but running as a hook so broken formatting never lands in history.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  # mypy as a local hook using our project venv. Pre-commit's isolated
+  # envs cannot see our installed type stubs, so running via `uv run`
+  # is the only way to get accurate strict-mode results.
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (strict)
+        entry: uv run mypy src tests
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-commit]
