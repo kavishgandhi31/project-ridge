@@ -104,12 +104,44 @@ def _filter_by_timescale(
     return df
 
 
+def _date_axis_format(scale_label: str) -> str:
+    """Pick a date axis format string based on the selected time scale.
+
+    Short ranges show day-level detail, longer ranges show quarter/year.
+    """
+    if scale_label in ("1M",):
+        return "%b %d"  # "Apr 10"
+    if scale_label in ("3M", "6M", "YTD"):
+        return "%b '%y"  # "Apr '26"
+    if scale_label in ("1Y",):
+        return "%b '%y"  # "Apr '26"
+    # 3Y, 5Y, All
+    return "%b '%y"  # "Apr '26"
+
+
+def _date_axis_tick_count(scale_label: str) -> int | str:
+    """Pick an appropriate number of axis ticks for the time scale."""
+    if scale_label == "1M":
+        return 8  # ~every 4 days
+    if scale_label == "3M":
+        return 6  # ~every 2 weeks
+    if scale_label in ("6M", "YTD"):
+        return 6
+    if scale_label == "1Y":
+        return 12  # monthly
+    if scale_label == "3Y":
+        return 12  # quarterly
+    # 5Y, All
+    return 10
+
+
 def _time_series_chart(
     df: pd.DataFrame,
     date_col: str,
     value_col: str,
     *,
     title: str = "",
+    y_unit: str = "",
     y_format: str = ".2f",
     height: int = 350,
     scale_key: str = "default",
@@ -137,19 +169,26 @@ def _time_series_chart(
         return
 
     y_min, y_max = _axis_bounds(values)
+    y_title = f"{title} ({y_unit})" if y_unit else (title or value_col)
+    date_fmt = _date_axis_format(selected_scale)
+    tick_count = _date_axis_tick_count(selected_scale)
 
     chart = (
         alt.Chart(filtered)
         .mark_line()
         .encode(
-            x=alt.X(f"{date_col}:T", title="Date"),
+            x=alt.X(
+                f"{date_col}:T",
+                title="",
+                axis=alt.Axis(format=date_fmt, tickCount=tick_count, grid=True),
+            ),
             y=alt.Y(
                 f"{value_col}:Q",
                 scale=alt.Scale(domain=[y_min, y_max]),
-                title=title or value_col,
+                title=y_title,
             ),
             tooltip=[
-                alt.Tooltip(f"{date_col}:T", title="Date"),
+                alt.Tooltip(f"{date_col}:T", title="Date", format="%Y-%m-%d"),
                 alt.Tooltip(f"{value_col}:Q", format=y_format, title=title or value_col),
             ],
         )
@@ -332,7 +371,8 @@ else:
                 spread_df,
                 "date",
                 "spread",
-                title=f"{long_label} - {short_label} (%)",
+                title=f"{long_label} - {short_label}",
+                y_unit="%",
                 y_format="+.3f",
                 scale_key="spread",
             )
@@ -381,6 +421,7 @@ if selected_commodity_label:
             "date",
             "value",
             title=selected_commodity_label,
+            y_unit="USD",
             y_format=",.2f",
             scale_key=f"commodity_{selected_code}",
         )
