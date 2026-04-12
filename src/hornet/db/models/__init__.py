@@ -10,11 +10,13 @@ in this package, import it here so it is picked up.
 from hornet.db.models.country import CountryRow
 from hornet.db.models.event_record import EventRecordRow
 from hornet.db.models.observation import ObservationRow
+from hornet.db.models.score_result import ScoreResultRow
 from hornet.db.models.source_indicator import SourceIndicatorRow
 
 __all__ = [
     "CountryRow",
     "EventRecordRow",
     "ObservationRow",
+    "ScoreResultRow",
     "SourceIndicatorRow",
 ]

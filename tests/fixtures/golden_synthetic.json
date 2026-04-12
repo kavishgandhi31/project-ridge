@@ -1,0 +1,104 @@
+{
+  "_meta": {
+    "description": "Synthetic golden test fixture for scoring engine validation",
+    "created": "2026-04-11",
+    "notes": "Hand-crafted observations with deterministic expected scores. Each country has a distinct macro profile to exercise different code paths."
+  },
+  "config": {
+    "dimension_weights": {
+      "growth_momentum": 0.25,
+      "external_balance": 0.25,
+      "monetary_stance": 0.25,
+      "risk_sentiment": 0.25
+    },
+    "zscore_method": "full",
+    "min_observations": 5,
+    "momentum_window": 5
+  },
+  "countries": {
+    "NGA": {
+      "description": "Strong growth, moderate inflation, weak external — exercises 3/4 dimensions",
+      "observations": [
+        {"indicator_code": "GDP_GROWTH", "source_id": "worldbank", "frequency": "annual", "dimension": "growth_momentum", "concept": "gdp", "values": [2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0]},
+        {"indicator_code": "CPI_YOY", "source_id": "worldbank", "frequency": "annual", "dimension": "monetary_stance", "concept": "cpi", "values": [8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0]},
+        {"indicator_code": "CURRENT_ACCOUNT_GDP", "source_id": "worldbank", "frequency": "annual", "dimension": "external_balance", "concept": "current_account", "values": [-3.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0]}
+      ],
+      "events": [],
+      "expected": {
+        "growth_momentum_not_none": true,
+        "monetary_stance_not_none": true,
+        "external_balance_not_none": true,
+        "risk_sentiment_is_none": true,
+        "composite_not_none": true,
+        "coverage_fraction": 0.75,
+        "growth_momentum_positive": true,
+        "monetary_stance_positive": true,
+        "external_balance_positive": true
+      }
+    },
+    "TUR": {
+      "description": "Deteriorating all dimensions — exercises full 4/4 coverage",
+      "observations": [
+        {"indicator_code": "GDP_GROWTH", "source_id": "worldbank", "frequency": "annual", "dimension": "growth_momentum", "concept": "gdp", "values": [7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.5, 0.0, -1.0]},
+        {"indicator_code": "CPI_YOY", "source_id": "worldbank", "frequency": "annual", "dimension": "monetary_stance", "concept": "cpi", "values": [8.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0, 60.0, 65.0, 70.0]},
+        {"indicator_code": "CURRENT_ACCOUNT_GDP", "source_id": "worldbank", "frequency": "annual", "dimension": "external_balance", "concept": "current_account", "values": [2.0, 1.0, 0.0, -1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -8.0]},
+        {"indicator_code": "VIXCLS", "source_id": "fred", "frequency": "daily", "dimension": "risk_sentiment", "concept": "volatility", "values": [12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 20.0, 25.0, 35.0]}
+      ],
+      "events": [],
+      "expected": {
+        "growth_momentum_not_none": true,
+        "monetary_stance_not_none": true,
+        "external_balance_not_none": true,
+        "risk_sentiment_not_none": true,
+        "composite_not_none": true,
+        "coverage_fraction": 1.0,
+        "growth_momentum_negative": true,
+        "external_balance_negative": true
+      }
+    },
+    "ZAF": {
+      "description": "Only 1 dimension — composite should be None (below min_dimensions=2)",
+      "observations": [
+        {"indicator_code": "GDP_GROWTH", "source_id": "worldbank", "frequency": "annual", "dimension": "growth_momentum", "concept": "gdp", "values": [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5]}
+      ],
+      "events": [],
+      "expected": {
+        "growth_momentum_not_none": true,
+        "monetary_stance_is_none": true,
+        "external_balance_is_none": true,
+        "risk_sentiment_is_none": true,
+        "composite_is_none": true,
+        "coverage_fraction": 0.25
+      }
+    },
+    "BRA": {
+      "description": "Concept dedup test — two GDP sources in same tier should average",
+      "observations": [
+        {"indicator_code": "GDP_GROWTH", "source_id": "worldbank", "frequency": "annual", "dimension": "growth_momentum", "concept": "gdp", "values": [2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 7.0]},
+        {"indicator_code": "GDP_GROWTH", "source_id": "fred", "frequency": "annual", "dimension": "growth_momentum", "concept": "gdp", "values": [2.2, 2.7, 3.2, 3.7, 4.2, 4.7, 5.2, 5.7, 6.2, 7.2]},
+        {"indicator_code": "CPI_YOY", "source_id": "worldbank", "frequency": "annual", "dimension": "monetary_stance", "concept": "cpi", "values": [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 10.0]}
+      ],
+      "events": [],
+      "expected": {
+        "growth_momentum_not_none": true,
+        "monetary_stance_not_none": true,
+        "composite_not_none": true,
+        "coverage_fraction": 0.5,
+        "growth_momentum_n_concepts_equals_1": true
+      }
+    },
+    "POL": {
+      "description": "No data at all — all dimensions None, composite None",
+      "observations": [],
+      "events": [],
+      "expected": {
+        "growth_momentum_is_none": true,
+        "monetary_stance_is_none": true,
+        "external_balance_is_none": true,
+        "risk_sentiment_is_none": true,
+        "composite_is_none": true,
+        "coverage_fraction": 0.0
+      }
+    }
+  }
+}

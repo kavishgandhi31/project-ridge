@@ -9,6 +9,14 @@ rest of the codebase testable.
 
 from hornet.domain.event import EventRecord
 from hornet.domain.observation import Frequency, Observation
+from hornet.domain.scoring import (
+    ALL_DIMENSIONS,
+    DimensionName,
+    DimensionScore,
+    NewsHeat,
+    ScoreResult,
+    ScoringConfig,
+)
 from hornet.domain.source import (
     CountrySpec,
     FetchRequest,
@@ -18,12 +26,18 @@ from hornet.domain.source import (
 )
 
 __all__ = [
+    "ALL_DIMENSIONS",
     "CountrySpec",
+    "DimensionName",
+    "DimensionScore",
     "EventRecord",
     "FetchRequest",
     "Frequency",
     "IndicatorSpec",
+    "NewsHeat",
     "Observation",
+    "ScoreResult",
+    "ScoringConfig",
     "SourceIndicatorSpec",
     "SourceManifest",
 ]

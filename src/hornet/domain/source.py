@@ -213,6 +213,32 @@ class SourceIndicatorSpec(BaseModel):
         default=True,
         description="Soft disable flag. Disabled series are skipped by discover() and fetch().",
     )
+    dimension: str | None = Field(
+        default=None,
+        description=(
+            "Scoring dimension this indicator feeds (e.g. 'growth_momentum', "
+            "'external_balance', 'monetary_stance', 'risk_sentiment'). "
+            "None for series that do not participate in scoring (e.g. GDELT headlines)."
+        ),
+    )
+    concept: str | None = Field(
+        default=None,
+        description=(
+            "Economic concept for deduplication within a dimension (e.g. 'gdp', "
+            "'cpi', 'current_account'). Series sharing the same (frequency, concept) "
+            "are averaged before tier weighting to prevent double-counting. "
+            "None for series that do not participate in scoring."
+        ),
+    )
+    global_signal: bool = Field(
+        default=False,
+        description=(
+            "True for indicators that apply to ALL countries regardless of "
+            "countries_iso3 (e.g. US Treasury yields, VIX). Observations are "
+            "stored with their actual origin country (e.g. USA) but the scoring "
+            "engine includes them when scoring any country."
+        ),
+    )
     notes: str | None = Field(
         default=None,
         description="Free-form operator notes. Not consumed by any code path.",

@@ -57,6 +57,9 @@ class SourceIndicatorRow(Base):
     name: Mapped[str | None] = mapped_column(Text, nullable=True)
     unit: Mapped[str | None] = mapped_column(Text, nullable=True)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    dimension: Mapped[str | None] = mapped_column(Text, nullable=True)
+    concept: Mapped[str | None] = mapped_column(Text, nullable=True)
+    global_signal: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
         TIMESTAMP(timezone=True),
@@ -107,6 +110,9 @@ class SourceIndicatorRow(Base):
             name=spec.name,
             unit=spec.unit,
             enabled=spec.enabled,
+            dimension=spec.dimension,
+            concept=spec.concept,
+            global_signal=spec.global_signal,
             notes=spec.notes,
             created_at=created_at,
             updated_at=updated_at,
@@ -123,5 +129,8 @@ class SourceIndicatorRow(Base):
             name=self.name,
             unit=self.unit,
             enabled=self.enabled,
+            dimension=self.dimension,
+            concept=self.concept,
+            global_signal=self.global_signal,
             notes=self.notes,
         )

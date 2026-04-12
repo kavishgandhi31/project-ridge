@@ -33,6 +33,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from hornet.db.models.country import CountryRow
 from hornet.db.models.source_indicator import SourceIndicatorRow
 from hornet.db.session import session_scope
+from hornet.domain.scoring import ScoringConfig
 from hornet.domain.source import CountrySpec, SourceIndicatorSpec
 
 logger = structlog.get_logger(__name__)
@@ -41,6 +42,7 @@ logger = structlog.get_logger(__name__)
 _SEED_PACKAGE = "hornet.seeds.data"
 _COUNTRIES_FILENAME = "countries.yaml"
 _SOURCE_INDICATORS_FILENAME = "source_indicators.yaml"
+_SCORING_CONFIG_FILENAME = "scoring_config.yaml"
 
 
 def _read_seed_file(filename: str) -> str:
@@ -112,6 +114,25 @@ def load_source_indicators_from_yaml(yaml_text: str | None = None) -> list[Sourc
         entry_dict["countries_iso3"] = frozenset(countries)
         specs.append(SourceIndicatorSpec(**entry_dict))
     return specs
+
+
+def load_scoring_config_from_yaml(yaml_text: str | None = None) -> ScoringConfig:
+    """Parse scoring_config.yaml into a ``ScoringConfig``.
+
+    When ``yaml_text`` is None the packaged default is loaded; tests
+    pass an explicit string to exercise edge cases without touching
+    the packaged file.
+    """
+    text = yaml_text if yaml_text is not None else _read_seed_file(_SCORING_CONFIG_FILENAME)
+    raw = yaml.safe_load(text) or {}
+    if not isinstance(raw, dict):
+        raise ValueError("scoring_config.yaml must deserialize to a mapping at the top level")
+
+    config_data = raw.get("scoring_config")
+    if not isinstance(config_data, dict):
+        raise ValueError("scoring_config.yaml must have a top-level 'scoring_config' mapping")
+
+    return ScoringConfig(**cast(dict[str, Any], config_data))
 
 
 async def seed_countries(
@@ -192,6 +213,9 @@ async def seed_source_indicators(
             "name": spec.name,
             "unit": spec.unit,
             "enabled": spec.enabled,
+            "dimension": spec.dimension,
+            "concept": spec.concept,
+            "global_signal": spec.global_signal,
             "notes": spec.notes,
             "created_at": timestamp,
             "updated_at": timestamp,
@@ -209,6 +233,9 @@ async def seed_source_indicators(
             "name": stmt.excluded.name,
             "unit": stmt.excluded.unit,
             "enabled": stmt.excluded.enabled,
+            "dimension": stmt.excluded.dimension,
+            "concept": stmt.excluded.concept,
+            "global_signal": stmt.excluded.global_signal,
             "notes": stmt.excluded.notes,
             "updated_at": stmt.excluded.updated_at,
         },

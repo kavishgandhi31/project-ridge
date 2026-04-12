@@ -1,28 +1,30 @@
 # Source indicator registry for Hornet.
 #
 # Every (source_id, source_native_code) -> canonical indicator_code
-# mapping lives here. This file replaces the hardcoded _PILOT_SERIES
-# dict that shipped in Phase 1's FRED adapter and the _INDICATORS list
-# that shipped in Phase 1's WorldBank adapter.
+# mapping lives here. Phase 3 adds dimension, concept, and global_signal
+# fields to support the scoring engine.
 #
 # Fields:
 #   source_id           'fred', 'worldbank', etc. Matches adapter.source_id.
 #   source_native_code  The source's own identifier for the series.
 #   indicator_code      Canonical Hornet code (e.g. CPI_YOY, GDP_GROWTH).
 #   frequency           daily / weekly / monthly / quarterly / annual / forecast
-#   countries_iso3      List of ISO3 codes this series covers. FRED-style
-#                       sources have one; WorldBank-style have many.
+#   countries_iso3      List of ISO3 codes this series covers.
 #   name                Optional human-readable label.
 #   unit                Optional unit of measure.
+#   dimension           Scoring dimension: growth_momentum / external_balance /
+#                       monetary_stance / risk_sentiment. Null for non-scored.
+#   concept             Deduplication concept within a dimension (e.g. 'gdp',
+#                       'cpi'). Null for non-scored.
+#   global_signal       true for indicators that apply to ALL countries
+#                       (e.g. US Treasury yields). Stored with origin country.
 #   enabled             Optional soft-disable flag. Defaults to true.
-#   notes               Optional operator notes, not consumed by code.
+#   notes               Optional operator notes.
 
 source_indicators:
 
   # -------------------------------------------------------------------
-  # FRED — country-coded series. The ISO3 is baked into the native code
-  # (e.g. FPCPITOTLZGNGA is the Nigeria inflation series). Each row
-  # covers exactly one country.
+  # FRED -- per-country series. The ISO3 is baked into the native code.
   # -------------------------------------------------------------------
   - source_id: fred
     source_native_code: FPCPITOTLZGNGA
@@ -31,6 +33,8 @@ source_indicators:
     countries_iso3: [NGA]
     name: Nigeria inflation, consumer prices (annual %)
     unit: percent
+    dimension: monetary_stance
+    concept: cpi
 
   - source_id: fred
     source_native_code: NGANGDPRPCH
@@ -39,6 +43,8 @@ source_indicators:
     countries_iso3: [NGA]
     name: Nigeria real GDP growth
     unit: percent
+    dimension: growth_momentum
+    concept: gdp
 
   - source_id: fred
     source_native_code: FPCPITOTLZGTUR
@@ -47,6 +53,8 @@ source_indicators:
     countries_iso3: [TUR]
     name: Turkey inflation, consumer prices (annual %)
     unit: percent
+    dimension: monetary_stance
+    concept: cpi
 
   - source_id: fred
     source_native_code: TURNGDPRPCH
@@ -55,6 +63,8 @@ source_indicators:
     countries_iso3: [TUR]
     name: Turkey real GDP growth
     unit: percent
+    dimension: growth_momentum
+    concept: gdp
 
   - source_id: fred
     source_native_code: FPCPITOTLZGZAF
@@ -63,6 +73,8 @@ source_indicators:
     countries_iso3: [ZAF]
     name: South Africa inflation, consumer prices (annual %)
     unit: percent
+    dimension: monetary_stance
+    concept: cpi
 
   - source_id: fred
     source_native_code: ZAFNGDPRPCH
@@ -71,6 +83,8 @@ source_indicators:
     countries_iso3: [ZAF]
     name: South Africa real GDP growth
     unit: percent
+    dimension: growth_momentum
+    concept: gdp
 
   - source_id: fred
     source_native_code: FPCPITOTLZGBRA
@@ -79,6 +93,8 @@ source_indicators:
     countries_iso3: [BRA]
     name: Brazil inflation, consumer prices (annual %)
     unit: percent
+    dimension: monetary_stance
+    concept: cpi
 
   - source_id: fred
     source_native_code: BRANGDPRPCH
@@ -87,6 +103,8 @@ source_indicators:
     countries_iso3: [BRA]
     name: Brazil real GDP growth
     unit: percent
+    dimension: growth_momentum
+    concept: gdp
 
   - source_id: fred
     source_native_code: FPCPITOTLZGPOL
@@ -95,6 +113,8 @@ source_indicators:
     countries_iso3: [POL]
     name: Poland inflation, consumer prices (annual %)
     unit: percent
+    dimension: monetary_stance
+    concept: cpi
 
   - source_id: fred
     source_native_code: POLNGDPRPCH
@@ -103,10 +123,115 @@ source_indicators:
     countries_iso3: [POL]
     name: Poland real GDP growth
     unit: percent
+    dimension: growth_momentum
+    concept: gdp
 
   # -------------------------------------------------------------------
-  # WorldBank — global series. One native code applies to every
-  # country WorldBank covers, so each row lists all pilot ISO3s.
+  # FRED -- global series. Apply to ALL countries for risk_sentiment.
+  # Stored with country_iso3=USA; global_signal=true tells the scoring
+  # engine to include them when scoring any country.
+  # -------------------------------------------------------------------
+  - source_id: fred
+    source_native_code: DGS10
+    indicator_code: DGS10
+    frequency: daily
+    countries_iso3: [USA]
+    name: US 10-Year Treasury Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: treasury_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DGS2
+    indicator_code: DGS2
+    frequency: daily
+    countries_iso3: [USA]
+    name: US 2-Year Treasury Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: treasury_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: T10Y2Y
+    indicator_code: T10Y2Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US 2s10s Yield Curve
+    unit: percent
+    dimension: risk_sentiment
+    concept: yield_curve
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DTWEXBGS
+    indicator_code: DTWEXBGS
+    frequency: weekly
+    countries_iso3: [USA]
+    name: USD Broad Trade-Weighted Index
+    unit: index
+    dimension: risk_sentiment
+    concept: usd_strength
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: NFCI
+    indicator_code: NFCI
+    frequency: weekly
+    countries_iso3: [USA]
+    name: Chicago Fed National Financial Conditions Index
+    unit: index
+    dimension: risk_sentiment
+    concept: financial_conditions
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: BAMLH0A0HYM2
+    indicator_code: BAMLH0A0HYM2
+    frequency: daily
+    countries_iso3: [USA]
+    name: US High Yield Spread
+    unit: percent
+    dimension: risk_sentiment
+    concept: sovereign_spread
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: VIXCLS
+    indicator_code: VIXCLS
+    frequency: daily
+    countries_iso3: [USA]
+    name: VIX Volatility Index
+    unit: index
+    dimension: risk_sentiment
+    concept: volatility
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DCOILBRENTEU
+    indicator_code: DCOILBRENTEU
+    frequency: daily
+    countries_iso3: [USA]
+    name: Brent Crude Oil Price
+    unit: usd_per_barrel
+    dimension: risk_sentiment
+    concept: oil_price
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: BAMLEMCBPIOAS
+    indicator_code: BAMLEMCBPIOAS
+    frequency: daily
+    countries_iso3: [USA]
+    name: EM Corporate Bond Spread (OAS)
+    unit: percent
+    dimension: risk_sentiment
+    concept: sovereign_spread
+    global_signal: true
+
+  # -------------------------------------------------------------------
+  # WorldBank -- global series. One native code applies to every country.
   # -------------------------------------------------------------------
   - source_id: worldbank
     source_native_code: NY.GDP.MKTP.KD.ZG
@@ -115,6 +240,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: GDP growth (annual %)
     unit: percent
+    dimension: growth_momentum
+    concept: gdp
 
   - source_id: worldbank
     source_native_code: FP.CPI.TOTL.ZG
@@ -123,6 +250,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Inflation, consumer prices (annual %)
     unit: percent
+    dimension: monetary_stance
+    concept: cpi
 
   - source_id: worldbank
     source_native_code: BN.CAB.XOKA.GD.ZS
@@ -131,6 +260,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Current account balance (% of GDP)
     unit: percent
+    dimension: external_balance
+    concept: current_account
 
   - source_id: worldbank
     source_native_code: FI.RES.TOTL.MO
@@ -139,6 +270,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Total reserves in months of imports
     unit: months
+    dimension: external_balance
+    concept: fx_reserves
 
   - source_id: worldbank
     source_native_code: GC.DOD.TOTL.GD.ZS
@@ -147,6 +280,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Central government debt, total (% of GDP)
     unit: percent
+    dimension: external_balance
+    concept: govt_debt
 
   - source_id: worldbank
     source_native_code: SL.UEM.TOTL.ZS
@@ -155,6 +290,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Unemployment, total (% of total labor force, ILO estimate)
     unit: percent
+    dimension: growth_momentum
+    concept: unemployment
 
   - source_id: worldbank
     source_native_code: NE.TRD.GNFS.ZS
@@ -163,18 +300,12 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Trade (% of GDP)
     unit: percent
+    dimension: external_balance
+    concept: trade_openness
 
   # -------------------------------------------------------------------
-  # yfinance -- FX pairs and equity indices from Yahoo Finance.
-  # Each FX pair is country-specific (one ISO3 per row). Equity indices
-  # are also country-specific. NGA has no equity index (^NGSEINDEX
-  # was delisted from Yahoo with no replacement).
-  #
-  # Commodities (GC=F, CL=F, etc.) are deferred -- they are global
-  # instruments with no per-country mapping.
+  # yfinance -- FX pairs and equity indices.
   # -------------------------------------------------------------------
-
-  # FX pairs -- daily close price = observation value
   - source_id: yfinance
     source_native_code: NGNUSD=X
     indicator_code: FX_USD
@@ -182,6 +313,8 @@ source_indicators:
     countries_iso3: [NGA]
     name: Nigerian Naira per USD
     unit: exchange_rate
+    dimension: risk_sentiment
+    concept: fx_momentum
 
   - source_id: yfinance
     source_native_code: TRYUSD=X
@@ -190,6 +323,8 @@ source_indicators:
     countries_iso3: [TUR]
     name: Turkish Lira per USD
     unit: exchange_rate
+    dimension: risk_sentiment
+    concept: fx_momentum
 
   - source_id: yfinance
     source_native_code: ZARUSD=X
@@ -198,6 +333,8 @@ source_indicators:
     countries_iso3: [ZAF]
     name: South African Rand per USD
     unit: exchange_rate
+    dimension: risk_sentiment
+    concept: fx_momentum
 
   - source_id: yfinance
     source_native_code: BRLUSD=X
@@ -206,6 +343,8 @@ source_indicators:
     countries_iso3: [BRA]
     name: Brazilian Real per USD
     unit: exchange_rate
+    dimension: risk_sentiment
+    concept: fx_momentum
 
   - source_id: yfinance
     source_native_code: PLNUSD=X
@@ -214,8 +353,9 @@ source_indicators:
     countries_iso3: [POL]
     name: Polish Zloty per USD
     unit: exchange_rate
+    dimension: risk_sentiment
+    concept: fx_momentum
 
-  # Equity indices -- daily close price = observation value
   - source_id: yfinance
     source_native_code: XU100.IS
     indicator_code: EQUITY_INDEX
@@ -223,6 +363,8 @@ source_indicators:
     countries_iso3: [TUR]
     name: BIST 100 (Istanbul)
     unit: index_level
+    dimension: risk_sentiment
+    concept: equity_momentum
 
   - source_id: yfinance
     source_native_code: ^J203.JO
@@ -231,6 +373,8 @@ source_indicators:
     countries_iso3: [ZAF]
     name: JSE All Share (Johannesburg)
     unit: index_level
+    dimension: risk_sentiment
+    concept: equity_momentum
 
   - source_id: yfinance
     source_native_code: ^BVSP
@@ -239,6 +383,8 @@ source_indicators:
     countries_iso3: [BRA]
     name: Bovespa (Sao Paulo)
     unit: index_level
+    dimension: risk_sentiment
+    concept: equity_momentum
 
   - source_id: yfinance
     source_native_code: ^WIG20
@@ -247,15 +393,11 @@ source_indicators:
     countries_iso3: [POL]
     name: WIG20 (Warsaw)
     unit: index_level
+    dimension: risk_sentiment
+    concept: equity_momentum
 
   # -------------------------------------------------------------------
-  # OECD -- leading indicators from the SDMX REST API. Monthly
-  # frequency. Each indicator covers all OECD-tracked pilot countries
-  # (TUR, ZAF, BRA, POL). NGA is NOT covered by OECD.
-  #
-  # source_native_code matches the canonical indicator code because
-  # OECD's SDMX dataflow details (agency, DSD, key pattern) are
-  # adapter-internal -- the registry just names the indicator.
+  # OECD -- leading indicators. Monthly. NGA not covered.
   # -------------------------------------------------------------------
   - source_id: oecd
     source_native_code: CLI
@@ -264,6 +406,8 @@ source_indicators:
     countries_iso3: [TUR, ZAF, BRA, POL]
     name: Composite Leading Indicator (100 = long-run trend)
     unit: index
+    dimension: growth_momentum
+    concept: leading_indicator
 
   - source_id: oecd
     source_native_code: BCI
@@ -272,6 +416,8 @@ source_indicators:
     countries_iso3: [TUR, ZAF, BRA, POL]
     name: Business Confidence Index
     unit: index
+    dimension: growth_momentum
+    concept: business_confidence
 
   - source_id: oecd
     source_native_code: CCI
@@ -280,6 +426,8 @@ source_indicators:
     countries_iso3: [TUR, ZAF, BRA, POL]
     name: Consumer Confidence Index
     unit: index
+    dimension: growth_momentum
+    concept: consumer_confidence
 
   - source_id: oecd
     source_native_code: INDPROD
@@ -288,10 +436,11 @@ source_indicators:
     countries_iso3: [TUR, ZAF, BRA, POL]
     name: Industrial Production (volume index)
     unit: index
+    dimension: growth_momentum
+    concept: industrial_production
 
   # -------------------------------------------------------------------
-  # BIS -- financial stability indicators via SDMX CSV API. NGA is not
-  # covered by BIS (G20 + major EMs only).
+  # BIS -- financial stability indicators. NGA not covered.
   # -------------------------------------------------------------------
   - source_id: bis
     source_native_code: WS_CREDIT_GAP
@@ -300,6 +449,8 @@ source_indicators:
     countries_iso3: [TUR, ZAF, BRA, POL]
     name: Credit-to-GDP gap (Basel gap)
     unit: percentage_points
+    dimension: external_balance
+    concept: credit_gap
 
   - source_id: bis
     source_native_code: WS_SPP
@@ -308,6 +459,8 @@ source_indicators:
     countries_iso3: [TUR, ZAF, BRA, POL]
     name: Residential property prices (index)
     unit: index
+    dimension: risk_sentiment
+    concept: property_price
 
   - source_id: bis
     source_native_code: WS_EER
@@ -316,14 +469,11 @@ source_indicators:
     countries_iso3: [TUR, ZAF, BRA, POL]
     name: Real effective exchange rate (broad basket)
     unit: index
+    dimension: external_balance
+    concept: reer
 
   # -------------------------------------------------------------------
-  # IMF -- three sub-APIs under one adapter. source_native_code prefix
-  # determines the fetch path: weo:, ifs:, bop:
-  #
-  # WEO: semi-annual forecasts, frequency=forecast (all 5 pilots)
-  # IFS: monthly actuals via SDMX (all 5 pilots)
-  # BOP: quarterly balance-of-payments flows (all 5 pilots)
+  # IMF -- three sub-APIs under one adapter.
   # -------------------------------------------------------------------
 
   # WEO forecasts
@@ -334,6 +484,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Real GDP growth (WEO forecast)
     unit: percent
+    dimension: growth_momentum
+    concept: gdp
 
   - source_id: imf
     source_native_code: weo:PCPIPCH
@@ -342,6 +494,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Inflation rate (WEO forecast)
     unit: percent
+    dimension: monetary_stance
+    concept: cpi
 
   - source_id: imf
     source_native_code: weo:BCA_NGDPD
@@ -350,6 +504,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Current account balance as percent of GDP (WEO forecast)
     unit: percent
+    dimension: external_balance
+    concept: current_account
 
   - source_id: imf
     source_native_code: weo:GGXWDG_NGDP
@@ -358,6 +514,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Government gross debt as percent of GDP (WEO forecast)
     unit: percent
+    dimension: external_balance
+    concept: govt_debt
 
   - source_id: imf
     source_native_code: weo:LUR
@@ -366,6 +524,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Unemployment rate (WEO forecast)
     unit: percent
+    dimension: growth_momentum
+    concept: unemployment
 
   - source_id: imf
     source_native_code: weo:RESERVE
@@ -374,6 +534,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Total FX reserves (WEO forecast)
     unit: usd_billions
+    dimension: external_balance
+    concept: fx_reserves
 
   # IFS monthly actuals
   - source_id: imf
@@ -383,6 +545,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Consumer price index (IFS)
     unit: index
+    dimension: monetary_stance
+    concept: cpi
 
   - source_id: imf
     source_native_code: ifs:ENDA_XDC_USD_RATE
@@ -391,6 +555,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Exchange rate, domestic currency per USD (IFS)
     unit: exchange_rate
+    dimension: risk_sentiment
+    concept: fx_rate
 
   - source_id: imf
     source_native_code: ifs:FITB_PA
@@ -399,6 +565,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Treasury bill rate (IFS)
     unit: percent
+    dimension: monetary_stance
+    concept: policy_rate
 
   - source_id: imf
     source_native_code: ifs:FMA_XDC
@@ -407,6 +575,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Broad money supply (IFS)
     unit: local_currency
+    dimension: monetary_stance
+    concept: money_supply
 
   - source_id: imf
     source_native_code: ifs:RAXGFX_USD
@@ -415,6 +585,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: FX reserves excluding gold in USD (IFS)
     unit: usd_millions
+    dimension: external_balance
+    concept: fx_reserves
 
   - source_id: imf
     source_native_code: ifs:FILR_PA
@@ -423,6 +595,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Lending rate (IFS)
     unit: percent
+    dimension: monetary_stance
+    concept: lending_rate
 
   # BOP quarterly flows
   - source_id: imf
@@ -432,6 +606,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Current account balance in USD (BOP)
     unit: usd_millions
+    dimension: external_balance
+    concept: current_account
 
   - source_id: imf
     source_native_code: bop:BFA_BP6_USD
@@ -440,6 +616,8 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Financial account balance in USD (BOP)
     unit: usd_millions
+    dimension: external_balance
+    concept: financial_flows
 
   - source_id: imf
     source_native_code: bop:BGS_BP6_USD
@@ -448,11 +626,12 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Goods and services balance in USD (BOP)
     unit: usd_millions
+    dimension: external_balance
+    concept: trade_balance
 
   # -------------------------------------------------------------------
-  # GDELT -- news sentiment and headlines. indicator_code carries the
-  # event_type (tone/volume/headline), not a canonical macro indicator.
-  # All 5 pilots covered.
+  # GDELT -- news sentiment and headlines.
+  # tone/volume participate in scoring; headline does not.
   # -------------------------------------------------------------------
   - source_id: gdelt
     source_native_code: tone
@@ -460,6 +639,8 @@ source_indicators:
     frequency: daily
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: GDELT average news tone (sentiment)
+    dimension: risk_sentiment
+    concept: news_tone
 
   - source_id: gdelt
     source_native_code: volume
@@ -467,6 +648,7 @@ source_indicators:
     frequency: daily
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: GDELT article volume (daily count)
+    # volume feeds news_heat standalone indicator, not dimension scoring
 
   - source_id: gdelt
     source_native_code: headline
@@ -474,10 +656,10 @@ source_indicators:
     frequency: daily
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: GDELT article headlines (artlist mode)
+    # headlines are display-only, no scoring
 
   # -------------------------------------------------------------------
-  # GoogleNews -- supplementary headlines via RSS. No tone/volume
-  # (use GDELT for those). All 5 pilots covered.
+  # GoogleNews -- supplementary headlines. No scoring participation.
   # -------------------------------------------------------------------
   - source_id: googlenews
     source_native_code: headline
