@@ -70,7 +70,7 @@ class TestListSourceIndicators:
         await _clean_and_seed()
         async with session_scope() as session:
             indicators = await list_source_indicators(session)
-        assert len(indicators) == 33
+        assert len(indicators) == 48
 
     async def test_filter_by_source_id(self) -> None:
         await _clean_and_seed()
@@ -83,8 +83,8 @@ class TestListSourceIndicators:
         await _clean_and_seed()
         async with session_scope() as session:
             cpi_indicators = await list_source_indicators(session, indicator_code="CPI_YOY")
-        # 5 FRED CPI series (one per pilot) + 1 WorldBank CPI series = 6
-        assert len(cpi_indicators) == 6
+        # 5 FRED CPI (annual) + 1 WB CPI (annual) + 1 IMF WEO CPI (forecast) = 7
+        assert len(cpi_indicators) == 7
         assert all(s.indicator_code == "CPI_YOY" for s in cpi_indicators)
 
     async def test_combined_filters(self) -> None:

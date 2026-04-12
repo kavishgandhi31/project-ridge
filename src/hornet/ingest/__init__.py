@@ -1,17 +1,10 @@
-"""Ingest orchestration -- calls SourceAdapters and persists Observations.
-
-Three discrete responsibilities:
-
-* ``runner`` -- takes a constructed adapter and persists its output.
-* ``factory`` -- builds adapters from the DB-backed registry. Handles
-  credential lookup and repo queries so the runner stays storage-only.
-* (future) a CLI entrypoint that wires them together.
-"""
+"""Ingest orchestration -- calls SourceAdapters and persists Observations."""
 
 from hornet.ingest.factory import (
     MissingCredentialError,
     build_bis_adapter,
     build_fred_adapter,
+    build_imf_adapter,
     build_oecd_adapter,
     build_worldbank_adapter,
     build_yfinance_adapter,
@@ -23,6 +16,7 @@ __all__ = [
     "MissingCredentialError",
     "build_bis_adapter",
     "build_fred_adapter",
+    "build_imf_adapter",
     "build_oecd_adapter",
     "build_worldbank_adapter",
     "build_yfinance_adapter",

@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from hornet.adapters.bis import BISAdapter
 from hornet.adapters.fred import FredAdapter
+from hornet.adapters.imf import IMFAdapter
 from hornet.adapters.oecd import OECDAdapter
 from hornet.adapters.worldbank import WorldBankAdapter
 from hornet.adapters.yfinance_adapter import YFinanceAdapter
@@ -137,3 +138,17 @@ async def build_bis_adapter(session: AsyncSession) -> BISAdapter:
         indicators=indicators,
         iso3_to_iso2=iso3_to_iso2,
     )
+
+
+async def build_imf_adapter(session: AsyncSession) -> IMFAdapter:
+    """Construct an IMFAdapter wired up against the DB registry.
+
+    Reads ``source_indicator`` rows where ``source_id = 'imf'``.
+    IMF has no credentials (all three sub-APIs are public).
+    """
+    indicators = await list_source_indicators(session, source_id=IMFAdapter.source_id)
+    logger.info(
+        "factory.imf.built",
+        indicator_count=len(indicators),
+    )
+    return IMFAdapter(indicators=indicators)

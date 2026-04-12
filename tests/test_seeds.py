@@ -71,8 +71,8 @@ class TestLoadCountriesFromYaml:
 class TestLoadSourceIndicatorsFromYaml:
     def test_parses_packaged_seed_file(self) -> None:
         specs = load_source_indicators_from_yaml()
-        # 10 FRED + 7 WorldBank + 9 yfinance + 4 OECD + 3 BIS = 33 total
-        assert len(specs) == 33
+        # 10 FRED + 7 WB + 9 yfinance + 4 OECD + 3 BIS + 15 IMF = 48 total
+        assert len(specs) == 48
         fred_count = sum(1 for s in specs if s.source_id == "fred")
         wb_count = sum(1 for s in specs if s.source_id == "worldbank")
         assert fred_count == 10
@@ -188,10 +188,10 @@ class TestSeedSourceIndicators:
         async with session_scope() as session:
             count = await seed_source_indicators(session, specs, now=_NOW)
 
-        assert count == 33
+        assert count == 48
         async with session_scope() as session:
             rows = (await session.execute(select(SourceIndicatorRow))).scalars().all()
-        assert len(rows) == 33
+        assert len(rows) == 48
 
     async def test_upsert_is_idempotent(self) -> None:
         await _clean_registries()
@@ -204,7 +204,7 @@ class TestSeedSourceIndicators:
 
         async with session_scope() as session:
             rows = (await session.execute(select(SourceIndicatorRow))).scalars().all()
-        assert len(rows) == 33
+        assert len(rows) == 48
 
 
 class TestSeedAll:
@@ -214,4 +214,4 @@ class TestSeedAll:
         n_countries, n_indicators = await seed_all(now=_NOW)
 
         assert n_countries == 5
-        assert n_indicators == 33
+        assert n_indicators == 48

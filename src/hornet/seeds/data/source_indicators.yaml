@@ -316,3 +316,135 @@ source_indicators:
     countries_iso3: [TUR, ZAF, BRA, POL]
     name: Real effective exchange rate (broad basket)
     unit: index
+
+  # -------------------------------------------------------------------
+  # IMF -- three sub-APIs under one adapter. source_native_code prefix
+  # determines the fetch path: weo:, ifs:, bop:
+  #
+  # WEO: semi-annual forecasts, frequency=forecast (all 5 pilots)
+  # IFS: monthly actuals via SDMX (all 5 pilots)
+  # BOP: quarterly balance-of-payments flows (all 5 pilots)
+  # -------------------------------------------------------------------
+
+  # WEO forecasts
+  - source_id: imf
+    source_native_code: weo:NGDP_RPCH
+    indicator_code: GDP_GROWTH
+    frequency: forecast
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Real GDP growth (WEO forecast)
+    unit: percent
+
+  - source_id: imf
+    source_native_code: weo:PCPIPCH
+    indicator_code: CPI_YOY
+    frequency: forecast
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Inflation rate (WEO forecast)
+    unit: percent
+
+  - source_id: imf
+    source_native_code: weo:BCA_NGDPD
+    indicator_code: CURRENT_ACCOUNT_GDP
+    frequency: forecast
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Current account balance as percent of GDP (WEO forecast)
+    unit: percent
+
+  - source_id: imf
+    source_native_code: weo:GGXWDG_NGDP
+    indicator_code: GOVT_DEBT_GDP
+    frequency: forecast
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Government gross debt as percent of GDP (WEO forecast)
+    unit: percent
+
+  - source_id: imf
+    source_native_code: weo:LUR
+    indicator_code: UNEMPLOYMENT
+    frequency: forecast
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Unemployment rate (WEO forecast)
+    unit: percent
+
+  - source_id: imf
+    source_native_code: weo:RESERVE
+    indicator_code: FX_RESERVES_TOTAL
+    frequency: forecast
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Total FX reserves (WEO forecast)
+    unit: usd_billions
+
+  # IFS monthly actuals
+  - source_id: imf
+    source_native_code: ifs:PCPI_IX
+    indicator_code: CPI_INDEX
+    frequency: monthly
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Consumer price index (IFS)
+    unit: index
+
+  - source_id: imf
+    source_native_code: ifs:ENDA_XDC_USD_RATE
+    indicator_code: FX_RATE
+    frequency: monthly
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Exchange rate, domestic currency per USD (IFS)
+    unit: exchange_rate
+
+  - source_id: imf
+    source_native_code: ifs:FITB_PA
+    indicator_code: POLICY_RATE
+    frequency: monthly
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Treasury bill rate (IFS)
+    unit: percent
+
+  - source_id: imf
+    source_native_code: ifs:FMA_XDC
+    indicator_code: MONEY_SUPPLY
+    frequency: monthly
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Broad money supply (IFS)
+    unit: local_currency
+
+  - source_id: imf
+    source_native_code: ifs:RAXGFX_USD
+    indicator_code: FX_RESERVES_EX_GOLD
+    frequency: monthly
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: FX reserves excluding gold in USD (IFS)
+    unit: usd_millions
+
+  - source_id: imf
+    source_native_code: ifs:FILR_PA
+    indicator_code: LENDING_RATE
+    frequency: monthly
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Lending rate (IFS)
+    unit: percent
+
+  # BOP quarterly flows
+  - source_id: imf
+    source_native_code: bop:BCA_BP6_USD
+    indicator_code: CURRENT_ACCOUNT_USD
+    frequency: quarterly
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Current account balance in USD (BOP)
+    unit: usd_millions
+
+  - source_id: imf
+    source_native_code: bop:BFA_BP6_USD
+    indicator_code: FINANCIAL_ACCOUNT_USD
+    frequency: quarterly
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Financial account balance in USD (BOP)
+    unit: usd_millions
+
+  - source_id: imf
+    source_native_code: bop:BGS_BP6_USD
+    indicator_code: TRADE_BALANCE_USD
+    frequency: quarterly
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Goods and services balance in USD (BOP)
+    unit: usd_millions
