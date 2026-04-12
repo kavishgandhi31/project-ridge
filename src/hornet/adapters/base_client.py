@@ -5,15 +5,11 @@ reusable base class that handles:
 
 - httpx.AsyncClient session with lazy init and context manager cleanup
 - Rate limiting via minimum spacing between requests
-- Exponential-backoff retry (1s → 2s → 4s, max 3 attempts by default)
+- Exponential-backoff retry (1s -> 2s -> 4s, max 3 attempts by default)
 - 429 Retry-After header respect
 - Fail-fast on 4xx (except 429); retry on 5xx and network errors
-
-Intentionally **does not** include v1's circuit breaker, on-disk state
-persistence, or source-health recording. Those belong in Phase 4 with
-the rest of the monitoring layer. Keeping this class minimal makes
-the adapters (FRED, WorldBank, etc.) trivially testable with a mocked
-httpx transport.
+- Circuit breaker: trips after N consecutive connection failures,
+  fails fast for remaining requests until reset
 """
 
 from __future__ import annotations
@@ -24,6 +20,21 @@ from types import TracebackType
 from typing import Any, Self
 
 import httpx
+import structlog
+
+logger = structlog.get_logger(__name__)
+
+
+class CircuitOpenError(Exception):
+    """Raised when the circuit breaker is open (too many consecutive failures)."""
+
+    def __init__(self, source_id: str, consecutive_failures: int) -> None:
+        self.source_id = source_id
+        self.consecutive_failures = consecutive_failures
+        super().__init__(
+            f"[{source_id}] Circuit breaker open after "
+            f"{consecutive_failures} consecutive connection failures"
+        )
 
 
 class BaseClient:
@@ -66,6 +77,7 @@ class BaseClient:
         requests_per_minute: int = 60,
         timeout_seconds: float = 30.0,
         max_retries: int = 3,
+        circuit_breaker_threshold: int = 5,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         """Initialize a BaseClient.
@@ -75,7 +87,7 @@ class BaseClient:
                 protocol (e.g. "fred", "worldbank"). Used in logs and
                 for monitoring layer tagging.
             base_url: Root URL for the source API.
-            requests_per_minute: Rate limit cap. Default 60 — matches
+            requests_per_minute: Rate limit cap. Default 60 -- matches
                 v1's conservative default for FRED. WorldBank and
                 OECD use lower values; override per-adapter.
             timeout_seconds: httpx request timeout. Default 30 seconds,
@@ -83,6 +95,10 @@ class BaseClient:
                 to 60 because its API is slow.
             max_retries: Maximum retry attempts on 5xx / timeouts /
                 network errors. Default 3.
+            circuit_breaker_threshold: Number of consecutive connection
+                failures before the circuit breaker trips. Once tripped,
+                all subsequent requests fail immediately with
+                CircuitOpenError. Default 5. Set to 0 to disable.
             transport: Optional httpx transport override. Tests inject
                 ``httpx.MockTransport`` here to avoid real network
                 calls. Production code should leave this as ``None``.
@@ -92,9 +108,12 @@ class BaseClient:
         self._min_interval_seconds = 60.0 / requests_per_minute
         self._timeout_seconds = timeout_seconds
         self._max_retries = max_retries
+        self._circuit_threshold = circuit_breaker_threshold
         self._transport = transport
         self._client: httpx.AsyncClient | None = None
         self._last_request_monotonic: float = 0.0
+        self._consecutive_failures: int = 0
+        self._circuit_open: bool = False
 
     async def __aenter__(self) -> Self:
         self._ensure_client()
@@ -120,6 +139,7 @@ class BaseClient:
             self._client = httpx.AsyncClient(
                 timeout=self._timeout_seconds,
                 transport=self._transport,
+                follow_redirects=True,
             )
         return self._client
 
@@ -161,6 +181,10 @@ class BaseClient:
         Exponential backoff sequence: 1s, 2s, 4s, 8s, ...
         (``2 ** attempt`` seconds where attempt starts at 0).
         """
+        # Circuit breaker: if tripped, fail immediately
+        if self._circuit_open:
+            raise CircuitOpenError(self.source_id, self._consecutive_failures)
+
         client = self._ensure_client()
 
         last_exception: Exception | None = None
@@ -172,10 +196,26 @@ class BaseClient:
                 response = await client.get(url, params=params)
             except (httpx.TimeoutException, httpx.NetworkError) as exc:
                 last_exception = exc
+                self._consecutive_failures += 1
+                if (
+                    self._circuit_threshold > 0
+                    and self._consecutive_failures >= self._circuit_threshold
+                    and not self._circuit_open
+                ):
+                    self._circuit_open = True
+                    logger.warning(
+                        "base_client.circuit_open",
+                        source=self.source_id,
+                        failures=self._consecutive_failures,
+                        url=url,
+                    )
                 if attempt == self._max_retries - 1:
                     raise
                 await asyncio.sleep(2**attempt)
                 continue
+
+            # Successful response -- reset failure counter
+            self._consecutive_failures = 0
 
             if response.status_code == 200:
                 return response

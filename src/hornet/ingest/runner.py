@@ -64,6 +64,11 @@ async def run_ingest(
     # so that re-runs skip existing rows silently. session.add_all()
     # would try to INSERT every row and raise IntegrityError on the
     # first primary-key collision.
+    #
+    # Postgres has a parameter limit of ~32,767. Each observation has
+    # 9 columns, so we chunk at 3,000 rows (27,000 params) to stay
+    # safely under the limit. yfinance can return 10,000+ observations
+    # in one fetch -- without chunking, the INSERT fails.
     values = [
         {
             "country_iso3": obs.country_iso3,
@@ -79,29 +84,28 @@ async def run_ingest(
         for obs in observations
     ]
 
-    stmt = (
-        pg_insert(ObservationRow)
-        .values(values)
-        .on_conflict_do_nothing(
-            index_elements=[
-                "country_iso3",
-                "indicator_code",
-                "source_id",
-                "date",
-                "vintage",
-            ],
-        )
-        .returning(ObservationRow.country_iso3)
-    )
+    _CHUNK_SIZE = 3000
+    written = 0
 
-    # INSERT ... ON CONFLICT DO NOTHING RETURNING <col> returns exactly
-    # the rows that were inserted — skipped rows are absent from the
-    # result set. Counting the returned rows gives us the write count
-    # directly, avoiding the driver-dependent `rowcount` attribute which
-    # can return -1 when the driver doesn't know the definitive count.
     async with session_scope() as session:
-        result = await session.execute(stmt)
-        written = len(result.all())
+        for i in range(0, len(values), _CHUNK_SIZE):
+            chunk = values[i : i + _CHUNK_SIZE]
+            stmt = (
+                pg_insert(ObservationRow)
+                .values(chunk)
+                .on_conflict_do_nothing(
+                    index_elements=[
+                        "country_iso3",
+                        "indicator_code",
+                        "source_id",
+                        "date",
+                        "vintage",
+                    ],
+                )
+                .returning(ObservationRow.country_iso3)
+            )
+            result = await session.execute(stmt)
+            written += len(result.all())
 
     return IngestResult(
         source_id=request.source_id,
@@ -153,18 +157,22 @@ async def run_event_ingest(
         for event in events
     ]
 
-    stmt = (
-        pg_insert(EventRecordRow)
-        .values(values)
-        .on_conflict_do_nothing(
-            index_elements=["date", "dedup_key"],
-        )
-        .returning(EventRecordRow.dedup_key)
-    )
+    _CHUNK_SIZE = 3000
+    written = 0
 
     async with session_scope() as session:
-        result = await session.execute(stmt)
-        written = len(result.all())
+        for i in range(0, len(values), _CHUNK_SIZE):
+            chunk = values[i : i + _CHUNK_SIZE]
+            stmt = (
+                pg_insert(EventRecordRow)
+                .values(chunk)
+                .on_conflict_do_nothing(
+                    index_elements=["date", "dedup_key"],
+                )
+                .returning(EventRecordRow.dedup_key)
+            )
+            result = await session.execute(stmt)
+            written += len(result.all())
 
     return EventIngestResult(
         source_id=source_id,

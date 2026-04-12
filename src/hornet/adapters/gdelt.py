@@ -160,7 +160,8 @@ class GDELTAdapter(BaseClient):
         iso2 = self._country_iso2s.get(iso3, "")
         query = f'"{name}"'
         if iso2 and len(iso2) == 2:
-            query += f' OR "{iso2}"'
+            # GDELT requires parentheses around OR'd terms
+            query = f'("{name}" OR "{iso2}")'
         return query
 
     async def _get_gdelt_json(self, url: str, params: dict[str, str]) -> Any:
