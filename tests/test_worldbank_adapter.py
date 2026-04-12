@@ -1,19 +1,64 @@
 """Tests for the WorldBank SourceAdapter.
 
 All tests use ``httpx.MockTransport`` — no real WorldBank API calls,
-no network. Tests exercise the parse quirks (ISO2→ISO3 mapping, null
+no network. Tests exercise the parse quirks (ISO2->ISO3 mapping, null
 handling, year-string dates), the fetch orchestration (pagination,
 country filter, bulk strategy), and the discover manifest.
+
+Phase 2 note: the adapter no longer carries a hardcoded indicator
+list or ISO2->ISO3 map. Tests now provide both explicitly in the
+constructor — the same shapes the ingest factory loads from the DB.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping, Sequence
 
 import httpx
 
 from hornet.adapters.worldbank import WorldBankAdapter
-from hornet.domain import FetchRequest
+from hornet.domain import FetchRequest, SourceIndicatorSpec
+
+
+def _pilot_iso_map() -> dict[str, str]:
+    """ISO2 -> ISO3 map for the 5 pilot countries."""
+    return {
+        "NG": "NGA",
+        "TR": "TUR",
+        "ZA": "ZAF",
+        "BR": "BRA",
+        "PL": "POL",
+    }
+
+
+def _pilot_indicators() -> list[SourceIndicatorSpec]:
+    """Build the 7 WorldBank indicator fixture used across tests.
+
+    Mirrors the hardcoded Phase 1 ``_INDICATORS`` list that the
+    adapter used to own internally. Test-only; production callers
+    load the same data from the ``source_indicator`` DB table.
+    """
+    all_pilots = frozenset({"NGA", "TUR", "ZAF", "BRA", "POL"})
+    pairs: list[tuple[str, str]] = [
+        ("NY.GDP.MKTP.KD.ZG", "GDP_GROWTH"),
+        ("FP.CPI.TOTL.ZG", "CPI_YOY"),
+        ("BN.CAB.XOKA.GD.ZS", "CURRENT_ACCOUNT_GDP"),
+        ("FI.RES.TOTL.MO", "RESERVES_MONTHS_IMPORTS"),
+        ("GC.DOD.TOTL.GD.ZS", "GOVT_DEBT_GDP"),
+        ("SL.UEM.TOTL.ZS", "UNEMPLOYMENT"),
+        ("NE.TRD.GNFS.ZS", "TRADE_OPENNESS"),
+    ]
+    return [
+        SourceIndicatorSpec(
+            source_id="worldbank",
+            source_native_code=wb_id,
+            indicator_code=canonical,
+            frequency="annual",
+            countries_iso3=all_pilots,
+        )
+        for wb_id, canonical in pairs
+    ]
+
 
 # A minimal two-page WorldBank-shaped response for one indicator.
 _PAGE_1 = [
@@ -45,8 +90,12 @@ _QUIRKY_RECORDS: list[dict[str, object]] = [
 
 def _adapter(
     handler: Callable[[httpx.Request], httpx.Response],
+    indicators: Sequence[SourceIndicatorSpec] | None = None,
+    iso2_to_iso3: Mapping[str, str] | None = None,
 ) -> WorldBankAdapter:
     return WorldBankAdapter(
+        indicators=indicators if indicators is not None else _pilot_indicators(),
+        iso2_to_iso3=iso2_to_iso3 if iso2_to_iso3 is not None else _pilot_iso_map(),
         requests_per_minute=600000,
         transport=httpx.MockTransport(handler),
     )
@@ -58,19 +107,19 @@ class TestParse:
             {"country": {"id": "NG"}, "date": "2023", "value": 3.5},
             {"country": {"id": "BR"}, "date": "2023", "value": 2.9},
         ]
-        df = WorldBankAdapter._parse(records)
+        df = WorldBankAdapter._parse(records, _pilot_iso_map())
         assert len(df) == 2
         assert set(df["iso3"]) == {"NGA", "BRA"}
 
     def test_skips_null_values(self) -> None:
-        df = WorldBankAdapter._parse(_QUIRKY_RECORDS)
+        df = WorldBankAdapter._parse(_QUIRKY_RECORDS, _pilot_iso_map())
         # Expected to keep: NG/2022 (5.0), ZA/2023 (7.2). 5 others skipped.
         assert len(df) == 2
         assert set(df["iso3"]) == {"NGA", "ZAF"}
 
     def test_maps_iso2_to_iso3(self) -> None:
         records = [{"country": {"id": "NG"}, "date": "2023", "value": 3.5}]
-        df = WorldBankAdapter._parse(records)
+        df = WorldBankAdapter._parse(records, _pilot_iso_map())
         assert df["iso3"].iloc[0] == "NGA"
 
     def test_skips_regional_aggregates(self) -> None:
@@ -80,18 +129,66 @@ class TestParse:
             {"country": {"id": "WLD"}, "date": "2023", "value": 1.0},
             {"country": {"id": "HIC"}, "date": "2023", "value": 2.0},
         ]
-        df = WorldBankAdapter._parse(records)
+        df = WorldBankAdapter._parse(records, _pilot_iso_map())
         assert df.empty
 
     def test_parses_year_string_as_datetime(self) -> None:
         records = [{"country": {"id": "NG"}, "date": "2024", "value": 3.5}]
-        df = WorldBankAdapter._parse(records)
+        df = WorldBankAdapter._parse(records, _pilot_iso_map())
         assert df["date"].iloc[0].year == 2024
         assert df["date"].iloc[0].month == 1
         assert df["date"].iloc[0].day == 1
 
     def test_empty_input_returns_empty_df(self) -> None:
-        assert WorldBankAdapter._parse([]).empty
+        assert WorldBankAdapter._parse([], _pilot_iso_map()).empty
+
+    def test_unknown_iso2_is_dropped(self) -> None:
+        """A country code not in the injected map is silently dropped.
+
+        Exercises the "caller controls the map, not a hardcoded dict"
+        property of the Phase 2 refactor: if BRA is removed from the
+        map, BR records are dropped even though they're valid ISO2.
+        """
+        records = [
+            {"country": {"id": "NG"}, "date": "2023", "value": 3.5},
+            {"country": {"id": "BR"}, "date": "2023", "value": 2.9},
+        ]
+        narrow_map = {"NG": "NGA"}  # deliberately omits BR
+        df = WorldBankAdapter._parse(records, narrow_map)
+        assert len(df) == 1
+        assert df["iso3"].iloc[0] == "NGA"
+
+
+class TestConstructor:
+    async def test_drops_non_worldbank_indicators(self) -> None:
+        """Foreign source_ids are filtered out, not passed to discover/fetch."""
+        mixed = [
+            SourceIndicatorSpec(
+                source_id="worldbank",
+                source_native_code="NY.GDP.MKTP.KD.ZG",
+                indicator_code="GDP_GROWTH",
+                frequency="annual",
+                countries_iso3=frozenset({"NGA"}),
+            ),
+            SourceIndicatorSpec(
+                source_id="fred",  # wrong source
+                source_native_code="FPCPITOTLZGNGA",
+                indicator_code="CPI_YOY",
+                frequency="annual",
+                countries_iso3=frozenset({"NGA"}),
+            ),
+        ]
+        adapter = _adapter(
+            lambda r: httpx.Response(200, json=[{"pages": 1}, []]),
+            indicators=mixed,
+        )
+        try:
+            manifest = await adapter.discover()
+            # Only the WB row should appear in the manifest.
+            assert len(manifest.indicators) == 1
+            assert manifest.indicators[0].indicator_code == "GDP_GROWTH"
+        finally:
+            await adapter.close()
 
 
 class TestFetch:

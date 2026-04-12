@@ -5,16 +5,22 @@ network, no API key needed. Tests exercise the parser quirks (dot
 sentinel, invalid values, missing fields), the fetch orchestration
 (country/indicator filtering, graceful 404 handling, pilot-set
 fallback), and the discover manifest.
+
+Phase 2 note: the adapter no longer carries a hardcoded pilot-series
+dict. Tests now provide an explicit list of SourceIndicatorSpec in
+the constructor — the same shape the ingest factory loads from the
+DB. ``_pilot_indicators()`` below builds the 5-country x 2-indicator
+fixture the original tests depended on.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 import httpx
 
 from hornet.adapters.fred import FredAdapter
-from hornet.domain import FetchRequest
+from hornet.domain import FetchRequest, SourceIndicatorSpec
 
 _VALID_RESPONSE = {
     "observations": [
@@ -34,12 +40,51 @@ _RESPONSE_WITH_MISSING = {
 }
 
 
+def _pilot_indicators() -> list[SourceIndicatorSpec]:
+    """Build the 10-series pilot fixture: 5 countries x 2 indicators.
+
+    Mirrors the hardcoded Phase 1 ``_PILOT_SERIES`` dict that the
+    adapter used to own internally. Test-only; production callers
+    load the same data from the ``source_indicator`` DB table.
+    """
+    countries = [
+        ("NGA", "FPCPITOTLZGNGA", "NGANGDPRPCH"),
+        ("TUR", "FPCPITOTLZGTUR", "TURNGDPRPCH"),
+        ("ZAF", "FPCPITOTLZGZAF", "ZAFNGDPRPCH"),
+        ("BRA", "FPCPITOTLZGBRA", "BRANGDPRPCH"),
+        ("POL", "FPCPITOTLZGPOL", "POLNGDPRPCH"),
+    ]
+    specs: list[SourceIndicatorSpec] = []
+    for iso3, cpi_code, gdp_code in countries:
+        specs.append(
+            SourceIndicatorSpec(
+                source_id="fred",
+                source_native_code=cpi_code,
+                indicator_code="CPI_YOY",
+                frequency="annual",
+                countries_iso3=frozenset({iso3}),
+            )
+        )
+        specs.append(
+            SourceIndicatorSpec(
+                source_id="fred",
+                source_native_code=gdp_code,
+                indicator_code="GDP_GROWTH",
+                frequency="annual",
+                countries_iso3=frozenset({iso3}),
+            )
+        )
+    return specs
+
+
 def _adapter(
     handler: Callable[[httpx.Request], httpx.Response],
+    indicators: Sequence[SourceIndicatorSpec] | None = None,
 ) -> FredAdapter:
-    """Build a FredAdapter whose transport is a mock handler."""
+    """Build a FredAdapter with a mock transport and optional custom indicators."""
     return FredAdapter(
         api_key="test_key",
+        indicators=indicators if indicators is not None else _pilot_indicators(),
         requests_per_minute=600000,  # effectively disable rate limit
         transport=httpx.MockTransport(handler),
     )
@@ -68,6 +113,39 @@ class TestParse:
     def test_missing_columns_returns_empty_df(self) -> None:
         df = FredAdapter._parse({"observations": [{"irrelevant": "data"}]})
         assert df.empty
+
+
+class TestConstructor:
+    async def test_drops_non_fred_indicators(self) -> None:
+        """Foreign source_ids are filtered out with a warning, not kept."""
+        mixed = [
+            SourceIndicatorSpec(
+                source_id="fred",
+                source_native_code="FPCPITOTLZGNGA",
+                indicator_code="CPI_YOY",
+                frequency="annual",
+                countries_iso3=frozenset({"NGA"}),
+            ),
+            SourceIndicatorSpec(
+                source_id="worldbank",  # wrong source
+                source_native_code="NY.GDP.MKTP.KD.ZG",
+                indicator_code="GDP_GROWTH",
+                frequency="annual",
+                countries_iso3=frozenset({"NGA"}),
+            ),
+        ]
+        adapter = _adapter(
+            lambda r: httpx.Response(200, json={"observations": []}),
+            indicators=mixed,
+        )
+        try:
+            # Only the FRED row should have made it into _by_country.
+            assert set(adapter._by_country.keys()) == {"NGA"}
+            nga_specs = adapter._by_country["NGA"]
+            assert len(nga_specs) == 1
+            assert nga_specs[0].source_id == "fred"
+        finally:
+            await adapter.close()
 
 
 class TestFetch:
@@ -124,7 +202,7 @@ class TestFetch:
             result = await adapter.fetch(
                 FetchRequest(
                     source_id="fred",
-                    countries_iso3=frozenset({"XYZ"}),  # not in pilot set
+                    countries_iso3=frozenset({"XYZ"}),  # not in the fixture
                 )
             )
         finally:

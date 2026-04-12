@@ -1,0 +1,84 @@
+"""Composition functions that build DB-backed adapters.
+
+The adapter classes themselves are pure — they take pre-loaded
+indicator lists and (for WB) ISO2->ISO3 maps in their constructors.
+This module is where the DB reads happen to produce those arguments.
+
+Split out of the ingest runner so that tests of the adapters can
+construct them with literal fixtures and skip all of this — and so
+tests of the factory can mock only the repo layer without pulling in
+adapter parsing logic.
+"""
+
+from __future__ import annotations
+
+import structlog
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from hornet.adapters.fred import FredAdapter
+from hornet.adapters.worldbank import WorldBankAdapter
+from hornet.config import get_settings
+from hornet.db.repos.country import load_iso2_to_iso3_map
+from hornet.db.repos.source_indicator import list_source_indicators
+
+logger = structlog.get_logger(__name__)
+
+
+class MissingCredentialError(RuntimeError):
+    """Raised when a factory cannot find a credential it needs in Settings."""
+
+
+async def build_fred_adapter(session: AsyncSession) -> FredAdapter:
+    """Construct a FredAdapter wired up against the DB registry.
+
+    Reads:
+    * ``source_indicator`` rows where ``source_id = 'fred'`` from the
+      registry, via the repo layer.
+    * ``HORNET_FRED_API_KEY`` from Settings.
+
+    Raises:
+        MissingCredentialError: if ``HORNET_FRED_API_KEY`` is unset.
+
+    Tests that exercise the adapter directly should bypass this
+    factory and construct ``FredAdapter(api_key=..., indicators=...)``
+    themselves with literal fixtures.
+    """
+    settings = get_settings()
+    if settings.fred_api_key is None:
+        raise MissingCredentialError(
+            "HORNET_FRED_API_KEY is not set; FredAdapter cannot be constructed "
+            "against a live FRED API. Set the env var or build the adapter "
+            "directly with a literal key for tests."
+        )
+
+    indicators = await list_source_indicators(session, source_id=FredAdapter.source_id)
+    logger.info(
+        "factory.fred.built",
+        indicator_count=len(indicators),
+    )
+    return FredAdapter(
+        api_key=settings.fred_api_key.get_secret_value(),
+        indicators=indicators,
+    )
+
+
+async def build_worldbank_adapter(session: AsyncSession) -> WorldBankAdapter:
+    """Construct a WorldBankAdapter wired up against the DB registry.
+
+    Reads:
+    * ``source_indicator`` rows where ``source_id = 'worldbank'``.
+    * The ISO2 -> ISO3 map from the ``country`` table.
+
+    WorldBank has no credentials (public API), so no secret lookups.
+    """
+    indicators = await list_source_indicators(session, source_id=WorldBankAdapter.source_id)
+    iso2_to_iso3 = await load_iso2_to_iso3_map(session)
+    logger.info(
+        "factory.worldbank.built",
+        indicator_count=len(indicators),
+        country_count=len(iso2_to_iso3),
+    )
+    return WorldBankAdapter(
+        indicators=indicators,
+        iso2_to_iso3=iso2_to_iso3,
+    )

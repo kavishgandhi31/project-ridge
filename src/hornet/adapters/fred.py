@@ -5,16 +5,19 @@ and normalizes them to canonical Observation records. The parsing
 quirks (dot-for-missing, string dates, annual 20-year lookback) are
 ported verbatim from v1's ``src/ingestion/fred_client.py``.
 
-Phase 1 uses a hardcoded series dictionary for the 5 pilot countries
-(NGA, TUR, ZAF, BRA, POL) — just enough to prove the adapter works
-end-to-end against the canonical schema. Production config moves to
-a DB-backed ``source_indicator`` table in Phase 2.
+Phase 2 removed the hardcoded ``_PILOT_SERIES`` dict that Phase 1
+shipped. The adapter now accepts a pre-loaded list of
+``SourceIndicatorSpec`` in its constructor — the ingest runner loads
+these from the ``source_indicator`` DB table at startup and passes
+them through. The adapter itself stays pure: no DB dependency, still
+trivially unit-testable with ``httpx.MockTransport``.
 """
 
 from __future__ import annotations
 
 import datetime
-from dataclasses import dataclass
+from collections import defaultdict
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
 import httpx
@@ -26,8 +29,8 @@ from hornet.adapters.base_client import BaseClient
 from hornet.domain import (
     FetchRequest,
     Frequency,
-    IndicatorSpec,
     Observation,
+    SourceIndicatorSpec,
     SourceManifest,
 )
 
@@ -44,66 +47,35 @@ _ANNUAL_LOOKBACK_YEARS = 20
 _DEFAULT_LOOKBACK_YEARS = 5
 
 
-@dataclass(frozen=True)
-class _SeriesSpec:
-    """Hardcoded metadata for a single FRED series.
-
-    Phase 1 fixture data only — moves to the ``source_indicator`` DB
-    table in Phase 2.
-    """
-
-    fred_id: str
-    """Native FRED series ID (e.g. 'FPCPITOTLZGNGA')."""
-
-    indicator_code: str
-    """Canonical Hornet indicator code (e.g. 'CPI_YOY')."""
-
-    frequency: Frequency
-    """Observation frequency tier, drives lookback window."""
-
-
-_PILOT_SERIES: dict[str, list[_SeriesSpec]] = {
-    "NGA": [
-        _SeriesSpec("FPCPITOTLZGNGA", "CPI_YOY", "annual"),
-        _SeriesSpec("NGANGDPRPCH", "GDP_GROWTH", "annual"),
-    ],
-    "TUR": [
-        _SeriesSpec("FPCPITOTLZGTUR", "CPI_YOY", "annual"),
-        _SeriesSpec("TURNGDPRPCH", "GDP_GROWTH", "annual"),
-    ],
-    "ZAF": [
-        _SeriesSpec("FPCPITOTLZGZAF", "CPI_YOY", "annual"),
-        _SeriesSpec("ZAFNGDPRPCH", "GDP_GROWTH", "annual"),
-    ],
-    "BRA": [
-        _SeriesSpec("FPCPITOTLZGBRA", "CPI_YOY", "annual"),
-        _SeriesSpec("BRANGDPRPCH", "GDP_GROWTH", "annual"),
-    ],
-    "POL": [
-        _SeriesSpec("FPCPITOTLZGPOL", "CPI_YOY", "annual"),
-        _SeriesSpec("POLNGDPRPCH", "GDP_GROWTH", "annual"),
-    ],
-}
-
-
 class FredAdapter(BaseClient):
     """Fetches FRED time series and yields canonical Observations.
 
     Satisfies the ``SourceAdapter`` protocol (``discover``, ``fetch``,
     ``health``). Inherits HTTP session, rate limiting, and retries
     from ``BaseClient``.
+
+    The ``indicators`` parameter is the registry of series this adapter
+    should expose. Every entry must have ``source_id == 'fred'`` —
+    the constructor validates and skips anything else, logging a
+    warning. FRED's native codes are country-coded (one country per
+    series), so each spec's ``countries_iso3`` should contain exactly
+    one ISO3 — multi-country specs get expanded into one
+    (country, spec) pair per country internally.
     """
+
+    source_id: str = "fred"
 
     def __init__(
         self,
         api_key: str,
+        indicators: Sequence[SourceIndicatorSpec],
         requests_per_minute: int = 60,
         timeout_seconds: float = 30.0,
         max_retries: int = 3,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         super().__init__(
-            source_id="fred",
+            source_id=self.source_id,
             base_url=FRED_BASE_URL,
             requests_per_minute=requests_per_minute,
             timeout_seconds=timeout_seconds,
@@ -111,57 +83,92 @@ class FredAdapter(BaseClient):
             transport=transport,
         )
         self._api_key = api_key
+        self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(
+            self._validate_indicators(indicators)
+        )
+        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = self._group_by_country(
+            self._indicators
+        )
+
+    @classmethod
+    def _validate_indicators(
+        cls,
+        indicators: Iterable[SourceIndicatorSpec],
+    ) -> list[SourceIndicatorSpec]:
+        """Drop any non-FRED rows and log a warning if found.
+
+        This is defensive — the ingest runner should only ever pass
+        FRED rows here, but the adapter shouldn't trust its caller.
+        """
+        kept: list[SourceIndicatorSpec] = []
+        for spec in indicators:
+            if spec.source_id != cls.source_id:
+                logger.warning(
+                    "fred.indicator.wrong_source",
+                    source_id=spec.source_id,
+                    native_code=spec.source_native_code,
+                )
+                continue
+            kept.append(spec)
+        return kept
+
+    @staticmethod
+    def _group_by_country(
+        indicators: Sequence[SourceIndicatorSpec],
+    ) -> dict[str, tuple[SourceIndicatorSpec, ...]]:
+        """Produce a (country_iso3 -> specs) map for fast fetch() lookup.
+
+        Each FRED series is country-specific, but a spec with multiple
+        countries in ``countries_iso3`` (unusual but legal) is expanded
+        into one entry per country so fetch() can iterate countries
+        without re-scanning the full list.
+        """
+        by_country: dict[str, list[SourceIndicatorSpec]] = defaultdict(list)
+        for spec in indicators:
+            for iso3 in spec.countries_iso3:
+                by_country[iso3].append(spec)
+        return {iso3: tuple(specs) for iso3, specs in by_country.items()}
 
     async def discover(self) -> SourceManifest:
-        """Return a SourceManifest listing every (country, indicator) pair.
+        """Return a SourceManifest listing every registered series.
 
-        Phase 1: derived from ``_PILOT_SERIES``. Each FRED series is
-        country-specific (the ISO3 is encoded in the series ID), so we
-        emit one ``IndicatorSpec`` per pair rather than aggregating.
+        One ``IndicatorSpec`` per ``SourceIndicatorSpec`` in the
+        registry — the manifest type is just a lighter shape that
+        drops ``source_id``.
         """
-        specs: list[IndicatorSpec] = []
-        for iso3, series_list in _PILOT_SERIES.items():
-            for series in series_list:
-                specs.append(
-                    IndicatorSpec(
-                        indicator_code=series.indicator_code,
-                        source_native_code=series.fred_id,
-                        frequency=series.frequency,
-                        countries_iso3=frozenset({iso3}),
-                    )
-                )
         return SourceManifest(
             source_id=self.source_id,
-            indicators=tuple(specs),
+            indicators=tuple(spec.to_manifest_spec() for spec in self._indicators),
             discovered_at=datetime.datetime.now(datetime.UTC),
         )
 
     async def fetch(self, request: FetchRequest) -> list[Observation]:
         """Fetch observations for the requested country/indicator scope.
 
-        Empty ``countries_iso3`` means "all pilot countries." Empty
-        ``indicator_codes`` means "all indicators each country has."
-        Unknown countries are silently skipped. Series that fail to
-        fetch (404, timeout, etc.) return an empty DataFrame and
-        contribute zero observations — one broken series never tanks
-        the whole fetch.
+        Empty ``countries_iso3`` means "all countries the adapter
+        knows." Empty ``indicator_codes`` means "all indicators each
+        country has." Unknown countries are silently skipped. Series
+        that fail to fetch (404, timeout, etc.) return an empty
+        DataFrame and contribute zero observations — one broken
+        series never tanks the whole fetch.
         """
         ingested_at = datetime.datetime.now(datetime.UTC)
-        countries = request.countries_iso3 or frozenset(_PILOT_SERIES.keys())
+        countries = request.countries_iso3 or frozenset(self._by_country.keys())
 
         results: list[Observation] = []
         for iso3 in countries:
-            if iso3 not in _PILOT_SERIES:
+            specs = self._by_country.get(iso3)
+            if specs is None:
                 logger.debug("fred.fetch.unknown_country", iso3=iso3)
                 continue
 
-            for series in _PILOT_SERIES[iso3]:
-                if request.indicator_codes and series.indicator_code not in request.indicator_codes:
+            for spec in specs:
+                if request.indicator_codes and spec.indicator_code not in request.indicator_codes:
                     continue
 
                 df = await self._fetch_series(
-                    series.fred_id,
-                    series.frequency,
+                    spec.source_native_code,
+                    spec.frequency,
                     start=request.start,
                     end=request.end,
                 )
@@ -174,11 +181,11 @@ class FredAdapter(BaseClient):
                     results.append(
                         Observation(
                             country_iso3=iso3,
-                            indicator_code=series.indicator_code,
+                            indicator_code=spec.indicator_code,
                             source_id=self.source_id,
                             date=obs_date,
                             value=float(row["value"]),
-                            frequency=series.frequency,
+                            frequency=spec.frequency,
                             vintage=ingested_at,
                             ingested_at=ingested_at,
                         )
@@ -209,7 +216,7 @@ class FredAdapter(BaseClient):
         end_str = (
             end.strftime(FRED_DATE_FORMAT)
             if end
-            else datetime.datetime.now().strftime(FRED_DATE_FORMAT)
+            else datetime.datetime.now(datetime.UTC).strftime(FRED_DATE_FORMAT)
         )
 
         params: dict[str, Any] = {
@@ -236,7 +243,7 @@ class FredAdapter(BaseClient):
     def _compute_start_date(frequency: Frequency) -> str:
         """Return default ``observation_start`` for a given frequency."""
         years = _ANNUAL_LOOKBACK_YEARS if frequency == "annual" else _DEFAULT_LOOKBACK_YEARS
-        cutoff = datetime.datetime.now() - datetime.timedelta(days=years * 365)
+        cutoff = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=years * 365)
         return cutoff.strftime(FRED_DATE_FORMAT)
 
     @staticmethod

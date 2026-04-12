@@ -10,7 +10,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -50,6 +50,17 @@ class Settings(BaseSettings):
     # ---- API server ----
     api_host: str = Field(default="127.0.0.1")
     api_port: int = Field(default=8000, ge=1, le=65535)
+
+    # ---- Source credentials ----
+    # Read from HORNET_FRED_API_KEY. Wrapped in SecretStr so accidental
+    # logging / repr of Settings never leaks the key. None means the
+    # FRED adapter cannot be wired up in production — tests that never
+    # hit real FRED can construct FredAdapter directly with a literal
+    # api_key and bypass Settings entirely.
+    fred_api_key: SecretStr | None = Field(
+        default=None,
+        description="API key for FRED (https://fred.stlouisfed.org). Required for live ingest.",
+    )
 
 
 @lru_cache(maxsize=1)

@@ -2,19 +2,23 @@
 
 Loads annual macro indicators from the World Bank REST API and
 normalizes them to canonical Observation records. Parsing quirks
-(ISO2 → ISO3 mapping, pagination with metadata-on-page-1, JSON null
+(ISO2 -> ISO3 mapping, pagination with metadata-on-page-1, JSON null
 handling, year-string dates) are ported verbatim from v1's
 ``src/ingestion/worldbank_client.py``.
 
-Phase 1 uses a hardcoded set of 7 indicators and a small ISO2↔ISO3
-map covering the 5 pilot countries. Real production config moves to
-DB-backed tables in a later phase.
+Phase 2 removed the hardcoded ``_INDICATORS`` list and
+``_ISO2_TO_ISO3`` map that Phase 1 shipped. The adapter now accepts
+both as constructor arguments: ``indicators`` from the
+``source_indicator`` DB table, ``iso2_to_iso3`` from the ``country``
+registry. The adapter itself stays pure — no DB dependency, still
+trivially unit-testable with an ``httpx.MockTransport`` and a literal
+indicator/country fixture.
 """
 
 from __future__ import annotations
 
 import datetime
-from dataclasses import dataclass
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
 import httpx
@@ -25,8 +29,8 @@ from hornet.adapters.base import HealthReport
 from hornet.adapters.base_client import BaseClient
 from hornet.domain import (
     FetchRequest,
-    IndicatorSpec,
     Observation,
+    SourceIndicatorSpec,
     SourceManifest,
 )
 
@@ -44,47 +48,6 @@ WB_START_YEAR = 2000
 WB_PER_PAGE = 5000
 
 
-@dataclass(frozen=True)
-class _IndicatorMetadata:
-    """Hardcoded metadata for a WorldBank indicator.
-
-    Phase 1 only — moves to DB-backed config in Phase 2+.
-    """
-
-    wb_id: str
-    """Native WorldBank indicator code (e.g. 'NY.GDP.MKTP.KD.ZG')."""
-
-    indicator_code: str
-    """Canonical Hornet indicator code (e.g. 'GDP_GROWTH')."""
-
-
-# The 7 indicators v1 pulls from WorldBank, with canonical codes chosen
-# to match FRED where the concept overlaps (CPI_YOY, GDP_GROWTH). The
-# remaining 5 are WorldBank-only for now.
-_INDICATORS: list[_IndicatorMetadata] = [
-    _IndicatorMetadata("NY.GDP.MKTP.KD.ZG", "GDP_GROWTH"),
-    _IndicatorMetadata("FP.CPI.TOTL.ZG", "CPI_YOY"),
-    _IndicatorMetadata("BN.CAB.XOKA.GD.ZS", "CURRENT_ACCOUNT_GDP"),
-    _IndicatorMetadata("FI.RES.TOTL.MO", "RESERVES_MONTHS_IMPORTS"),
-    _IndicatorMetadata("GC.DOD.TOTL.GD.ZS", "GOVT_DEBT_GDP"),
-    _IndicatorMetadata("SL.UEM.TOTL.ZS", "UNEMPLOYMENT"),
-    _IndicatorMetadata("NE.TRD.GNFS.ZS", "TRADE_OPENNESS"),
-]
-
-
-# ISO2 → ISO3 map for the 5 pilot countries. WorldBank returns ISO2
-# in its JSON responses, but Hornet's canonical Observation.country_iso3
-# is ISO3, so we map at the parse boundary. Phase 2 will replace this
-# with a DB-backed lookup populated from countries.yaml.
-_ISO2_TO_ISO3: dict[str, str] = {
-    "NG": "NGA",
-    "TR": "TUR",
-    "ZA": "ZAF",
-    "BR": "BRA",
-    "PL": "POL",
-}
-
-
 class WorldBankAdapter(BaseClient):
     """Fetches WorldBank indicators and yields canonical Observations.
 
@@ -94,46 +57,67 @@ class WorldBankAdapter(BaseClient):
     doesn't publish limits and conservative defaults avoid 429s.
     Timeout is raised to 60 seconds because WB is genuinely slow on
     multi-page indicator fetches.
+
+    Two pre-loaded dependencies in the constructor:
+
+    * ``indicators`` — the registry of series to expose, filtered to
+      ``source_id == 'worldbank'``. Non-matching rows are dropped with
+      a warning.
+    * ``iso2_to_iso3`` — the country code map used at the parse
+      boundary to translate WB's native ISO2 responses to canonical
+      ISO3. Populated from the ``country`` table by the ingest runner.
     """
+
+    source_id: str = "worldbank"
 
     def __init__(
         self,
+        indicators: Sequence[SourceIndicatorSpec],
+        iso2_to_iso3: Mapping[str, str],
         requests_per_minute: int = 30,
         timeout_seconds: float = 60.0,
         max_retries: int = 3,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         super().__init__(
-            source_id="worldbank",
+            source_id=self.source_id,
             base_url=WB_BASE_URL,
             requests_per_minute=requests_per_minute,
             timeout_seconds=timeout_seconds,
             max_retries=max_retries,
             transport=transport,
         )
+        self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(
+            self._validate_indicators(indicators)
+        )
+        # Store as a plain dict for O(1) lookup in the parse hot path.
+        self._iso2_to_iso3: dict[str, str] = {
+            iso2.upper(): iso3.upper() for iso2, iso3 in iso2_to_iso3.items()
+        }
+
+    @classmethod
+    def _validate_indicators(
+        cls,
+        indicators: Iterable[SourceIndicatorSpec],
+    ) -> list[SourceIndicatorSpec]:
+        """Drop any non-WB rows and log a warning if found."""
+        kept: list[SourceIndicatorSpec] = []
+        for spec in indicators:
+            if spec.source_id != cls.source_id:
+                logger.warning(
+                    "worldbank.indicator.wrong_source",
+                    source_id=spec.source_id,
+                    native_code=spec.source_native_code,
+                )
+                continue
+            kept.append(spec)
+        return kept
 
     async def discover(self) -> SourceManifest:
-        """Return a SourceManifest listing every WorldBank indicator available.
-
-        Unlike FRED (which has per-country native codes), WorldBank
-        indicators are global: one native code like ``NY.GDP.MKTP.KD.ZG``
-        applies to every country. So each ``IndicatorSpec`` covers the
-        full set of pilot countries rather than a single country.
-        """
-        all_countries = frozenset(_ISO2_TO_ISO3.values())
-        specs: list[IndicatorSpec] = []
-        for indicator in _INDICATORS:
-            specs.append(
-                IndicatorSpec(
-                    indicator_code=indicator.indicator_code,
-                    source_native_code=indicator.wb_id,
-                    frequency="annual",
-                    countries_iso3=all_countries,
-                )
-            )
+        """Return a SourceManifest listing every registered indicator."""
         return SourceManifest(
             source_id=self.source_id,
-            indicators=tuple(specs),
+            indicators=tuple(spec.to_manifest_spec() for spec in self._indicators),
             discovered_at=datetime.datetime.now(datetime.UTC),
         )
 
@@ -143,22 +127,22 @@ class WorldBankAdapter(BaseClient):
         Bulk-fetches each indicator once (one API call returns all ~190
         countries for that indicator), then filters client-side to the
         requested country set. This is vastly more efficient than
-        per-country fetches: 7 indicators x 2 pages is ~14 calls for
-        the entire run, regardless of how many countries are requested.
+        per-country fetches: N indicators x ~2 pages is the total call
+        count, regardless of how many countries are requested.
         """
         ingested_at = datetime.datetime.now(datetime.UTC)
-        requested_countries = request.countries_iso3 or frozenset(_ISO2_TO_ISO3.values())
+        all_known_countries: frozenset[str] = frozenset(self._iso2_to_iso3.values())
+        requested_countries = request.countries_iso3 or all_known_countries
 
-        # Apply indicator filter if present; otherwise fetch all.
         indicators_to_fetch = [
-            ind
-            for ind in _INDICATORS
-            if not request.indicator_codes or ind.indicator_code in request.indicator_codes
+            spec
+            for spec in self._indicators
+            if not request.indicator_codes or spec.indicator_code in request.indicator_codes
         ]
 
         results: list[Observation] = []
-        for indicator in indicators_to_fetch:
-            df = await self._fetch_indicator(indicator.wb_id)
+        for spec in indicators_to_fetch:
+            df = await self._fetch_indicator(spec.source_native_code)
             if df.empty:
                 continue
 
@@ -173,11 +157,11 @@ class WorldBankAdapter(BaseClient):
                 results.append(
                     Observation(
                         country_iso3=str(row["iso3"]),
-                        indicator_code=indicator.indicator_code,
+                        indicator_code=spec.indicator_code,
                         source_id=self.source_id,
                         date=obs_date,
                         value=float(row["value"]),
-                        frequency="annual",
+                        frequency=spec.frequency,
                         vintage=ingested_at,
                         ingested_at=ingested_at,
                     )
@@ -200,7 +184,7 @@ class WorldBankAdapter(BaseClient):
         at index 1.
         """
         url = f"{WB_BASE_URL}/country/all/indicator/{wb_id}"
-        current_year = datetime.datetime.now().year
+        current_year = datetime.datetime.now(datetime.UTC).year
 
         all_records: list[dict[str, Any]] = []
         page = 1
@@ -244,10 +228,13 @@ class WorldBankAdapter(BaseClient):
                 break
             page += 1
 
-        return self._parse(all_records)
+        return self._parse(all_records, self._iso2_to_iso3)
 
     @staticmethod
-    def _parse(records: list[dict[str, Any]]) -> pd.DataFrame:
+    def _parse(
+        records: list[dict[str, Any]],
+        iso2_to_iso3: Mapping[str, str],
+    ) -> pd.DataFrame:
         """Parse a list of WorldBank records into a DataFrame.
 
         Ports v1's parsing quirks verbatim:
@@ -256,11 +243,13 @@ class WorldBankAdapter(BaseClient):
           string ``"."`` as a sentinel and needs coerce-to-NaN), WB
           uses actual JSON null (Python ``None``). Skip those rows
           entirely — never add them to the DataFrame.
-        * **ISO2 → ISO3 mapping at the parse boundary.** WB responses
-          contain ISO2 country codes. Rows whose ISO2 isn't in our
-          pilot map are silently dropped — these include WB's regional
-          aggregates ("WLD" for World, "HIC" for High-Income Countries,
-          etc.) which have ISO2-like codes but no country mapping.
+        * **ISO2 -> ISO3 mapping at the parse boundary.** WB responses
+          contain ISO2 country codes. Rows whose ISO2 isn't in the
+          injected map are silently dropped — these include WB's
+          regional aggregates ("WLD" for World, "HIC" for High-Income
+          Countries, etc.) which have ISO2-like codes but no country
+          mapping. The map comes from the ``country`` DB table via
+          the constructor, not from a hardcoded dict.
         * **Date is a year string** (``"2024"``), not ``"YYYY-MM-DD"``
           like FRED. Parsed with ``format="%Y"`` so the resulting
           ``datetime64[ns]`` snaps to Jan 1 of that year.
@@ -272,11 +261,11 @@ class WorldBankAdapter(BaseClient):
         for record in records:
             value = record.get("value")
             if value is None:
-                continue  # JSON null — skip entirely, don't coerce
+                continue  # JSON null - skip entirely, don't coerce
 
             country = record.get("country") or {}
             iso2 = str(country.get("id", "")).upper()
-            iso3 = _ISO2_TO_ISO3.get(iso2)
+            iso3 = iso2_to_iso3.get(iso2)
             if not iso3:
                 continue  # not a country we track (regional aggregate, etc.)
 

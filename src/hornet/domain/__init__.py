@@ -8,12 +8,20 @@ rest of the codebase testable.
 """
 
 from hornet.domain.observation import Frequency, Observation
-from hornet.domain.source import FetchRequest, IndicatorSpec, SourceManifest
+from hornet.domain.source import (
+    CountrySpec,
+    FetchRequest,
+    IndicatorSpec,
+    SourceIndicatorSpec,
+    SourceManifest,
+)
 
 __all__ = [
+    "CountrySpec",
     "FetchRequest",
     "Frequency",
     "IndicatorSpec",
     "Observation",
+    "SourceIndicatorSpec",
     "SourceManifest",
 ]
