@@ -53,6 +53,31 @@ RISK_ITEMS = [
 ]
 
 
+def _maturity_sort_key(label: str) -> float:
+    """Convert a maturity label to a numeric value in years for sorting.
+
+    Handles: "1 Month", "3 Month", "6 Month", "1 Year", "10 Year",
+    "30 Year", etc. Works for any bond curve (UST, JGB, Bund, Gilt).
+    """
+    parts = label.strip().split()
+    if len(parts) < 2:
+        return 999.0
+    try:
+        num = float(parts[0])
+    except ValueError:
+        return 999.0
+    unit = parts[1].lower()
+    if unit.startswith("month"):
+        return num / 12.0
+    if unit.startswith("year"):
+        return num
+    if unit.startswith("week"):
+        return num / 52.0
+    if unit.startswith("day"):
+        return num / 365.0
+    return num
+
+
 @st.cache_data(ttl=300)
 def fetch_indicator(indicator_code: str, limit: int = 500) -> list[dict[str, object]]:
     """Fetch observations for one indicator."""
@@ -84,15 +109,15 @@ for code, label in NOMINAL_YIELDS:
         curve_data[label] = None
 
 if any(v is not None for v in curve_data.values()):
-    # Preserve maturity order from NOMINAL_YIELDS (1M -> 30Y)
-    maturity_order = [label for _, label in NOMINAL_YIELDS]
-    curve_df = pd.DataFrame(
-        [{"Maturity": k, "Yield (%)": v} for k, v in curve_data.items() if v is not None]
-    )
+    # Sort by maturity numerically (adaptive -- works for any bond curve)
+    curve_rows = [{"Maturity": k, "Yield (%)": v} for k, v in curve_data.items() if v is not None]
+    curve_rows.sort(key=lambda r: _maturity_sort_key(str(r["Maturity"])))
+    curve_df = pd.DataFrame(curve_rows)
+    # Use Categorical with the sorted order to prevent Streamlit re-sorting
+    sorted_labels = [str(r["Maturity"]) for r in curve_rows]
     curve_df["Maturity"] = pd.Categorical(
-        curve_df["Maturity"], categories=maturity_order, ordered=True
+        curve_df["Maturity"], categories=sorted_labels, ordered=True
     )
-    curve_df = curve_df.sort_values("Maturity")
     st.line_chart(curve_df, x="Maturity", y="Yield (%)")
 
     st.dataframe(
