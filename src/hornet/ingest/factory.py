@@ -17,12 +17,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from hornet.adapters.bis import BISAdapter
 from hornet.adapters.fred import FredAdapter
+from hornet.adapters.gdelt import GDELTAdapter
 from hornet.adapters.imf import IMFAdapter
 from hornet.adapters.oecd import OECDAdapter
 from hornet.adapters.worldbank import WorldBankAdapter
 from hornet.adapters.yfinance_adapter import YFinanceAdapter
 from hornet.config import get_settings
-from hornet.db.repos.country import load_iso2_to_iso3_map
+from hornet.db.repos.country import list_countries, load_iso2_to_iso3_map
 from hornet.db.repos.source_indicator import list_source_indicators
 
 logger = structlog.get_logger(__name__)
@@ -152,3 +153,29 @@ async def build_imf_adapter(session: AsyncSession) -> IMFAdapter:
         indicator_count=len(indicators),
     )
     return IMFAdapter(indicators=indicators)
+
+
+async def build_gdelt_adapter(session: AsyncSession) -> GDELTAdapter:
+    """Construct a GDELTAdapter wired up against the DB registry.
+
+    Reads:
+    * ``source_indicator`` rows where ``source_id = 'gdelt'``.
+    * Country names and ISO2 codes from the ``country`` table for
+      GDELT query building (GDELT searches by country name, not code).
+
+    GDELT has no credentials (free public API).
+    """
+    indicators = await list_source_indicators(session, source_id=GDELTAdapter.source_id)
+    countries = await list_countries(session)
+    country_names = {c.iso3: c.name for c in countries}
+    country_iso2s = {c.iso3: c.iso2 for c in countries}
+    logger.info(
+        "factory.gdelt.built",
+        indicator_count=len(indicators),
+        country_count=len(country_names),
+    )
+    return GDELTAdapter(
+        indicators=indicators,
+        country_names=country_names,
+        country_iso2s=country_iso2s,
+    )

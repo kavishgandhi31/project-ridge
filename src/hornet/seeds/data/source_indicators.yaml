@@ -448,3 +448,29 @@ source_indicators:
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: Goods and services balance in USD (BOP)
     unit: usd_millions
+
+  # -------------------------------------------------------------------
+  # GDELT -- news sentiment and headlines. indicator_code carries the
+  # event_type (tone/volume/headline), not a canonical macro indicator.
+  # All 5 pilots covered.
+  # -------------------------------------------------------------------
+  - source_id: gdelt
+    source_native_code: tone
+    indicator_code: tone
+    frequency: daily
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: GDELT average news tone (sentiment)
+
+  - source_id: gdelt
+    source_native_code: volume
+    indicator_code: volume
+    frequency: daily
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: GDELT article volume (daily count)
+
+  - source_id: gdelt
+    source_native_code: headline
+    indicator_code: headline
+    frequency: daily
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: GDELT article headlines (artlist mode)

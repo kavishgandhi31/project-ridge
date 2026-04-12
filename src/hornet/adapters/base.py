@@ -7,6 +7,7 @@ from typing import Protocol, runtime_checkable
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from hornet.domain.event import EventRecord
 from hornet.domain.observation import Observation
 from hornet.domain.source import FetchRequest, SourceManifest
 
@@ -67,5 +68,26 @@ class SourceAdapter(Protocol):
     async def discover(self) -> SourceManifest: ...
 
     async def fetch(self, request: FetchRequest) -> list[Observation]: ...
+
+    async def health(self) -> HealthReport: ...
+
+
+@runtime_checkable
+class EventSourceAdapter(Protocol):
+    """Contract for event/news sources that produce EventRecords.
+
+    Parallel to SourceAdapter but returns EventRecord instead of
+    Observation. Used by GDELT and GoogleNews.
+
+    No ``discover()`` -- event sources do not expose a manifest of
+    indicators. Their configuration comes from the source_indicator
+    registry the same way numeric adapters work, but the
+    ``indicator_code`` field carries the event_type (tone, volume,
+    headline) rather than a canonical macro indicator.
+    """
+
+    source_id: str
+
+    async def fetch_events(self, request: FetchRequest) -> list[EventRecord]: ...
 
     async def health(self) -> HealthReport: ...
