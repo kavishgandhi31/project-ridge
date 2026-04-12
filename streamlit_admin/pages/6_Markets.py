@@ -118,9 +118,9 @@ if any(v is not None for v in curve_data.values()):
     curve_df = pd.DataFrame(curve_rows)
     sorted_labels = [str(r["Maturity"]) for r in curve_rows]
 
-    # Dynamic y-axis: round down/up to nearest whole %, then add 0.5% buffer
+    # Dynamic y-axis: bottom = floor to nearest whole %, top = ceil + 0.5% buffer
     yields = [r["Yield (%)"] for r in curve_rows]
-    y_min = math.floor(min(yields)) - 0.5  # type: ignore[arg-type]
+    y_min = math.floor(min(yields))  # type: ignore[arg-type]
     y_max = math.ceil(max(yields)) + 0.5  # type: ignore[arg-type]
 
     chart = (
