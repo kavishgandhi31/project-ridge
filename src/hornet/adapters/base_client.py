@@ -136,25 +136,25 @@ class BaseClient:
             await asyncio.sleep(self._min_interval_seconds - elapsed)
         self._last_request_monotonic = time.monotonic()
 
-    async def get_json(
+    async def _request(
         self,
         url: str,
         params: dict[str, Any] | None = None,
-    ) -> Any:
+    ) -> httpx.Response:
         """Perform a GET request with rate limiting and retries.
 
-        Returns the parsed JSON body on success. Raises the original
-        httpx exception on 4xx (non-429) responses or after ``max_retries``
-        exhausted retries on 5xx / network errors.
+        Returns the raw ``httpx.Response`` on success (status 200).
+        Raises the original httpx exception on 4xx (non-429) responses
+        or after ``max_retries`` exhausted retries on 5xx / network errors.
 
         Retry policy:
 
-        * **200**: return parsed JSON immediately.
+        * **200**: return response immediately.
         * **429**: respect ``Retry-After`` header if present, else
           exponential backoff. Retry up to ``max_retries``.
         * **5xx**: exponential backoff, retry up to ``max_retries``.
           Final attempt's exception is raised.
-        * **4xx (non-429)**: fail fast, no retries — these are usually
+        * **4xx (non-429)**: fail fast, no retries -- these are usually
           permanent (bad auth, bad URL, invalid query).
         * **Network error / timeout**: exponential backoff, retry.
 
@@ -177,11 +177,9 @@ class BaseClient:
                 await asyncio.sleep(2**attempt)
                 continue
 
-            # Success.
             if response.status_code == 200:
-                return response.json()
+                return response
 
-            # Rate limited — respect Retry-After if provided.
             if response.status_code == 429:
                 if attempt == self._max_retries - 1:
                     response.raise_for_status()
@@ -190,24 +188,39 @@ class BaseClient:
                 await asyncio.sleep(delay)
                 continue
 
-            # Server error — backoff and retry.
             if 500 <= response.status_code < 600:
                 if attempt == self._max_retries - 1:
                     response.raise_for_status()
                 await asyncio.sleep(2**attempt)
                 continue
 
-            # 4xx (non-429) — fail fast, not retryable.
             response.raise_for_status()
 
-        # Exhausted retries without a clean return path. We only get
-        # here if every attempt bailed via ``continue``, which means
-        # the last one was a timeout or network error that raced past
-        # the "raise on final attempt" check. Re-raise the last seen
-        # exception if available; otherwise fall back to a generic error.
         if last_exception is not None:
             raise last_exception
         raise RuntimeError(
             f"BaseClient({self.source_id}): exhausted {self._max_retries} "
             f"retries for {url} without a definitive response"
         )
+
+    async def get_json(
+        self,
+        url: str,
+        params: dict[str, Any] | None = None,
+    ) -> Any:
+        """GET request returning parsed JSON. See ``_request`` for retry policy."""
+        response = await self._request(url, params=params)
+        return response.json()
+
+    async def get_text(
+        self,
+        url: str,
+        params: dict[str, Any] | None = None,
+    ) -> str:
+        """GET request returning response body as text. See ``_request`` for retry policy.
+
+        Used by adapters that receive CSV or XML instead of JSON
+        (e.g., BIS returns SDMX-CSV).
+        """
+        response = await self._request(url, params=params)
+        return response.text

@@ -8,12 +8,14 @@ authentication. Everything downstream consumes canonical Observations.
 
 from hornet.adapters.base import HealthReport, SourceAdapter
 from hornet.adapters.base_client import BaseClient
+from hornet.adapters.bis import BISAdapter
 from hornet.adapters.fred import FredAdapter
 from hornet.adapters.oecd import OECDAdapter
 from hornet.adapters.worldbank import WorldBankAdapter
 from hornet.adapters.yfinance_adapter import YFinanceAdapter
 
 __all__ = [
+    "BISAdapter",
     "BaseClient",
     "FredAdapter",
     "HealthReport",

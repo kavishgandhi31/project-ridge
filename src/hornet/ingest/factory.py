@@ -15,6 +15,7 @@ from __future__ import annotations
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from hornet.adapters.bis import BISAdapter
 from hornet.adapters.fred import FredAdapter
 from hornet.adapters.oecd import OECDAdapter
 from hornet.adapters.worldbank import WorldBankAdapter
@@ -112,3 +113,27 @@ async def build_oecd_adapter(session: AsyncSession) -> OECDAdapter:
         indicator_count=len(indicators),
     )
     return OECDAdapter(indicators=indicators)
+
+
+async def build_bis_adapter(session: AsyncSession) -> BISAdapter:
+    """Construct a BISAdapter wired up against the DB registry.
+
+    Reads:
+    * ``source_indicator`` rows where ``source_id = 'bis'``.
+    * The ISO3 -> ISO2 map (reversed from the ``country`` table's
+      ISO2 -> ISO3 map) because BIS uses ISO2 in its API.
+
+    BIS has no credentials (public SDMX API).
+    """
+    indicators = await list_source_indicators(session, source_id=BISAdapter.source_id)
+    iso2_to_iso3 = await load_iso2_to_iso3_map(session)
+    iso3_to_iso2 = {iso3: iso2 for iso2, iso3 in iso2_to_iso3.items()}
+    logger.info(
+        "factory.bis.built",
+        indicator_count=len(indicators),
+        country_count=len(iso3_to_iso2),
+    )
+    return BISAdapter(
+        indicators=indicators,
+        iso3_to_iso2=iso3_to_iso2,
+    )

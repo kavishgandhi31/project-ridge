@@ -288,3 +288,31 @@ source_indicators:
     countries_iso3: [TUR, ZAF, BRA, POL]
     name: Industrial Production (volume index)
     unit: index
+
+  # -------------------------------------------------------------------
+  # BIS -- financial stability indicators via SDMX CSV API. NGA is not
+  # covered by BIS (G20 + major EMs only).
+  # -------------------------------------------------------------------
+  - source_id: bis
+    source_native_code: WS_CREDIT_GAP
+    indicator_code: CREDIT_GAP
+    frequency: quarterly
+    countries_iso3: [TUR, ZAF, BRA, POL]
+    name: Credit-to-GDP gap (Basel gap)
+    unit: percentage_points
+
+  - source_id: bis
+    source_native_code: WS_SPP
+    indicator_code: PROPERTY_PRICE
+    frequency: quarterly
+    countries_iso3: [TUR, ZAF, BRA, POL]
+    name: Residential property prices (index)
+    unit: index
+
+  - source_id: bis
+    source_native_code: WS_EER
+    indicator_code: REER
+    frequency: monthly
+    countries_iso3: [TUR, ZAF, BRA, POL]
+    name: Real effective exchange rate (broad basket)
+    unit: index
