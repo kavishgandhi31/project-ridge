@@ -21,6 +21,7 @@ from hornet import __version__
 from hornet.api.routes.alerts import router as alerts_router
 from hornet.api.routes.countries import router as countries_router
 from hornet.api.routes.narratives import router as narratives_router
+from hornet.api.routes.observations import router as observations_router
 from hornet.api.routes.pipeline import router as pipeline_router
 from hornet.api.routes.quality import router as quality_router
 from hornet.api.routes.scores import router as scores_router
@@ -67,6 +68,7 @@ def create_app() -> FastAPI:
     app.include_router(quality_router)
     app.include_router(pipeline_router)
     app.include_router(narratives_router)
+    app.include_router(observations_router)
 
     @app.get("/health", response_model=HealthResponse)
     async def health() -> HealthResponse:
