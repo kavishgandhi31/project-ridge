@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from hornet.adapters.bis import BISAdapter
 from hornet.adapters.fred import FredAdapter
 from hornet.adapters.gdelt import GDELTAdapter
+from hornet.adapters.googlenews import GoogleNewsAdapter
 from hornet.adapters.imf import IMFAdapter
 from hornet.adapters.oecd import OECDAdapter
 from hornet.adapters.worldbank import WorldBankAdapter
@@ -178,4 +179,27 @@ async def build_gdelt_adapter(session: AsyncSession) -> GDELTAdapter:
         indicators=indicators,
         country_names=country_names,
         country_iso2s=country_iso2s,
+    )
+
+
+async def build_googlenews_adapter(session: AsyncSession) -> GoogleNewsAdapter:
+    """Construct a GoogleNewsAdapter wired up against the DB registry.
+
+    Reads:
+    * ``source_indicator`` rows where ``source_id = 'googlenews'``.
+    * Country names from the ``country`` table for query building.
+
+    Google News RSS is free, no credentials.
+    """
+    indicators = await list_source_indicators(session, source_id=GoogleNewsAdapter.source_id)
+    countries = await list_countries(session)
+    country_names = {c.iso3: c.name for c in countries}
+    logger.info(
+        "factory.googlenews.built",
+        indicator_count=len(indicators),
+        country_count=len(country_names),
+    )
+    return GoogleNewsAdapter(
+        indicators=indicators,
+        country_names=country_names,
     )

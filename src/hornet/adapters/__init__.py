@@ -11,6 +11,7 @@ from hornet.adapters.base_client import BaseClient
 from hornet.adapters.bis import BISAdapter
 from hornet.adapters.fred import FredAdapter
 from hornet.adapters.gdelt import GDELTAdapter
+from hornet.adapters.googlenews import GoogleNewsAdapter
 from hornet.adapters.imf import IMFAdapter
 from hornet.adapters.oecd import OECDAdapter
 from hornet.adapters.worldbank import WorldBankAdapter
@@ -22,6 +23,7 @@ __all__ = [
     "EventSourceAdapter",
     "FredAdapter",
     "GDELTAdapter",
+    "GoogleNewsAdapter",
     "HealthReport",
     "IMFAdapter",
     "OECDAdapter",

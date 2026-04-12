@@ -474,3 +474,14 @@ source_indicators:
     frequency: daily
     countries_iso3: [NGA, TUR, ZAF, BRA, POL]
     name: GDELT article headlines (artlist mode)
+
+  # -------------------------------------------------------------------
+  # GoogleNews -- supplementary headlines via RSS. No tone/volume
+  # (use GDELT for those). All 5 pilots covered.
+  # -------------------------------------------------------------------
+  - source_id: googlenews
+    source_native_code: headline
+    indicator_code: headline
+    frequency: daily
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Google News RSS headlines (economy/politics)
