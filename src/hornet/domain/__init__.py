@@ -7,6 +7,7 @@ no HTTP, no filesystem) is non-negotiable — it's what makes the
 rest of the codebase testable.
 """
 
+from hornet.domain.event import EventRecord
 from hornet.domain.observation import Frequency, Observation
 from hornet.domain.source import (
     CountrySpec,
@@ -18,6 +19,7 @@ from hornet.domain.source import (
 
 __all__ = [
     "CountrySpec",
+    "EventRecord",
     "FetchRequest",
     "Frequency",
     "IndicatorSpec",

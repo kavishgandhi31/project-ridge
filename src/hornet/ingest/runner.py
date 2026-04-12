@@ -11,9 +11,10 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from hornet.adapters import SourceAdapter
-from hornet.db.models import ObservationRow
+from hornet.db.models import EventRecordRow, ObservationRow
 from hornet.db.session import session_scope
 from hornet.domain import FetchRequest
+from hornet.domain.event import EventRecord
 
 
 class IngestResult(BaseModel):
@@ -106,4 +107,67 @@ async def run_ingest(
         source_id=request.source_id,
         observations_fetched=len(observations),
         observations_written=written,
+    )
+
+
+class EventIngestResult(BaseModel):
+    """Summary of an event ingest invocation."""
+
+    model_config = ConfigDict(frozen=True)
+
+    source_id: str
+    events_received: int
+    events_written: int
+
+
+async def run_event_ingest(
+    source_id: str,
+    events: list[EventRecord],
+) -> EventIngestResult:
+    """Persist a list of EventRecord objects idempotently.
+
+    Uses ``INSERT ... ON CONFLICT DO NOTHING`` against the composite
+    primary key ``(date, dedup_key)`` so running the same events twice
+    is safe -- duplicates are skipped.
+    """
+    if not events:
+        return EventIngestResult(
+            source_id=source_id,
+            events_received=0,
+            events_written=0,
+        )
+
+    values = [
+        {
+            "date": event.date,
+            "dedup_key": event.dedup_key,
+            "country_iso3": event.country_iso3,
+            "source_id": event.source_id,
+            "event_type": event.event_type,
+            "value": event.value,
+            "title": event.title,
+            "url": event.url,
+            "metadata_": event.metadata,
+            "ingested_at": event.ingested_at,
+        }
+        for event in events
+    ]
+
+    stmt = (
+        pg_insert(EventRecordRow)
+        .values(values)
+        .on_conflict_do_nothing(
+            index_elements=["date", "dedup_key"],
+        )
+        .returning(EventRecordRow.dedup_key)
+    )
+
+    async with session_scope() as session:
+        result = await session.execute(stmt)
+        written = len(result.all())
+
+    return EventIngestResult(
+        source_id=source_id,
+        events_received=len(events),
+        events_written=written,
     )
