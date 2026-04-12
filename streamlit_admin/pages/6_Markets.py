@@ -1,5 +1,8 @@
 """Markets page -- Treasury yields, spreads, commodities, FX."""
 
+import math
+
+import altair as alt
 import httpx
 import pandas as pd
 import streamlit as st
@@ -113,12 +116,24 @@ if any(v is not None for v in curve_data.values()):
     curve_rows = [{"Maturity": k, "Yield (%)": v} for k, v in curve_data.items() if v is not None]
     curve_rows.sort(key=lambda r: _maturity_sort_key(str(r["Maturity"])))
     curve_df = pd.DataFrame(curve_rows)
-    # Use Categorical with the sorted order to prevent Streamlit re-sorting
     sorted_labels = [str(r["Maturity"]) for r in curve_rows]
-    curve_df["Maturity"] = pd.Categorical(
-        curve_df["Maturity"], categories=sorted_labels, ordered=True
+
+    # Dynamic y-axis: round down/up to nearest whole %, then add 0.5% buffer
+    yields = [r["Yield (%)"] for r in curve_rows]
+    y_min = math.floor(min(yields)) - 0.5  # type: ignore[arg-type]
+    y_max = math.ceil(max(yields)) + 0.5  # type: ignore[arg-type]
+
+    chart = (
+        alt.Chart(curve_df)
+        .mark_line(point=True)
+        .encode(
+            x=alt.X("Maturity:N", sort=sorted_labels, title="Maturity"),
+            y=alt.Y("Yield (%):Q", scale=alt.Scale(domain=[y_min, y_max]), title="Yield (%)"),
+            tooltip=["Maturity", alt.Tooltip("Yield (%):Q", format=".3f")],
+        )
+        .properties(height=350)
     )
-    st.line_chart(curve_df, x="Maturity", y="Yield (%)")
+    st.altair_chart(chart, use_container_width=True)
 
     st.dataframe(
         pd.DataFrame(
