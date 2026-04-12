@@ -14,6 +14,7 @@ no longer carry hardcoded indicator dicts.
 from hornet.ingest.factory import (
     MissingCredentialError,
     build_fred_adapter,
+    build_oecd_adapter,
     build_worldbank_adapter,
     build_yfinance_adapter,
 )
@@ -23,6 +24,7 @@ __all__ = [
     "IngestResult",
     "MissingCredentialError",
     "build_fred_adapter",
+    "build_oecd_adapter",
     "build_worldbank_adapter",
     "build_yfinance_adapter",
     "run_ingest",

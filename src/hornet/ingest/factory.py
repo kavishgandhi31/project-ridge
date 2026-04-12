@@ -16,6 +16,7 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from hornet.adapters.fred import FredAdapter
+from hornet.adapters.oecd import OECDAdapter
 from hornet.adapters.worldbank import WorldBankAdapter
 from hornet.adapters.yfinance_adapter import YFinanceAdapter
 from hornet.config import get_settings
@@ -97,3 +98,17 @@ async def build_yfinance_adapter(session: AsyncSession) -> YFinanceAdapter:
         indicator_count=len(indicators),
     )
     return YFinanceAdapter(indicators=indicators)
+
+
+async def build_oecd_adapter(session: AsyncSession) -> OECDAdapter:
+    """Construct an OECDAdapter wired up against the DB registry.
+
+    Reads ``source_indicator`` rows where ``source_id = 'oecd'``.
+    OECD has no credentials (public SDMX API).
+    """
+    indicators = await list_source_indicators(session, source_id=OECDAdapter.source_id)
+    logger.info(
+        "factory.oecd.built",
+        indicator_count=len(indicators),
+    )
+    return OECDAdapter(indicators=indicators)

@@ -70,7 +70,7 @@ class TestListSourceIndicators:
         await _clean_and_seed()
         async with session_scope() as session:
             indicators = await list_source_indicators(session)
-        assert len(indicators) == 26
+        assert len(indicators) == 30
 
     async def test_filter_by_source_id(self) -> None:
         await _clean_and_seed()

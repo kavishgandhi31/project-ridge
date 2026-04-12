@@ -247,3 +247,44 @@ source_indicators:
     countries_iso3: [POL]
     name: WIG20 (Warsaw)
     unit: index_level
+
+  # -------------------------------------------------------------------
+  # OECD -- leading indicators from the SDMX REST API. Monthly
+  # frequency. Each indicator covers all OECD-tracked pilot countries
+  # (TUR, ZAF, BRA, POL). NGA is NOT covered by OECD.
+  #
+  # source_native_code matches the canonical indicator code because
+  # OECD's SDMX dataflow details (agency, DSD, key pattern) are
+  # adapter-internal -- the registry just names the indicator.
+  # -------------------------------------------------------------------
+  - source_id: oecd
+    source_native_code: CLI
+    indicator_code: CLI
+    frequency: monthly
+    countries_iso3: [TUR, ZAF, BRA, POL]
+    name: Composite Leading Indicator (100 = long-run trend)
+    unit: index
+
+  - source_id: oecd
+    source_native_code: BCI
+    indicator_code: BCI
+    frequency: monthly
+    countries_iso3: [TUR, ZAF, BRA, POL]
+    name: Business Confidence Index
+    unit: index
+
+  - source_id: oecd
+    source_native_code: CCI
+    indicator_code: CCI
+    frequency: monthly
+    countries_iso3: [TUR, ZAF, BRA, POL]
+    name: Consumer Confidence Index
+    unit: index
+
+  - source_id: oecd
+    source_native_code: INDPROD
+    indicator_code: INDPROD
+    frequency: monthly
+    countries_iso3: [TUR, ZAF, BRA, POL]
+    name: Industrial Production (volume index)
+    unit: index
