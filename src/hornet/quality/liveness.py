@@ -53,7 +53,7 @@ _LIVENESS_THRESHOLDS: dict[str, int] = {
     "weekly": 30,
     "monthly": 120,
     "quarterly": 270,
-    "annual": 730,
+    "annual": 1000,  # WorldBank/FRED annual series publish with ~2yr lag
     "forecast": 730,
 }
 

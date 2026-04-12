@@ -45,8 +45,10 @@ class TestBuildFredAdapter:
     async def test_raises_if_no_api_key(self) -> None:
         await _clean_and_seed()
         async with session_scope() as session:
-            with pytest.raises(MissingCredentialError, match="HORNET_FRED_API_KEY"):
-                await build_fred_adapter(session)
+            with patch("hornet.ingest.factory.get_settings") as mock_settings:
+                mock_settings.return_value.fred_api_key = None
+                with pytest.raises(MissingCredentialError, match="HORNET_FRED_API_KEY"):
+                    await build_fred_adapter(session)
 
     async def test_builds_with_correct_indicators(self) -> None:
         await _clean_and_seed()
@@ -59,7 +61,7 @@ class TestBuildFredAdapter:
         try:
             manifest = await adapter.discover()
             assert manifest.source_id == "fred"
-            assert len(manifest.indicators) == 39  # 10 per-country + 29 global
+            assert len(manifest.indicators) == 34  # 39 total - 5 disabled
             all_countries: set[str] = set()
             for spec in manifest.indicators:
                 all_countries.update(spec.countries_iso3)
