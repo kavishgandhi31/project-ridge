@@ -1,0 +1,156 @@
+# Eval regression questions for grounded LLM output.
+#
+# Each question exercises a template with specific inputs and defines
+# expected output characteristics. The harness scores actual output
+# against these expectations.
+#
+# Start with ~15 core questions covering both templates across the
+# pilot countries. Grow to 50 as we observe real failure modes.
+#
+# Pilot countries: NGA, TUR, ZAF, BRA, POL
+
+questions:
+  # --- Country Narrative Template ---
+
+  - question_id: "narrative_nga_01"
+    template_name: "country_narrative"
+    country_iso3: "NGA"
+    reference_date: "2026-04-01"
+    description: "Nigeria narrative -- high inflation, oil dependency, should cite CPI and GDP"
+    required_indicators: ["CPI_YOY", "GDP_GROWTH"]
+    min_citations: 3
+    max_ungrounded: 2
+    forbidden_patterns: []
+
+  - question_id: "narrative_tur_01"
+    template_name: "country_narrative"
+    country_iso3: "TUR"
+    reference_date: "2026-04-01"
+    description: "Turkey narrative -- high inflation, FX pressure, monetary tightening"
+    required_indicators: ["CPI_YOY", "POLICY_RATE"]
+    min_citations: 3
+    max_ungrounded: 2
+    forbidden_patterns: []
+
+  - question_id: "narrative_zaf_01"
+    template_name: "country_narrative"
+    country_iso3: "ZAF"
+    reference_date: "2026-04-01"
+    description: "South Africa narrative -- stagflation, load shedding impact"
+    required_indicators: ["GDP_GROWTH", "UNEMPLOYMENT"]
+    min_citations: 3
+    max_ungrounded: 2
+    forbidden_patterns: []
+
+  - question_id: "narrative_bra_01"
+    template_name: "country_narrative"
+    country_iso3: "BRA"
+    reference_date: "2026-04-01"
+    description: "Brazil narrative -- large EM, fiscal concerns, selic rate"
+    required_indicators: ["CPI_YOY", "GDP_GROWTH"]
+    min_citations: 3
+    max_ungrounded: 2
+    forbidden_patterns: []
+
+  - question_id: "narrative_pol_01"
+    template_name: "country_narrative"
+    country_iso3: "POL"
+    reference_date: "2026-04-01"
+    description: "Poland narrative -- EU convergence, manufacturing"
+    required_indicators: ["GDP_GROWTH"]
+    min_citations: 2
+    max_ungrounded: 2
+    forbidden_patterns: []
+
+  - question_id: "narrative_nga_sparse"
+    template_name: "country_narrative"
+    country_iso3: "NGA"
+    reference_date: "2024-01-01"
+    description: "Nigeria with sparse data -- tests graceful handling of low coverage"
+    required_indicators: []
+    min_citations: 1
+    max_ungrounded: 1
+    forbidden_patterns: []
+
+  - question_id: "narrative_tur_strict"
+    template_name: "country_narrative"
+    country_iso3: "TUR"
+    reference_date: "2026-04-01"
+    description: "Turkey with strict grounding -- zero tolerance for ungrounded claims"
+    required_indicators: ["CPI_YOY"]
+    min_citations: 4
+    max_ungrounded: 0
+    forbidden_patterns: []
+
+  # --- Alert Rationale Template ---
+
+  - question_id: "rationale_nga_01"
+    template_name: "alert_rationale"
+    country_iso3: "NGA"
+    reference_date: "2026-04-01"
+    description: "Nigeria ESCALATE rationale -- should identify inflation and external drivers"
+    required_indicators: ["CPI_YOY", "CURRENT_ACCOUNT_GDP"]
+    min_citations: 4
+    max_ungrounded: 2
+    forbidden_patterns: []
+
+  - question_id: "rationale_tur_01"
+    template_name: "alert_rationale"
+    country_iso3: "TUR"
+    reference_date: "2026-04-01"
+    description: "Turkey ESCALATE rationale -- FX crisis, rate decisions"
+    required_indicators: ["CPI_YOY", "POLICY_RATE"]
+    min_citations: 4
+    max_ungrounded: 2
+    forbidden_patterns: []
+
+  - question_id: "rationale_zaf_01"
+    template_name: "alert_rationale"
+    country_iso3: "ZAF"
+    reference_date: "2026-04-01"
+    description: "South Africa ESCALATE rationale -- structural issues"
+    required_indicators: ["GDP_GROWTH", "UNEMPLOYMENT"]
+    min_citations: 4
+    max_ungrounded: 2
+    forbidden_patterns: []
+
+  - question_id: "rationale_bra_01"
+    template_name: "alert_rationale"
+    country_iso3: "BRA"
+    reference_date: "2026-04-01"
+    description: "Brazil ESCALATE rationale -- fiscal concerns, contagion to EM"
+    required_indicators: ["CPI_YOY"]
+    min_citations: 4
+    max_ungrounded: 2
+    forbidden_patterns: []
+
+  - question_id: "rationale_pol_01"
+    template_name: "alert_rationale"
+    country_iso3: "POL"
+    reference_date: "2026-04-01"
+    description: "Poland ESCALATE rationale -- tests EU contagion assessment"
+    required_indicators: ["GDP_GROWTH"]
+    min_citations: 3
+    max_ungrounded: 2
+    forbidden_patterns: []
+
+  - question_id: "rationale_nga_strict"
+    template_name: "alert_rationale"
+    country_iso3: "NGA"
+    reference_date: "2026-04-01"
+    description: "Nigeria rationale strict -- zero ungrounded tolerance"
+    required_indicators: ["CPI_YOY", "GDP_GROWTH", "CURRENT_ACCOUNT_GDP"]
+    min_citations: 5
+    max_ungrounded: 0
+    forbidden_patterns: []
+
+  - question_id: "rationale_confidence_check"
+    template_name: "alert_rationale"
+    country_iso3: "NGA"
+    reference_date: "2026-04-01"
+    description: "Verify output contains valid confidence_level field"
+    required_indicators: []
+    min_citations: 3
+    max_ungrounded: 3
+    forbidden_patterns:
+      - '"confidence_level"\\s*:\\s*"(?!high|medium|low)'

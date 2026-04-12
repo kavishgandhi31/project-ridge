@@ -17,6 +17,16 @@ from hornet.domain.alerting import (
     tier_rank,
 )
 from hornet.domain.event import EventRecord
+from hornet.domain.llm import (
+    Citation,
+    EvalQuestion,
+    EvalResult,
+    GroundedContext,
+    GroundedResponse,
+    LLMRequest,
+    LLMResponse,
+    TaskType,
+)
 from hornet.domain.observation import Frequency, Observation
 from hornet.domain.pipeline import PipelineRun, RunStatus, RunType
 from hornet.domain.scoring import (
@@ -41,17 +51,24 @@ __all__ = [
     "ALL_DIMENSIONS",
     "AlertConfig",
     "AlertTier",
+    "Citation",
     "CountrySpec",
     "Digest",
     "DigestSummary",
     "DimensionName",
     "DimensionScore",
     "DispatchResult",
+    "EvalQuestion",
+    "EvalResult",
     "EventRecord",
     "FetchRequest",
     "Frequency",
+    "GroundedContext",
+    "GroundedResponse",
     "IndicatorSpec",
     "IssueSeverity",
+    "LLMRequest",
+    "LLMResponse",
     "NewsHeat",
     "Observation",
     "PipelineRun",
@@ -63,6 +80,7 @@ __all__ = [
     "ScoringConfig",
     "SourceIndicatorSpec",
     "SourceManifest",
+    "TaskType",
     "TierAssignment",
     "tier_rank",
 ]

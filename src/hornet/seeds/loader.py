@@ -36,6 +36,7 @@ from hornet.db.models.source_indicator import SourceIndicatorRow
 from hornet.db.session import session_scope
 from hornet.domain.scoring import ScoringConfig
 from hornet.domain.source import CountrySpec, SourceIndicatorSpec
+from hornet.llm.config import LLMConfig
 from hornet.quality.config import QualityConfig
 
 logger = structlog.get_logger(__name__)
@@ -47,6 +48,7 @@ _SOURCE_INDICATORS_FILENAME = "source_indicators.yaml"
 _SCORING_CONFIG_FILENAME = "scoring_config.yaml"
 _QUALITY_CONFIG_FILENAME = "quality_config.yaml"
 _ALERT_CONFIG_FILENAME = "alert_config.yaml"
+_LLM_CONFIG_FILENAME = "llm_config.yaml"
 
 
 def _read_seed_file(filename: str) -> str:
@@ -175,6 +177,25 @@ def load_quality_config_from_yaml(yaml_text: str | None = None) -> QualityConfig
         raise ValueError("quality_config.yaml must have a top-level 'quality_config' mapping")
 
     return QualityConfig(**cast(dict[str, Any], config_data))
+
+
+def load_llm_config_from_yaml(yaml_text: str | None = None) -> LLMConfig:
+    """Parse llm_config.yaml into an ``LLMConfig``.
+
+    When ``yaml_text`` is None the packaged default is loaded; tests
+    pass an explicit string to exercise edge cases without touching
+    the packaged file.
+
+    Unlike other configs, LLMConfig has no top-level wrapper key --
+    the YAML root IS the config. This matches the structure of
+    llm_config.yaml where provider settings sit at the root level.
+    """
+    text = yaml_text if yaml_text is not None else _read_seed_file(_LLM_CONFIG_FILENAME)
+    raw = yaml.safe_load(text) or {}
+    if not isinstance(raw, dict):
+        raise ValueError("llm_config.yaml must deserialize to a mapping at the top level")
+
+    return LLMConfig(**cast(dict[str, Any], raw))
 
 
 async def seed_countries(

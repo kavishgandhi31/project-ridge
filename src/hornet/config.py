@@ -62,6 +62,19 @@ class Settings(BaseSettings):
         description="API key for FRED (https://fred.stlouisfed.org). Required for live ingest.",
     )
 
+    # ---- LLM provider credentials ----
+    anthropic_api_key: SecretStr | None = Field(
+        default=None,
+        description="Anthropic API key for Claude provider. Required for Claude-routed tasks.",
+    )
+    openai_api_key: SecretStr | None = Field(
+        default=None,
+        description=(
+            "API key for OpenAI-compatible provider (vLLM, LM Studio, etc.). "
+            "Optional -- many local servers do not require authentication."
+        ),
+    )
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
