@@ -134,22 +134,28 @@ else:
     st.info("No Treasury yield data. Run the FRED ingest pipeline first.")
 
 # =====================================================================
-# Spread Comparator -- pick any two nominal maturities
+# Spread Comparator -- pick any two maturities, auto long-short
 # =====================================================================
 st.header("Spread Comparator")
-st.caption("Long end minus short end. All nominal yields (no TIPS mixing).")
+st.caption("Always computes longer maturity minus shorter maturity. All nominal yields.")
 
 maturity_labels = [label for _, label in NOMINAL_YIELDS]
 
 col1, col2 = st.columns(2)
 with col1:
-    long_label = st.selectbox("Long end", maturity_labels, index=maturity_labels.index("10 Year"))
+    maturity_a = st.selectbox("Maturity A", maturity_labels, index=maturity_labels.index("10 Year"))
 with col2:
-    short_label = st.selectbox("Short end", maturity_labels, index=maturity_labels.index("2 Year"))
+    maturity_b = st.selectbox("Maturity B", maturity_labels, index=maturity_labels.index("2 Year"))
 
-if long_label == short_label:
+if maturity_a == maturity_b:
     st.warning("Select two different maturities.")
 else:
+    # Auto-assign long/short by maturity duration
+    if _maturity_sort_key(maturity_a) >= _maturity_sort_key(maturity_b):
+        long_label, short_label = maturity_a, maturity_b
+    else:
+        long_label, short_label = maturity_b, maturity_a
+
     long_code = _NOMINAL_CODE_BY_LABEL[long_label]
     short_code = _NOMINAL_CODE_BY_LABEL[short_label]
 
