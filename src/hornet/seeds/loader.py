@@ -35,6 +35,7 @@ from hornet.db.models.source_indicator import SourceIndicatorRow
 from hornet.db.session import session_scope
 from hornet.domain.scoring import ScoringConfig
 from hornet.domain.source import CountrySpec, SourceIndicatorSpec
+from hornet.quality.config import QualityConfig
 
 logger = structlog.get_logger(__name__)
 
@@ -43,6 +44,7 @@ _SEED_PACKAGE = "hornet.seeds.data"
 _COUNTRIES_FILENAME = "countries.yaml"
 _SOURCE_INDICATORS_FILENAME = "source_indicators.yaml"
 _SCORING_CONFIG_FILENAME = "scoring_config.yaml"
+_QUALITY_CONFIG_FILENAME = "quality_config.yaml"
 
 
 def _read_seed_file(filename: str) -> str:
@@ -133,6 +135,25 @@ def load_scoring_config_from_yaml(yaml_text: str | None = None) -> ScoringConfig
         raise ValueError("scoring_config.yaml must have a top-level 'scoring_config' mapping")
 
     return ScoringConfig(**cast(dict[str, Any], config_data))
+
+
+def load_quality_config_from_yaml(yaml_text: str | None = None) -> QualityConfig:
+    """Parse quality_config.yaml into a ``QualityConfig``.
+
+    When ``yaml_text`` is None the packaged default is loaded; tests
+    pass an explicit string to exercise edge cases without touching
+    the packaged file.
+    """
+    text = yaml_text if yaml_text is not None else _read_seed_file(_QUALITY_CONFIG_FILENAME)
+    raw = yaml.safe_load(text) or {}
+    if not isinstance(raw, dict):
+        raise ValueError("quality_config.yaml must deserialize to a mapping at the top level")
+
+    config_data = raw.get("quality_config")
+    if not isinstance(config_data, dict):
+        raise ValueError("quality_config.yaml must have a top-level 'quality_config' mapping")
+
+    return QualityConfig(**cast(dict[str, Any], config_data))
 
 
 async def seed_countries(

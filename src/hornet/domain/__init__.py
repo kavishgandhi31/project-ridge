@@ -1,9 +1,9 @@
-"""Domain types — pure Pydantic models with zero I/O.
+"""Domain types -- pure Pydantic models with zero I/O.
 
 These are the canonical shapes every other layer reads and writes.
 Adapters normalize into these; scoring, quality, and API layers
 consume them. Keeping this package free of side effects (no DB,
-no HTTP, no filesystem) is non-negotiable — it's what makes the
+no HTTP, no filesystem) is non-negotiable -- it's what makes the
 rest of the codebase testable.
 """
 
@@ -24,6 +24,8 @@ from hornet.domain.source import (
     SourceIndicatorSpec,
     SourceManifest,
 )
+from hornet.quality.config import QualityConfig
+from hornet.quality.issue import IssueSeverity, QualityIssue
 
 __all__ = [
     "ALL_DIMENSIONS",
@@ -34,8 +36,11 @@ __all__ = [
     "FetchRequest",
     "Frequency",
     "IndicatorSpec",
+    "IssueSeverity",
     "NewsHeat",
     "Observation",
+    "QualityConfig",
+    "QualityIssue",
     "ScoreResult",
     "ScoringConfig",
     "SourceIndicatorSpec",

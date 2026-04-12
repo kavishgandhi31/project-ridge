@@ -1,0 +1,63 @@
+# Quality layer configuration for Hornet.
+#
+# Mirrors v1's setting.yaml monitoring block exactly. All values here
+# are the production defaults. Phase 4 loads this at quality runner
+# construction time.
+
+quality_config:
+
+  # Control #1: Outlier detection
+  # Quarantine observations deviating by more than N sigma from
+  # trailing history. Prevents bad data from flipping tier assignments.
+  outlier_sigma: 4.0
+  outlier_min_history: 20
+
+  # Control #2: Series audit
+  # Flag countries where ingestion returned fewer series than configured.
+  # 0.0 = flag any gap.
+  series_audit_threshold: 0.0
+
+  # Control #3: Cross-source validation
+  # Maximum allowed divergence between sources for the same indicator.
+  # 0.02 = 2%. Accounts for timing differences.
+  cross_source_threshold: 0.02
+
+  # Control #4: Score stability
+  # Flag countries whose composite jumped by more than this between
+  # runs, when coverage didn't change.
+  score_jump_threshold: 1.0
+  coverage_stability_tolerance: 0.10
+
+  # Control #5: Revision detection
+  # How many trailing observations to check for vintage-based revisions.
+  revision_lookback: 12
+
+  # Control #6: Flatline detection
+  # Flag series where the last N observations are all identical.
+  flatline_min_repeats: 10
+  flatline_tolerance: 1.0e-8
+
+  # Control #7: Structural break detection
+  # Split-window regime shift detection.
+  break_window: 12                    # observations per window
+  break_sigma: 2.0                    # sigma threshold
+
+  # Control #8: Date consistency
+  # Max allowed date lag between sources for the same country.
+  max_source_date_lag_days: 30
+
+  # Control #9: Backfill detection
+  # Flag countries whose coverage jumped by this much between runs.
+  backfill_threshold: 0.25
+
+  # Control #10: Source staleness
+  # Maximum age (in days) per frequency before flagging as stale.
+  staleness_days:
+    daily: 7
+    weekly: 14
+    monthly: 90
+    quarterly: 150
+    annual: 400
+    forecast: 200
+  failure_threshold: 3
+  coverage_drop_threshold: 0.25
