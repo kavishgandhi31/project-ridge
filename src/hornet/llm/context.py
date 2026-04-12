@@ -59,9 +59,10 @@ def _format_value(value: float, indicator_code: str) -> str:
     """Format a numeric value for display in the context block.
 
     Uses indicator-appropriate formatting: percentages for rates,
-    two decimal places for indices, etc.
+    two decimal places for indices, etc. Pattern-based matching
+    so new indicator codes don't require updating this function.
     """
-    # Indicators that are typically percentages
+    # Percentage-unit indicators (rates, ratios, spreads, yields)
     pct_indicators = {
         "CPI_YOY",
         "GDP_GROWTH",
@@ -71,11 +72,28 @@ def _format_value(value: float, indicator_code: str) -> str:
         "TRADE_OPENNESS",
         "CREDIT_GAP",
         "POLICY_RATE",
+        "LENDING_RATE",
+        "DGS10",
+        "DGS2",
+        "T10Y2Y",
     }
+    # Pattern-based: UST_*, TIPS_*, BREAKEVEN_*, SPREAD_*, *_SPREAD
+    pct_prefixes = ("UST_", "TIPS_", "BREAKEVEN_", "SPREAD_")
+    pct_suffixes = ("_SPREAD",)
+
     if indicator_code in pct_indicators:
+        return f"{value:.2f}%"
+    if any(indicator_code.startswith(p) for p in pct_prefixes):
+        return f"{value:.2f}%"
+    if any(indicator_code.endswith(s) for s in pct_suffixes):
         return f"{value:.2f}%"
     if indicator_code.startswith("FX_"):
         return f"{value:.4f}"
+    # USD-denominated prices (commodities, ETFs)
+    if indicator_code in ("GOLD", "GOLD_FUTURES", "SILVER_FUTURES"):
+        return f"${value:,.2f}"
+    if "OIL" in indicator_code or "NATGAS" in indicator_code:
+        return f"${value:.2f}"
     return f"{value:.2f}"
 
 

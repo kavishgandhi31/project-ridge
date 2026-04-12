@@ -70,13 +70,13 @@ class TestListSourceIndicators:
         await _clean_and_seed()
         async with session_scope() as session:
             indicators = await list_source_indicators(session)
-        assert len(indicators) == 61  # 52 original + 9 FRED global
+        assert len(indicators) == 93  # expanded with treasury curve, commodities, global equity
 
     async def test_filter_by_source_id(self) -> None:
         await _clean_and_seed()
         async with session_scope() as session:
             fred_indicators = await list_source_indicators(session, source_id="fred")
-        assert len(fred_indicators) == 19  # 10 per-country + 9 global
+        assert len(fred_indicators) == 39  # 10 per-country + 29 global
         assert all(s.source_id == "fred" for s in fred_indicators)
 
     async def test_filter_by_indicator_code(self) -> None:

@@ -59,7 +59,7 @@ class TestBuildFredAdapter:
         try:
             manifest = await adapter.discover()
             assert manifest.source_id == "fred"
-            assert len(manifest.indicators) == 19  # 10 per-country + 9 global
+            assert len(manifest.indicators) == 39  # 10 per-country + 29 global
             all_countries: set[str] = set()
             for spec in manifest.indicators:
                 all_countries.update(spec.countries_iso3)

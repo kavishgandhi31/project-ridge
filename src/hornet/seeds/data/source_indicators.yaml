@@ -231,6 +231,379 @@ source_indicators:
     global_signal: true
 
   # -------------------------------------------------------------------
+  # FRED -- full US Treasury yield curve (constant maturity).
+  # Every maturity is a separate series. The spread builder computes
+  # derived spreads (e.g. 10Y-2Y, 10Y-3M) from these.
+  # -------------------------------------------------------------------
+  - source_id: fred
+    source_native_code: DGS1MO
+    indicator_code: UST_1M
+    frequency: daily
+    countries_iso3: [USA]
+    name: US Treasury 1-Month Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: treasury_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DGS3MO
+    indicator_code: UST_3M
+    frequency: daily
+    countries_iso3: [USA]
+    name: US Treasury 3-Month Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: treasury_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DGS6MO
+    indicator_code: UST_6M
+    frequency: daily
+    countries_iso3: [USA]
+    name: US Treasury 6-Month Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: treasury_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DGS1
+    indicator_code: UST_1Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US Treasury 1-Year Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: treasury_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DGS3
+    indicator_code: UST_3Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US Treasury 3-Year Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: treasury_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DGS5
+    indicator_code: UST_5Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US Treasury 5-Year Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: treasury_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DGS7
+    indicator_code: UST_7Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US Treasury 7-Year Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: treasury_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DGS20
+    indicator_code: UST_20Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US Treasury 20-Year Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: treasury_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DGS30
+    indicator_code: UST_30Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US Treasury 30-Year Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: treasury_yield
+    global_signal: true
+
+  # -------------------------------------------------------------------
+  # FRED -- TIPS (inflation-protected Treasury yields).
+  # Real yields = nominal - breakeven inflation expectations.
+  # -------------------------------------------------------------------
+  - source_id: fred
+    source_native_code: DFII5
+    indicator_code: TIPS_5Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US 5-Year TIPS Real Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: real_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DFII7
+    indicator_code: TIPS_7Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US 7-Year TIPS Real Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: real_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DFII10
+    indicator_code: TIPS_10Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US 10-Year TIPS Real Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: real_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DFII20
+    indicator_code: TIPS_20Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US 20-Year TIPS Real Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: real_yield
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DFII30
+    indicator_code: TIPS_30Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US 30-Year TIPS Real Yield
+    unit: percent
+    dimension: risk_sentiment
+    concept: real_yield
+    global_signal: true
+
+  # -------------------------------------------------------------------
+  # FRED -- Breakeven inflation rates (nominal - TIPS).
+  # -------------------------------------------------------------------
+  - source_id: fred
+    source_native_code: T5YIE
+    indicator_code: BREAKEVEN_5Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US 5-Year Breakeven Inflation Rate
+    unit: percent
+    dimension: risk_sentiment
+    concept: inflation_expectations
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: T10YIE
+    indicator_code: BREAKEVEN_10Y
+    frequency: daily
+    countries_iso3: [USA]
+    name: US 10-Year Breakeven Inflation Rate
+    unit: percent
+    dimension: risk_sentiment
+    concept: inflation_expectations
+    global_signal: true
+
+  # -------------------------------------------------------------------
+  # FRED -- Commodities.
+  # -------------------------------------------------------------------
+  - source_id: fred
+    source_native_code: DCOILWTICO
+    indicator_code: OIL_WTI
+    frequency: daily
+    countries_iso3: [USA]
+    name: WTI Crude Oil Price
+    unit: usd_per_barrel
+    dimension: risk_sentiment
+    concept: oil_price
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: GOLDAMGBD228NLBM
+    indicator_code: GOLD
+    frequency: daily
+    countries_iso3: [USA]
+    name: Gold Price (London PM Fix)
+    unit: usd_per_oz
+    dimension: risk_sentiment
+    concept: gold_price
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: DHHNGSP
+    indicator_code: NATGAS_HH
+    frequency: daily
+    countries_iso3: [USA]
+    name: Henry Hub Natural Gas Spot Price
+    unit: usd_per_mmbtu
+    dimension: risk_sentiment
+    concept: natgas_price
+    global_signal: true
+
+  - source_id: fred
+    source_native_code: PCOPPUSDM
+    indicator_code: COPPER
+    frequency: monthly
+    countries_iso3: [USA]
+    name: Copper Price (LME)
+    unit: usd_per_mt
+    dimension: risk_sentiment
+    concept: industrial_metals
+    global_signal: true
+
+  # -------------------------------------------------------------------
+  # yfinance -- Commodity futures (daily, more timely than FRED monthly).
+  # -------------------------------------------------------------------
+  - source_id: yfinance
+    source_native_code: GC=F
+    indicator_code: GOLD_FUTURES
+    frequency: daily
+    countries_iso3: [USA]
+    name: Gold Futures (COMEX)
+    unit: usd_per_oz
+    dimension: risk_sentiment
+    concept: gold_price
+    global_signal: true
+
+  - source_id: yfinance
+    source_native_code: SI=F
+    indicator_code: SILVER_FUTURES
+    frequency: daily
+    countries_iso3: [USA]
+    name: Silver Futures (COMEX)
+    unit: usd_per_oz
+    dimension: risk_sentiment
+    concept: precious_metals
+    global_signal: true
+
+  - source_id: yfinance
+    source_native_code: CL=F
+    indicator_code: OIL_WTI_FUTURES
+    frequency: daily
+    countries_iso3: [USA]
+    name: WTI Crude Oil Futures (NYMEX)
+    unit: usd_per_barrel
+    dimension: risk_sentiment
+    concept: oil_price
+    global_signal: true
+
+  - source_id: yfinance
+    source_native_code: BZ=F
+    indicator_code: OIL_BRENT_FUTURES
+    frequency: daily
+    countries_iso3: [USA]
+    name: Brent Crude Oil Futures (ICE)
+    unit: usd_per_barrel
+    dimension: risk_sentiment
+    concept: oil_price
+    global_signal: true
+
+  - source_id: yfinance
+    source_native_code: NG=F
+    indicator_code: NATGAS_FUTURES
+    frequency: daily
+    countries_iso3: [USA]
+    name: Natural Gas Futures (NYMEX)
+    unit: usd_per_mmbtu
+    dimension: risk_sentiment
+    concept: natgas_price
+    global_signal: true
+
+  - source_id: yfinance
+    source_native_code: HG=F
+    indicator_code: COPPER_FUTURES
+    frequency: daily
+    countries_iso3: [USA]
+    name: Copper Futures (COMEX)
+    unit: usd_per_lb
+    dimension: risk_sentiment
+    concept: industrial_metals
+    global_signal: true
+
+  - source_id: yfinance
+    source_native_code: ZW=F
+    indicator_code: WHEAT_FUTURES
+    frequency: daily
+    countries_iso3: [USA]
+    name: Wheat Futures (CBOT)
+    unit: usd_per_bushel
+    dimension: risk_sentiment
+    concept: agricultural
+    global_signal: true
+
+  - source_id: yfinance
+    source_native_code: ZC=F
+    indicator_code: CORN_FUTURES
+    frequency: daily
+    countries_iso3: [USA]
+    name: Corn Futures (CBOT)
+    unit: usd_per_bushel
+    dimension: risk_sentiment
+    concept: agricultural
+    global_signal: true
+
+  - source_id: yfinance
+    source_native_code: ZS=F
+    indicator_code: SOYBEAN_FUTURES
+    frequency: daily
+    countries_iso3: [USA]
+    name: Soybean Futures (CBOT)
+    unit: usd_per_bushel
+    dimension: risk_sentiment
+    concept: agricultural
+    global_signal: true
+
+  # -------------------------------------------------------------------
+  # yfinance -- Global equity indices (risk-on/risk-off signals).
+  # -------------------------------------------------------------------
+  - source_id: yfinance
+    source_native_code: ^GSPC
+    indicator_code: SP500
+    frequency: daily
+    countries_iso3: [USA]
+    name: S&P 500
+    unit: index_level
+    dimension: risk_sentiment
+    concept: global_equity
+    global_signal: true
+
+  - source_id: yfinance
+    source_native_code: EEM
+    indicator_code: EM_EQUITY_ETF
+    frequency: daily
+    countries_iso3: [USA]
+    name: iShares MSCI Emerging Markets ETF
+    unit: usd_price
+    dimension: risk_sentiment
+    concept: em_equity
+    global_signal: true
+
+  - source_id: yfinance
+    source_native_code: EMB
+    indicator_code: EM_BOND_ETF
+    frequency: daily
+    countries_iso3: [USA]
+    name: iShares JP Morgan EM Bond ETF
+    unit: usd_price
+    dimension: risk_sentiment
+    concept: em_bond
+    global_signal: true
+
+  # -------------------------------------------------------------------
   # WorldBank -- global series. One native code applies to every country.
   # -------------------------------------------------------------------
   - source_id: worldbank
