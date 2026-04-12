@@ -1,0 +1,50 @@
+# Canonical country registry for Hornet.
+#
+# Every ISO3 code used anywhere in the system must resolve to a row here.
+# ISO2 is kept so the WorldBank adapter can translate its native ISO2
+# responses to canonical ISO3 without a hardcoded map.
+#
+# Phase 2 ships with the 5 pilot countries. Later phases expand the
+# set; adding a country is an edit to this file followed by re-running
+# `hornet.seeds.seed_all()`. No migration required.
+#
+# Fields:
+#   iso3          ISO 3166-1 alpha-3, uppercase. Primary identity.
+#   iso2          ISO 3166-1 alpha-2, uppercase. Must be unique.
+#   name          Human-readable English name.
+#   region        World Bank region classification. Optional.
+#   income_group  World Bank income group. Optional.
+#   enabled       Soft disable flag. Defaults to true if omitted.
+#   notes         Free-form operator notes. Not consumed by any code.
+
+countries:
+  - iso3: NGA
+    iso2: NG
+    name: Nigeria
+    region: Sub-Saharan Africa
+    income_group: Lower middle income
+    notes: Phase 1 pilot. Oil exporter, user's primary coverage.
+  - iso3: TUR
+    iso2: TR
+    name: Turkey
+    region: Europe & Central Asia
+    income_group: Upper middle income
+    notes: Phase 1 pilot. High inflation edge case, stress-tests scoring.
+  - iso3: ZAF
+    iso2: ZA
+    name: South Africa
+    region: Sub-Saharan Africa
+    income_group: Upper middle income
+    notes: Phase 1 pilot. Stagflation, deep market data, user's region.
+  - iso3: BRA
+    iso2: BR
+    name: Brazil
+    region: Latin America & Caribbean
+    income_group: Upper middle income
+    notes: Phase 1 pilot. Large EM, rich data across all dimensions.
+  - iso3: POL
+    iso2: PL
+    name: Poland
+    region: Europe & Central Asia
+    income_group: High income
+    notes: Phase 1 pilot. EE, closer to DM, contrast to other pilots.

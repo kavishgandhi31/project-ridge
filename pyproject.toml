@@ -16,6 +16,7 @@ dependencies = [
     "typer>=0.13",
     "pandas>=2.2",
     "pyyaml>=6.0",
+    "yfinance>=0.2",
 ]
 
 [dependency-groups]
@@ -73,6 +74,12 @@ python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
 exclude = ["alembic/versions"]
+
+# Third-party libraries without type stubs or py.typed markers.
+# Each entry documents an upstream gap, not a local suppression.
+[[tool.mypy.overrides]]
+module = "yfinance"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -28,8 +28,9 @@ coverage.xml
 .env.local
 .env.*.local
 
-# Local data and generated outputs
-data/
+# Local data and generated outputs — but NOT packaged seed data
+/data/
+!/src/hornet/seeds/data/
 outputs/
 *.db
 *.db-journal

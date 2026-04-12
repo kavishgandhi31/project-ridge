@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from hornet.adapters.fred import FredAdapter
 from hornet.adapters.worldbank import WorldBankAdapter
+from hornet.adapters.yfinance_adapter import YFinanceAdapter
 from hornet.config import get_settings
 from hornet.db.repos.country import load_iso2_to_iso3_map
 from hornet.db.repos.source_indicator import list_source_indicators
@@ -82,3 +83,17 @@ async def build_worldbank_adapter(session: AsyncSession) -> WorldBankAdapter:
         indicators=indicators,
         iso2_to_iso3=iso2_to_iso3,
     )
+
+
+async def build_yfinance_adapter(session: AsyncSession) -> YFinanceAdapter:
+    """Construct a YFinanceAdapter wired up against the DB registry.
+
+    Reads ``source_indicator`` rows where ``source_id = 'yfinance'``.
+    yfinance has no credentials (public library wrapping Yahoo Finance).
+    """
+    indicators = await list_source_indicators(session, source_id=YFinanceAdapter.source_id)
+    logger.info(
+        "factory.yfinance.built",
+        indicator_count=len(indicators),
+    )
+    return YFinanceAdapter(indicators=indicators)

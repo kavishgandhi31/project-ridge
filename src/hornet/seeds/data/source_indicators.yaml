@@ -1,0 +1,249 @@
+# Source indicator registry for Hornet.
+#
+# Every (source_id, source_native_code) -> canonical indicator_code
+# mapping lives here. This file replaces the hardcoded _PILOT_SERIES
+# dict that shipped in Phase 1's FRED adapter and the _INDICATORS list
+# that shipped in Phase 1's WorldBank adapter.
+#
+# Fields:
+#   source_id           'fred', 'worldbank', etc. Matches adapter.source_id.
+#   source_native_code  The source's own identifier for the series.
+#   indicator_code      Canonical Hornet code (e.g. CPI_YOY, GDP_GROWTH).
+#   frequency           daily / weekly / monthly / quarterly / annual / forecast
+#   countries_iso3      List of ISO3 codes this series covers. FRED-style
+#                       sources have one; WorldBank-style have many.
+#   name                Optional human-readable label.
+#   unit                Optional unit of measure.
+#   enabled             Optional soft-disable flag. Defaults to true.
+#   notes               Optional operator notes, not consumed by code.
+
+source_indicators:
+
+  # -------------------------------------------------------------------
+  # FRED — country-coded series. The ISO3 is baked into the native code
+  # (e.g. FPCPITOTLZGNGA is the Nigeria inflation series). Each row
+  # covers exactly one country.
+  # -------------------------------------------------------------------
+  - source_id: fred
+    source_native_code: FPCPITOTLZGNGA
+    indicator_code: CPI_YOY
+    frequency: annual
+    countries_iso3: [NGA]
+    name: Nigeria inflation, consumer prices (annual %)
+    unit: percent
+
+  - source_id: fred
+    source_native_code: NGANGDPRPCH
+    indicator_code: GDP_GROWTH
+    frequency: annual
+    countries_iso3: [NGA]
+    name: Nigeria real GDP growth
+    unit: percent
+
+  - source_id: fred
+    source_native_code: FPCPITOTLZGTUR
+    indicator_code: CPI_YOY
+    frequency: annual
+    countries_iso3: [TUR]
+    name: Turkey inflation, consumer prices (annual %)
+    unit: percent
+
+  - source_id: fred
+    source_native_code: TURNGDPRPCH
+    indicator_code: GDP_GROWTH
+    frequency: annual
+    countries_iso3: [TUR]
+    name: Turkey real GDP growth
+    unit: percent
+
+  - source_id: fred
+    source_native_code: FPCPITOTLZGZAF
+    indicator_code: CPI_YOY
+    frequency: annual
+    countries_iso3: [ZAF]
+    name: South Africa inflation, consumer prices (annual %)
+    unit: percent
+
+  - source_id: fred
+    source_native_code: ZAFNGDPRPCH
+    indicator_code: GDP_GROWTH
+    frequency: annual
+    countries_iso3: [ZAF]
+    name: South Africa real GDP growth
+    unit: percent
+
+  - source_id: fred
+    source_native_code: FPCPITOTLZGBRA
+    indicator_code: CPI_YOY
+    frequency: annual
+    countries_iso3: [BRA]
+    name: Brazil inflation, consumer prices (annual %)
+    unit: percent
+
+  - source_id: fred
+    source_native_code: BRANGDPRPCH
+    indicator_code: GDP_GROWTH
+    frequency: annual
+    countries_iso3: [BRA]
+    name: Brazil real GDP growth
+    unit: percent
+
+  - source_id: fred
+    source_native_code: FPCPITOTLZGPOL
+    indicator_code: CPI_YOY
+    frequency: annual
+    countries_iso3: [POL]
+    name: Poland inflation, consumer prices (annual %)
+    unit: percent
+
+  - source_id: fred
+    source_native_code: POLNGDPRPCH
+    indicator_code: GDP_GROWTH
+    frequency: annual
+    countries_iso3: [POL]
+    name: Poland real GDP growth
+    unit: percent
+
+  # -------------------------------------------------------------------
+  # WorldBank — global series. One native code applies to every
+  # country WorldBank covers, so each row lists all pilot ISO3s.
+  # -------------------------------------------------------------------
+  - source_id: worldbank
+    source_native_code: NY.GDP.MKTP.KD.ZG
+    indicator_code: GDP_GROWTH
+    frequency: annual
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: GDP growth (annual %)
+    unit: percent
+
+  - source_id: worldbank
+    source_native_code: FP.CPI.TOTL.ZG
+    indicator_code: CPI_YOY
+    frequency: annual
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Inflation, consumer prices (annual %)
+    unit: percent
+
+  - source_id: worldbank
+    source_native_code: BN.CAB.XOKA.GD.ZS
+    indicator_code: CURRENT_ACCOUNT_GDP
+    frequency: annual
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Current account balance (% of GDP)
+    unit: percent
+
+  - source_id: worldbank
+    source_native_code: FI.RES.TOTL.MO
+    indicator_code: RESERVES_MONTHS_IMPORTS
+    frequency: annual
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Total reserves in months of imports
+    unit: months
+
+  - source_id: worldbank
+    source_native_code: GC.DOD.TOTL.GD.ZS
+    indicator_code: GOVT_DEBT_GDP
+    frequency: annual
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Central government debt, total (% of GDP)
+    unit: percent
+
+  - source_id: worldbank
+    source_native_code: SL.UEM.TOTL.ZS
+    indicator_code: UNEMPLOYMENT
+    frequency: annual
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Unemployment, total (% of total labor force, ILO estimate)
+    unit: percent
+
+  - source_id: worldbank
+    source_native_code: NE.TRD.GNFS.ZS
+    indicator_code: TRADE_OPENNESS
+    frequency: annual
+    countries_iso3: [NGA, TUR, ZAF, BRA, POL]
+    name: Trade (% of GDP)
+    unit: percent
+
+  # -------------------------------------------------------------------
+  # yfinance -- FX pairs and equity indices from Yahoo Finance.
+  # Each FX pair is country-specific (one ISO3 per row). Equity indices
+  # are also country-specific. NGA has no equity index (^NGSEINDEX
+  # was delisted from Yahoo with no replacement).
+  #
+  # Commodities (GC=F, CL=F, etc.) are deferred -- they are global
+  # instruments with no per-country mapping.
+  # -------------------------------------------------------------------
+
+  # FX pairs -- daily close price = observation value
+  - source_id: yfinance
+    source_native_code: NGNUSD=X
+    indicator_code: FX_USD
+    frequency: daily
+    countries_iso3: [NGA]
+    name: Nigerian Naira per USD
+    unit: exchange_rate
+
+  - source_id: yfinance
+    source_native_code: TRYUSD=X
+    indicator_code: FX_USD
+    frequency: daily
+    countries_iso3: [TUR]
+    name: Turkish Lira per USD
+    unit: exchange_rate
+
+  - source_id: yfinance
+    source_native_code: ZARUSD=X
+    indicator_code: FX_USD
+    frequency: daily
+    countries_iso3: [ZAF]
+    name: South African Rand per USD
+    unit: exchange_rate
+
+  - source_id: yfinance
+    source_native_code: BRLUSD=X
+    indicator_code: FX_USD
+    frequency: daily
+    countries_iso3: [BRA]
+    name: Brazilian Real per USD
+    unit: exchange_rate
+
+  - source_id: yfinance
+    source_native_code: PLNUSD=X
+    indicator_code: FX_USD
+    frequency: daily
+    countries_iso3: [POL]
+    name: Polish Zloty per USD
+    unit: exchange_rate
+
+  # Equity indices -- daily close price = observation value
+  - source_id: yfinance
+    source_native_code: XU100.IS
+    indicator_code: EQUITY_INDEX
+    frequency: daily
+    countries_iso3: [TUR]
+    name: BIST 100 (Istanbul)
+    unit: index_level
+
+  - source_id: yfinance
+    source_native_code: ^J203.JO
+    indicator_code: EQUITY_INDEX
+    frequency: daily
+    countries_iso3: [ZAF]
+    name: JSE All Share (Johannesburg)
+    unit: index_level
+
+  - source_id: yfinance
+    source_native_code: ^BVSP
+    indicator_code: EQUITY_INDEX
+    frequency: daily
+    countries_iso3: [BRA]
+    name: Bovespa (Sao Paulo)
+    unit: index_level
+
+  - source_id: yfinance
+    source_native_code: ^WIG20
+    indicator_code: EQUITY_INDEX
+    frequency: daily
+    countries_iso3: [POL]
+    name: WIG20 (Warsaw)
+    unit: index_level
