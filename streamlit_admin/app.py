@@ -8,7 +8,7 @@ Launch:
     # Start the API first:
     uv run uvicorn hornet.api.main:app --port 8000
     # Then start Streamlit:
-    uv run streamlit run streamlit_admin/app.py --server.port 8501
+    uv run streamlit run streamlit_admin/app.py --server.port 8502
 """
 
 import httpx
