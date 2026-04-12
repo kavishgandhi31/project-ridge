@@ -84,9 +84,15 @@ for code, label in NOMINAL_YIELDS:
         curve_data[label] = None
 
 if any(v is not None for v in curve_data.values()):
+    # Preserve maturity order from NOMINAL_YIELDS (1M -> 30Y)
+    maturity_order = [label for _, label in NOMINAL_YIELDS]
     curve_df = pd.DataFrame(
         [{"Maturity": k, "Yield (%)": v} for k, v in curve_data.items() if v is not None]
     )
+    curve_df["Maturity"] = pd.Categorical(
+        curve_df["Maturity"], categories=maturity_order, ordered=True
+    )
+    curve_df = curve_df.sort_values("Maturity")
     st.line_chart(curve_df, x="Maturity", y="Yield (%)")
 
     st.dataframe(
