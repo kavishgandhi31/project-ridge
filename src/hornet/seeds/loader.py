@@ -30,6 +30,7 @@ import yaml
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from hornet.alerts.config import AlertConfig
 from hornet.db.models.country import CountryRow
 from hornet.db.models.source_indicator import SourceIndicatorRow
 from hornet.db.session import session_scope
@@ -45,6 +46,7 @@ _COUNTRIES_FILENAME = "countries.yaml"
 _SOURCE_INDICATORS_FILENAME = "source_indicators.yaml"
 _SCORING_CONFIG_FILENAME = "scoring_config.yaml"
 _QUALITY_CONFIG_FILENAME = "quality_config.yaml"
+_ALERT_CONFIG_FILENAME = "alert_config.yaml"
 
 
 def _read_seed_file(filename: str) -> str:
@@ -135,6 +137,25 @@ def load_scoring_config_from_yaml(yaml_text: str | None = None) -> ScoringConfig
         raise ValueError("scoring_config.yaml must have a top-level 'scoring_config' mapping")
 
     return ScoringConfig(**cast(dict[str, Any], config_data))
+
+
+def load_alert_config_from_yaml(yaml_text: str | None = None) -> AlertConfig:
+    """Parse alert_config.yaml into an ``AlertConfig``.
+
+    When ``yaml_text`` is None the packaged default is loaded; tests
+    pass an explicit string to exercise edge cases without touching
+    the packaged file.
+    """
+    text = yaml_text if yaml_text is not None else _read_seed_file(_ALERT_CONFIG_FILENAME)
+    raw = yaml.safe_load(text) or {}
+    if not isinstance(raw, dict):
+        raise ValueError("alert_config.yaml must deserialize to a mapping at the top level")
+
+    config_data = raw.get("alert_config")
+    if not isinstance(config_data, dict):
+        raise ValueError("alert_config.yaml must have a top-level 'alert_config' mapping")
+
+    return AlertConfig(**cast(dict[str, Any], config_data))
 
 
 def load_quality_config_from_yaml(yaml_text: str | None = None) -> QualityConfig:
