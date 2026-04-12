@@ -18,6 +18,7 @@ dependencies = [
     "pyyaml>=6.0",
     "yfinance>=0.2",
     "anthropic>=0.40",
+    "streamlit>=1.40",
 ]
 
 [dependency-groups]

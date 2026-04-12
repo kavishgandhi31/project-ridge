@@ -85,3 +85,29 @@ async def list_prior_records(
     )
     result = await session.execute(stmt)
     return [row.to_domain_dict() for row in result.scalars().all()]
+
+
+async def list_alert_records(
+    session: AsyncSession,
+    *,
+    country_iso3: str | None = None,
+    run_id: str | None = None,
+    effective_tier: str | None = None,
+    limit: int = 100,
+) -> list[dict[str, Any]]:
+    """Query alert records with optional filters.
+
+    Returns dicts suitable for API serialization.
+    """
+    stmt = select(AlertRecordRow).order_by(AlertRecordRow.evaluated_at.desc())
+
+    if country_iso3 is not None:
+        stmt = stmt.where(AlertRecordRow.country_iso3 == country_iso3)
+    if run_id is not None:
+        stmt = stmt.where(AlertRecordRow.run_id == run_id)
+    if effective_tier is not None:
+        stmt = stmt.where(AlertRecordRow.effective_tier == effective_tier)
+
+    stmt = stmt.limit(limit)
+    result = await session.execute(stmt)
+    return [row.to_domain_dict() for row in result.scalars().all()]
