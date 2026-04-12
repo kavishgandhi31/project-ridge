@@ -36,7 +36,11 @@ def fetch_indicator(indicator_code: str, limit: int = 500) -> list[dict[str, obj
             params={"indicator_code": indicator_code, "country_iso3": "USA", "limit": limit},
             timeout=30,
         )
-        return resp.json()  # type: ignore[no-any-return]
+        data = resp.json()
+        # Guard: API may return a dict (error) instead of a list
+        if isinstance(data, list):
+            return data  # type: ignore[no-any-return]
+        return []
     except Exception:
         return []
 
