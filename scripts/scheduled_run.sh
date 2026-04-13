@@ -49,11 +49,11 @@ cd "$HORNET_DIR"
 if [ "$RUN_TYPE" = "morning" ]; then
     # Morning: full pipeline with LLM narratives
     echo "Running full pipeline (with LLM)..." >> "$LOG_FILE"
-    "$VENV/python" -m hornet.cli run >> "$LOG_FILE" 2>&1
+    "$VENV/python" -m hornet.cli >> "$LOG_FILE" 2>&1
 else
     # Evening: data refresh only (no LLM, saves 10 min)
     echo "Running data pipeline (skip LLM)..." >> "$LOG_FILE"
-    "$VENV/python" -m hornet.cli run --skip-llm >> "$LOG_FILE" 2>&1
+    "$VENV/python" -m hornet.cli --skip-llm >> "$LOG_FILE" 2>&1
 fi
 
 echo "Completed: $(date)" >> "$LOG_FILE"
