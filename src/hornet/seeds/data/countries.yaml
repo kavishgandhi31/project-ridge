@@ -1,50 +1,1334 @@
-# Canonical country registry for Hornet.
+# Hornet v2 country registry -- 183 countries.
 #
-# Every ISO3 code used anywhere in the system must resolve to a row here.
-# ISO2 is kept so the WorldBank adapter can translate its native ISO2
-# responses to canonical ISO3 without a hardcoded map.
+# Generated from v1-reference/config/countries.yaml by
+# scripts/generate_countries.py. Metadata in 'notes' field:
+#   market_type=em/fm/ef/dm/standalone
+#   msci=emerging/frontier/developed
+#   monitored_only -- sanctioned/conflict, tracked for contagion
+#   fx=TICKER -- yfinance FX pair
+#   equity=TICKER -- yfinance equity index
+#   sources=bis+oecd -- which specialized sources cover this country
 #
-# Phase 2 ships with the 5 pilot countries. Later phases expand the
-# set; adding a country is an edit to this file followed by re-running
-# `hornet.seeds.seed_all()`. No migration required.
-#
-# Fields:
-#   iso3          ISO 3166-1 alpha-3, uppercase. Primary identity.
-#   iso2          ISO 3166-1 alpha-2, uppercase. Must be unique.
-#   name          Human-readable English name.
-#   region        World Bank region classification. Optional.
-#   income_group  World Bank income group. Optional.
-#   enabled       Soft disable flag. Defaults to true if omitted.
-#   notes         Free-form operator notes. Not consumed by any code.
+# To regenerate: python scripts/generate_countries.py
 
 countries:
-  - iso3: NGA
-    iso2: NG
-    name: Nigeria
-    region: Sub-Saharan Africa
-    income_group: Lower middle income
-    notes: Phase 1 pilot. Oil exporter, user's primary coverage.
-  - iso3: TUR
-    iso2: TR
-    name: Turkey
-    region: Europe & Central Asia
-    income_group: Upper middle income
-    notes: Phase 1 pilot. High inflation edge case, stress-tests scoring.
-  - iso3: ZAF
-    iso2: ZA
-    name: South Africa
-    region: Sub-Saharan Africa
-    income_group: Upper middle income
-    notes: Phase 1 pilot. Stagflation, deep market data, user's region.
-  - iso3: BRA
-    iso2: BR
-    name: Brazil
-    region: Latin America & Caribbean
-    income_group: Upper middle income
-    notes: Phase 1 pilot. Large EM, rich data across all dimensions.
-  - iso3: POL
-    iso2: PL
-    name: Poland
-    region: Europe & Central Asia
-    income_group: High income
-    notes: Phase 1 pilot. EE, closer to DM, contrast to other pilots.
+- iso3: AFG
+  iso2: AF
+  name: Afghanistan
+  region: southern_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=AFNUSD=X
+- iso3: AGO
+  iso2: AO
+  name: Angola
+  region: central_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=AOAUSD=X
+- iso3: ALB
+  iso2: AL
+  name: Albania
+  region: southeastern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=ALLUSD=X
+- iso3: ARE
+  iso2: AE
+  name: United Arab Emirates
+  region: gulf
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=AEDUSD=X; equity=^DFMGI
+- iso3: ARG
+  iso2: AR
+  name: Argentina
+  region: southern_cone
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=ARSUSD=X; equity=^MERV; sources=bis
+- iso3: ARM
+  iso2: AM
+  name: Armenia
+  region: central_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=AMDUSD=X
+- iso3: ATG
+  iso2: AG
+  name: Antigua and Barbuda
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XCDUSD=X
+- iso3: AUS
+  iso2: AU
+  name: Australia
+  region: asia_pacific_dm
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=AUDUSD=X; equity=^AXJO; sources=bis+oecd
+- iso3: AUT
+  iso2: AT
+  name: Austria
+  region: western_europe
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=EURUSD=X; sources=bis+oecd
+- iso3: AZE
+  iso2: AZ
+  name: Azerbaijan
+  region: central_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=AZNUSD=X
+- iso3: BDI
+  iso2: BI
+  name: Burundi
+  region: east_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=BIFUSD=X
+- iso3: BEL
+  iso2: BE
+  name: Belgium
+  region: western_europe
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=EURUSD=X; sources=bis+oecd
+- iso3: BEN
+  iso2: BJ
+  name: Benin
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XOFUSD=X
+- iso3: BFA
+  iso2: BF
+  name: Burkina Faso
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=XOFUSD=X
+- iso3: BGD
+  iso2: BD
+  name: Bangladesh
+  region: south_asia
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=BDTUSD=X; equity=^DSEX
+- iso3: BGR
+  iso2: BG
+  name: Bulgaria
+  region: southeastern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=BGNUSD=X; equity=^SOFIX
+- iso3: BHR
+  iso2: BH
+  name: Bahrain
+  region: gulf
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=BHDUSD=X; equity=^DJBH
+- iso3: BHS
+  iso2: BS
+  name: Bahamas
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=BSDUSD=X
+- iso3: BIH
+  iso2: BA
+  name: Bosnia and Herzegovina
+  region: southeastern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=BAMUSD=X
+- iso3: BLR
+  iso2: BY
+  name: Belarus
+  region: emerging_europe
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=BYNUSD=X
+- iso3: BLZ
+  iso2: BZ
+  name: Belize
+  region: central_america
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=BZDUSD=X
+- iso3: BOL
+  iso2: BO
+  name: Bolivia
+  region: andean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=BOBUSD=X
+- iso3: BRA
+  iso2: BR
+  name: Brazil
+  region: brazil
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=BRLUSD=X; equity=^BVSP; sources=bis+oecd
+- iso3: BRB
+  iso2: BB
+  name: Barbados
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=BBDUSD=X
+- iso3: BRN
+  iso2: BN
+  name: Brunei
+  region: southeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=BNDUSD=X
+- iso3: BTN
+  iso2: BT
+  name: Bhutan
+  region: south_asia
+  income_group: null
+  enabled: true
+  notes: market_type=standalone; msci=standalone; v1_inactive; fx=BTNUSD=X
+- iso3: BWA
+  iso2: BW
+  name: Botswana
+  region: southern_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=BWPUSD=X
+- iso3: CAF
+  iso2: CF
+  name: Central African Republic
+  region: central_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XAFUSD=X
+- iso3: CAN
+  iso2: CA
+  name: Canada
+  region: north_america
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=CADUSD=X; equity=^GSPTSE; sources=bis+oecd
+- iso3: CHE
+  iso2: CH
+  name: Switzerland
+  region: western_europe
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=CHFUSD=X; equity=^SSMI; sources=bis+oecd
+- iso3: CHL
+  iso2: CL
+  name: Chile
+  region: andean
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=CLPUSD=X; equity=^IPSA; sources=bis+oecd
+- iso3: CHN
+  iso2: CN
+  name: China
+  region: greater_china
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=CNYUSD=X; equity=^SSEC; sources=bis+oecd
+- iso3: CIV
+  iso2: CI
+  name: Ivory Coast
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XOFUSD=X
+- iso3: CMR
+  iso2: CM
+  name: Cameroon
+  region: central_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XAFUSD=X
+- iso3: COD
+  iso2: CD
+  name: DR Congo
+  region: central_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=CDFUSD=X
+- iso3: COG
+  iso2: CG
+  name: Republic of the Congo
+  region: central_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XAFUSD=X
+- iso3: COL
+  iso2: CO
+  name: Colombia
+  region: andean
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=COPUSD=X; equity=^COLCAP; sources=bis+oecd
+- iso3: COM
+  iso2: KM
+  name: Comoros
+  region: indian_ocean_islands
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=KMFUSD=X
+- iso3: CPV
+  iso2: CV
+  name: Cape Verde
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=CVEUSD=X
+- iso3: CRI
+  iso2: CR
+  name: Costa Rica
+  region: central_america
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=CRCUSD=X; sources=oecd
+- iso3: CUB
+  iso2: CU
+  name: Cuba
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=CUCUSD=X
+- iso3: CYP
+  iso2: CY
+  name: Cyprus
+  region: southern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=EURUSD=X
+- iso3: CZE
+  iso2: CZ
+  name: Czechia
+  region: central_europe
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=CZKUSD=X; equity=^PX1; sources=bis+oecd
+- iso3: DEU
+  iso2: DE
+  name: Germany
+  region: western_europe
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=EURUSD=X; equity=^GDAXI; sources=bis+oecd
+- iso3: DJI
+  iso2: DJ
+  name: Djibouti
+  region: east_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=DJFUSD=X
+- iso3: DMA
+  iso2: DM
+  name: Dominica
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XCDUSD=X
+- iso3: DNK
+  iso2: DK
+  name: Denmark
+  region: nordic
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=DKKUSD=X; equity=^OMXC25; sources=bis+oecd
+- iso3: DOM
+  iso2: DO
+  name: Dominican Republic
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=DOPUSD=X
+- iso3: DZA
+  iso2: DZ
+  name: Algeria
+  region: north_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=DZDUSD=X
+- iso3: ECU
+  iso2: EC
+  name: Ecuador
+  region: andean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=USDUSD=X
+- iso3: EGY
+  iso2: EG
+  name: Egypt
+  region: north_africa
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=EGPUSD=X; equity=^CASE
+- iso3: ERI
+  iso2: ER
+  name: Eritrea
+  region: east_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=ERNUSD=X
+- iso3: ESP
+  iso2: ES
+  name: Spain
+  region: southern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=EURUSD=X; equity=^IBEX; sources=bis+oecd
+- iso3: EST
+  iso2: EE
+  name: Estonia
+  region: baltic
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=EURUSD=X; equity=^OMXT; sources=oecd
+- iso3: ETH
+  iso2: ET
+  name: Ethiopia
+  region: east_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=ETBUSD=X
+- iso3: FIN
+  iso2: FI
+  name: Finland
+  region: nordic
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=EURUSD=X; sources=bis+oecd
+- iso3: FJI
+  iso2: FJ
+  name: Fiji
+  region: melanesia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=FJDUSD=X
+- iso3: FRA
+  iso2: FR
+  name: France
+  region: western_europe
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=EURUSD=X; equity=^FCHI; sources=bis+oecd
+- iso3: GAB
+  iso2: GA
+  name: Gabon
+  region: central_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XAFUSD=X
+- iso3: GBR
+  iso2: GB
+  name: United Kingdom
+  region: western_europe
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=GBPUSD=X; equity=^FTSE; sources=bis+oecd
+- iso3: GEO
+  iso2: GE
+  name: Georgia
+  region: central_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=GELUSD=X
+- iso3: GHA
+  iso2: GH
+  name: Ghana
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=GHSUSD=X; equity=^GSE-CI
+- iso3: GIN
+  iso2: GN
+  name: Guinea
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=GNFUSD=X
+- iso3: GMB
+  iso2: GM
+  name: Gambia
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=GMDUSD=X
+- iso3: GNB
+  iso2: GW
+  name: Guinea-Bissau
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XOFUSD=X
+- iso3: GNQ
+  iso2: GQ
+  name: Equatorial Guinea
+  region: central_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XAFUSD=X
+- iso3: GRC
+  iso2: GR
+  name: Greece
+  region: southern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=EURUSD=X; equity=FTSE.AT; sources=bis+oecd
+- iso3: GRD
+  iso2: GD
+  name: Grenada
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XCDUSD=X
+- iso3: GTM
+  iso2: GT
+  name: Guatemala
+  region: central_america
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=GTQUSD=X
+- iso3: GUY
+  iso2: GY
+  name: Guyana
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=GYDUSD=X
+- iso3: HKG
+  iso2: HK
+  name: Hong Kong
+  region: greater_china
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=HKDUSD=X; equity=^HSI; sources=bis
+- iso3: HND
+  iso2: HN
+  name: Honduras
+  region: central_america
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=HNLUSD=X
+- iso3: HRV
+  iso2: HR
+  name: Croatia
+  region: central_europe
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=HRKUSD=X; equity=^CROBEX
+- iso3: HTI
+  iso2: HT
+  name: Haiti
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=HTGUSD=X
+- iso3: HUN
+  iso2: HU
+  name: Hungary
+  region: central_europe
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=HUFUSD=X; equity=^BUX; sources=bis+oecd
+- iso3: IDN
+  iso2: ID
+  name: Indonesia
+  region: southeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=IDRUSD=X; equity=^JKSE; sources=bis+oecd
+- iso3: IND
+  iso2: IN
+  name: India
+  region: south_asia
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=INRUSD=X; equity=^BSESN; sources=bis+oecd
+- iso3: IRL
+  iso2: IE
+  name: Ireland
+  region: western_europe
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=EURUSD=X; sources=bis+oecd
+- iso3: IRN
+  iso2: IR
+  name: Iran
+  region: middle_east
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=IRRUSD=X
+- iso3: IRQ
+  iso2: IQ
+  name: Iraq
+  region: middle_east
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=IQDUSD=X
+- iso3: ISL
+  iso2: IS
+  name: Iceland
+  region: nordic
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=ISKUSD=X; equity=^OMXIPI; sources=oecd
+- iso3: ISR
+  iso2: IL
+  name: Israel
+  region: middle_east
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=ILSUSD=X; equity=^TA125.TA; sources=bis+oecd
+- iso3: ITA
+  iso2: IT
+  name: Italy
+  region: southern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=EURUSD=X; equity=FTSEMIB.MI; sources=bis+oecd
+- iso3: JAM
+  iso2: JM
+  name: Jamaica
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=JMDUSD=X
+- iso3: JOR
+  iso2: JO
+  name: Jordan
+  region: middle_east
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=JODUSD=X
+- iso3: JPN
+  iso2: JP
+  name: Japan
+  region: northeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=JPYUSD=X; equity=^N225; sources=bis+oecd
+- iso3: KAZ
+  iso2: KZ
+  name: Kazakhstan
+  region: central_asia
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=KZTUSD=X
+- iso3: KEN
+  iso2: KE
+  name: Kenya
+  region: east_africa
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=KESUSD=X
+- iso3: KGZ
+  iso2: KG
+  name: Kyrgyzstan
+  region: central_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=KGSUSD=X
+- iso3: KHM
+  iso2: KH
+  name: Cambodia
+  region: southeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=KHRUSD=X
+- iso3: KNA
+  iso2: KN
+  name: Saint Kitts and Nevis
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XCDUSD=X
+- iso3: KOR
+  iso2: KR
+  name: South Korea
+  region: northeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=KRWUSD=X; equity=^KS11; sources=bis+oecd
+- iso3: KWT
+  iso2: KW
+  name: Kuwait
+  region: gulf
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=KWDUSD=X
+- iso3: LAO
+  iso2: LA
+  name: Laos
+  region: southeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=LAKUSD=X
+- iso3: LBN
+  iso2: LB
+  name: Lebanon
+  region: middle_east
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=LBPUSD=X
+- iso3: LBR
+  iso2: LR
+  name: Liberia
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=LRDUSD=X
+- iso3: LBY
+  iso2: LY
+  name: Libya
+  region: north_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=LYDUSD=X
+- iso3: LCA
+  iso2: LC
+  name: Saint Lucia
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XCDUSD=X
+- iso3: LKA
+  iso2: LK
+  name: Sri Lanka
+  region: south_asia
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=LKRUSD=X; equity=^CSE.CM
+- iso3: LSO
+  iso2: LS
+  name: Lesotho
+  region: southern_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=LSLUSD=X
+- iso3: LTU
+  iso2: LT
+  name: Lithuania
+  region: baltic
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=EURUSD=X; equity=^OMXV; sources=oecd
+- iso3: LUX
+  iso2: LU
+  name: Luxembourg
+  region: western_europe
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=EURUSD=X; sources=oecd
+- iso3: LVA
+  iso2: LV
+  name: Latvia
+  region: baltic
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=EURUSD=X; equity=^OMXR; sources=oecd
+- iso3: MAR
+  iso2: MA
+  name: Morocco
+  region: north_africa
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=MADUSD=X; equity=^MASI
+- iso3: MDA
+  iso2: MD
+  name: Moldova
+  region: emerging_europe
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=MDLUSD=X
+- iso3: MDG
+  iso2: MG
+  name: Madagascar
+  region: indian_ocean_islands
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=MGAUSD=X
+- iso3: MDV
+  iso2: MV
+  name: Maldives
+  region: south_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=MVRUSD=X
+- iso3: MEX
+  iso2: MX
+  name: Mexico
+  region: mexico
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=MXNUSD=X; equity=^MXX; sources=bis+oecd
+- iso3: MKD
+  iso2: MK
+  name: North Macedonia
+  region: southeastern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=MKDUSD=X
+- iso3: MLI
+  iso2: ML
+  name: Mali
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XOFUSD=X
+- iso3: MLT
+  iso2: MT
+  name: Malta
+  region: southern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=EURUSD=X
+- iso3: MMR
+  iso2: MM
+  name: Myanmar
+  region: southeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=MMKUSD=X
+- iso3: MNE
+  iso2: ME
+  name: Montenegro
+  region: southeastern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=EURUSD=X
+- iso3: MNG
+  iso2: MN
+  name: Mongolia
+  region: northeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=MNTUSD=X
+- iso3: MOZ
+  iso2: MZ
+  name: Mozambique
+  region: southern_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=MZNUSD=X
+- iso3: MRT
+  iso2: MR
+  name: Mauritania
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=MRUUSD=X
+- iso3: MUS
+  iso2: MU
+  name: Mauritius
+  region: indian_ocean_islands
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=MRUUSD=X; equity=^SEMDEX
+- iso3: MWI
+  iso2: MW
+  name: Malawi
+  region: southern_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=MWKUSD=X
+- iso3: MYS
+  iso2: MY
+  name: Malaysia
+  region: southeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=MYRUSD=X; equity=^KLSE; sources=bis
+- iso3: NAM
+  iso2: NA
+  name: Namibia
+  region: southern_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=NADUSD=X
+- iso3: NER
+  iso2: NE
+  name: Niger
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XOFUSD=X
+- iso3: NGA
+  iso2: NG
+  name: Nigeria
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=NGNUSD=X
+- iso3: NIC
+  iso2: NI
+  name: Nicaragua
+  region: central_america
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=NIOUSD=X
+- iso3: NLD
+  iso2: NL
+  name: Netherlands
+  region: western_europe
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=EURUSD=X; equity=^AEX; sources=bis+oecd
+- iso3: NOR
+  iso2: 'NO'
+  name: Norway
+  region: nordic
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=NOKUSD=X; equity=OBX.OL; sources=bis+oecd
+- iso3: NPL
+  iso2: NP
+  name: Nepal
+  region: south_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=NPRUSD=X
+- iso3: NZL
+  iso2: NZ
+  name: New Zealand
+  region: asia_pacific_dm
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=NZDUSD=X; equity=^NZ50; sources=bis+oecd
+- iso3: OMN
+  iso2: OM
+  name: Oman
+  region: gulf
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=OMRUSD=X
+- iso3: PAK
+  iso2: PK
+  name: Pakistan
+  region: south_asia
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=PKRUSD=X; equity=^KSE100
+- iso3: PAN
+  iso2: PA
+  name: Panama
+  region: central_america
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=PABUSD=X
+- iso3: PER
+  iso2: PE
+  name: Peru
+  region: andean
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=PENUSD=X; equity=^SPBLPGPT; sources=bis
+- iso3: PHL
+  iso2: PH
+  name: Philippines
+  region: southeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=PHPUSD=X; equity=^PSEi; sources=bis
+- iso3: PNG
+  iso2: PG
+  name: Papua New Guinea
+  region: melanesia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=PGKUSD=X
+- iso3: POL
+  iso2: PL
+  name: Poland
+  region: central_europe
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=PLNUSD=X; equity=^WIG20; sources=bis+oecd
+- iso3: PRK
+  iso2: KP
+  name: North Korea
+  region: northeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=KPWUSD=X
+- iso3: PRT
+  iso2: PT
+  name: Portugal
+  region: southern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=EURUSD=X; sources=bis+oecd
+- iso3: PRY
+  iso2: PY
+  name: Paraguay
+  region: southern_cone
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=PYGUSD=X
+- iso3: PSE
+  iso2: PS
+  name: Palestine
+  region: middle_east
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=ILSUSD=X
+- iso3: QAT
+  iso2: QA
+  name: Qatar
+  region: gulf
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=QARUSD=X; equity=^QSI
+- iso3: ROU
+  iso2: RO
+  name: Romania
+  region: southeastern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=RONUSD=X; equity=^BET; sources=bis
+- iso3: RUS
+  iso2: RU
+  name: Russia
+  region: emerging_europe
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=RUBUSD=X; sources=bis
+- iso3: RWA
+  iso2: RW
+  name: Rwanda
+  region: east_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=RWFUSD=X
+- iso3: SAU
+  iso2: SA
+  name: Saudi Arabia
+  region: gulf
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=SARUSD=X; equity=^TASI.SR; sources=bis
+- iso3: SDN
+  iso2: SD
+  name: Sudan
+  region: east_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=SDGUSD=X
+- iso3: SEN
+  iso2: SN
+  name: Senegal
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XOFUSD=X
+- iso3: SGP
+  iso2: SG
+  name: Singapore
+  region: southeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=SGDUSD=X; equity=^STI; sources=bis
+- iso3: SLE
+  iso2: SL
+  name: Sierra Leone
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=SLEUSD=X
+- iso3: SLV
+  iso2: SV
+  name: El Salvador
+  region: central_america
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=USDUSD=X
+- iso3: SOM
+  iso2: SO
+  name: Somalia
+  region: east_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=SOSUSD=X
+- iso3: SRB
+  iso2: RS
+  name: Serbia
+  region: southeastern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=RSDUSD=X; equity=^BELEX15
+- iso3: SSD
+  iso2: SS
+  name: South Sudan
+  region: east_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=SSPUSD=X
+- iso3: STP
+  iso2: ST
+  name: São Tomé and Príncipe
+  region: central_africa
+  income_group: null
+  enabled: true
+  notes: market_type=standalone; msci=standalone; v1_inactive; fx=STNUSD=X
+- iso3: SUR
+  iso2: SR
+  name: Suriname
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=SRDUSD=X
+- iso3: SVK
+  iso2: SK
+  name: Slovakia
+  region: central_europe
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=EURUSD=X; sources=oecd
+- iso3: SVN
+  iso2: SI
+  name: Slovenia
+  region: central_europe
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=EURUSD=X; equity=^SBITOP; sources=oecd
+- iso3: SWE
+  iso2: SE
+  name: Sweden
+  region: nordic
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; fx=SEKUSD=X; equity=^OMXS30; sources=bis+oecd
+- iso3: SWZ
+  iso2: SZ
+  name: Eswatini
+  region: southern_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=SZLUSD=X
+- iso3: SYC
+  iso2: SC
+  name: Seychelles
+  region: indian_ocean_islands
+  income_group: null
+  enabled: true
+  notes: market_type=standalone; msci=standalone; v1_inactive; fx=SCRUSD=X
+- iso3: SYR
+  iso2: SY
+  name: Syria
+  region: middle_east
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=SYPUSD=X
+- iso3: TCD
+  iso2: TD
+  name: Chad
+  region: central_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XAFUSD=X
+- iso3: TGO
+  iso2: TG
+  name: Togo
+  region: west_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XOFUSD=X
+- iso3: THA
+  iso2: TH
+  name: Thailand
+  region: southeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=THBUSD=X; equity=^SET.BK; sources=bis
+- iso3: TJK
+  iso2: TJ
+  name: Tajikistan
+  region: central_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=TJSUSD=X
+- iso3: TKM
+  iso2: TM
+  name: Turkmenistan
+  region: central_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=TMTUSD=X
+- iso3: TLS
+  iso2: TL
+  name: Timor-Leste
+  region: southeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=USDUSD=X
+- iso3: TTO
+  iso2: TT
+  name: Trinidad and Tobago
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=TTDUSD=X
+- iso3: TUN
+  iso2: TN
+  name: Tunisia
+  region: north_africa
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=TNDUSD=X
+- iso3: TUR
+  iso2: TR
+  name: Turkey
+  region: emerging_europe
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=TRYUSD=X; equity=XU100.IS; sources=bis+oecd
+- iso3: TWN
+  iso2: TW
+  name: Taiwan
+  region: greater_china
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=TWDUSD=X; equity=^TWII; sources=bis
+- iso3: TZA
+  iso2: TZ
+  name: Tanzania
+  region: east_africa
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=TZSUSD=X
+- iso3: UGA
+  iso2: UG
+  name: Uganda
+  region: east_africa
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=UGXUSD=X
+- iso3: UKR
+  iso2: UA
+  name: Ukraine
+  region: emerging_europe
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=UAHUSD=X
+- iso3: UNK
+  iso2: XK
+  name: Kosovo
+  region: southeastern_europe
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=EURUSD=X
+- iso3: URY
+  iso2: UY
+  name: Uruguay
+  region: southern_cone
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=UYUUSD=X
+- iso3: USA
+  iso2: US
+  name: United States
+  region: north_america
+  income_group: null
+  enabled: true
+  notes: market_type=dm; msci=developed; equity=^GSPC; sources=bis+oecd
+- iso3: UZB
+  iso2: UZ
+  name: Uzbekistan
+  region: central_asia
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=UZSUSD=X
+- iso3: VCT
+  iso2: VC
+  name: Saint Vincent and the Grenadines
+  region: caribbean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; fx=XCDUSD=X
+- iso3: VEN
+  iso2: VE
+  name: Venezuela
+  region: andean
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=VESUSD=X
+- iso3: VNM
+  iso2: VN
+  name: Vietnam
+  region: southeast_asia
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=VNDUSD=X; equity=^VNINDEX
+- iso3: YEM
+  iso2: YE
+  name: Yemen
+  region: middle_east
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier; monitored_only; reason=Sanctioned
+    or conflict-affected market. Monitored for regional spillover and geopolitical
+    risk signals. Not directly investable but relevant to regional macro outlook.;
+    fx=YERUSD=X
+- iso3: ZAF
+  iso2: ZA
+  name: South Africa
+  region: southern_africa
+  income_group: null
+  enabled: true
+  notes: market_type=em; msci=emerging; fx=ZARUSD=X; equity=^J203.JO; sources=bis+oecd
+- iso3: ZMB
+  iso2: ZM
+  name: Zambia
+  region: southern_africa
+  income_group: null
+  enabled: true
+  notes: market_type=fm; msci=frontier; fx=ZMWUSD=X
+- iso3: ZWE
+  iso2: ZW
+  name: Zimbabwe
+  region: southern_africa
+  income_group: null
+  enabled: true
+  notes: market_type=ef; msci=extended_frontier

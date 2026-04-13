@@ -40,8 +40,8 @@ class TestListCountries:
         await _clean_and_seed()
         async with session_scope() as session:
             countries = await list_countries(session)
-        assert len(countries) == 5
-        assert {c.iso3 for c in countries} == {"NGA", "TUR", "ZAF", "BRA", "POL"}
+        assert len(countries) == 183
+        assert {"NGA", "TUR", "ZAF", "BRA", "POL"}.issubset({c.iso3 for c in countries})
 
     async def test_results_are_sorted_by_iso3(self) -> None:
         await _clean_and_seed()
@@ -56,13 +56,10 @@ class TestLoadIso2ToIso3Map:
         await _clean_and_seed()
         async with session_scope() as session:
             mapping = await load_iso2_to_iso3_map(session)
-        assert mapping == {
-            "NG": "NGA",
-            "TR": "TUR",
-            "ZA": "ZAF",
-            "BR": "BRA",
-            "PL": "POL",
-        }
+        assert len(mapping) == 183
+        assert mapping["NG"] == "NGA"
+        assert mapping["TR"] == "TUR"
+        assert mapping["US"] == "USA"
 
 
 class TestListSourceIndicators:
@@ -70,7 +67,7 @@ class TestListSourceIndicators:
         await _clean_and_seed()
         async with session_scope() as session:
             indicators = await list_source_indicators(session)
-        assert len(indicators) == 88  # 93 total - 5 disabled (4 bad FRED GDP + 1 FRED gold)
+        assert len(indicators) == 261  # 266 total - 5 disabled
 
     async def test_filter_by_source_id(self) -> None:
         await _clean_and_seed()

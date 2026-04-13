@@ -41,9 +41,9 @@ _NOW = datetime(2026, 4, 11, 12, 0, 0, tzinfo=UTC)
 class TestLoadCountriesFromYaml:
     def test_parses_packaged_seed_file(self) -> None:
         specs = load_countries_from_yaml()
-        assert len(specs) == 5
+        assert len(specs) == 183
         iso3s = {s.iso3 for s in specs}
-        assert iso3s == {"NGA", "TUR", "ZAF", "BRA", "POL"}
+        assert {"NGA", "TUR", "ZAF", "BRA", "POL"}.issubset(iso3s)
 
     def test_parses_minimal_yaml(self) -> None:
         yaml_text = dedent("""\
@@ -73,7 +73,7 @@ class TestLoadSourceIndicatorsFromYaml:
         specs = load_source_indicators_from_yaml()
         # 39 FRED (10 per-country + 29 global) + 7 WB + 21 yfinance + 4 OECD
         # + 3 BIS + 15 IMF + 3 GDELT + 1 GNews = 93
-        assert len(specs) == 93
+        assert len(specs) == 266
         fred_count = sum(1 for s in specs if s.source_id == "fred")
         wb_count = sum(1 for s in specs if s.source_id == "worldbank")
         assert fred_count == 39
@@ -130,11 +130,11 @@ class TestSeedCountries:
         async with session_scope() as session:
             count = await seed_countries(session, specs, now=_NOW)
 
-        assert count == 5
+        assert count == 183
         async with session_scope() as session:
             rows = (await session.execute(select(CountryRow))).scalars().all()
-        assert len(rows) == 5
-        assert {r.iso3 for r in rows} == {"NGA", "TUR", "ZAF", "BRA", "POL"}
+        assert len(rows) == 183
+        assert {"NGA", "TUR", "ZAF", "BRA", "POL"}.issubset({r.iso3 for r in rows})
 
     async def test_upsert_is_idempotent(self) -> None:
         await _clean_registries()
@@ -147,7 +147,7 @@ class TestSeedCountries:
 
         async with session_scope() as session:
             rows = (await session.execute(select(CountryRow))).scalars().all()
-        assert len(rows) == 5
+        assert len(rows) == 183
 
     async def test_upsert_updates_changed_fields(self) -> None:
         await _clean_registries()
@@ -189,10 +189,10 @@ class TestSeedSourceIndicators:
         async with session_scope() as session:
             count = await seed_source_indicators(session, specs, now=_NOW)
 
-        assert count == 93
+        assert count == 266
         async with session_scope() as session:
             rows = (await session.execute(select(SourceIndicatorRow))).scalars().all()
-        assert len(rows) == 93
+        assert len(rows) == 266
 
     async def test_upsert_is_idempotent(self) -> None:
         await _clean_registries()
@@ -205,7 +205,7 @@ class TestSeedSourceIndicators:
 
         async with session_scope() as session:
             rows = (await session.execute(select(SourceIndicatorRow))).scalars().all()
-        assert len(rows) == 93
+        assert len(rows) == 266
 
 
 class TestSeedAll:
@@ -214,5 +214,5 @@ class TestSeedAll:
 
         n_countries, n_indicators = await seed_all(now=_NOW)
 
-        assert n_countries == 5
-        assert n_indicators == 93
+        assert n_countries == 183
+        assert n_indicators == 266

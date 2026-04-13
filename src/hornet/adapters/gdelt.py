@@ -151,17 +151,15 @@ class GDELTAdapter(BaseClient):
         return HealthReport(source_id=self.source_id, healthy=True)
 
     def _build_query(self, iso3: str) -> str:
-        """Build a GDELT search query using country name + ISO2.
+        """Build a GDELT search query using country name.
 
-        Ported from v1: wraps name in quotes for phrase matching,
-        adds ISO2 as secondary term.
+        Uses the full country name only. ISO2 codes are NOT included
+        because GDELT rejects phrases shorter than 3 characters
+        ("The specified phrase is too short"), and 2-letter codes
+        produce false positives (e.g. "TR" matches "trade", "transport").
         """
         name = self._country_names.get(iso3, iso3)
-        iso2 = self._country_iso2s.get(iso3, "")
         query = f'"{name}"'
-        if iso2 and len(iso2) == 2:
-            # GDELT requires parentheses around OR'd terms
-            query = f'("{name}" OR "{iso2}")'
         return query
 
     async def _get_gdelt_json(self, url: str, params: dict[str, str]) -> Any:

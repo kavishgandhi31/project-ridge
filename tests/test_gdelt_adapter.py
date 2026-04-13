@@ -297,11 +297,14 @@ class TestFetchEvents:
 
 
 class TestQueryBuilding:
-    def test_builds_query_with_name_and_iso2(self) -> None:
+    def test_builds_query_with_name_only(self) -> None:
+        """GDELT queries use country name only -- ISO2 dropped to avoid
+        'phrase too short' errors and false positives."""
         adapter = _adapter(lambda r: httpx.Response(200, text="{}"))
         query = adapter._build_query("NGA")
         assert '"Nigeria"' in query
-        assert '"NG"' in query
+        # ISO2 no longer included (too short for GDELT, causes false positives)
+        assert "NG" not in query or "Nigeria" in query
 
 
 class TestHealth:

@@ -89,12 +89,12 @@ class TestBuildWorldBankAdapter:
         async with session_scope() as session:
             adapter = await build_worldbank_adapter(session)
         try:
-            assert adapter._iso2_to_iso3 == {
-                "NG": "NGA",
-                "TR": "TUR",
-                "ZA": "ZAF",
-                "BR": "BRA",
-                "PL": "POL",
-            }
+            # Verify pilot countries are in the map (183 total)
+            assert len(adapter._iso2_to_iso3) == 183
+            assert adapter._iso2_to_iso3["NG"] == "NGA"
+            assert adapter._iso2_to_iso3["TR"] == "TUR"
+            assert adapter._iso2_to_iso3["ZA"] == "ZAF"
+            assert adapter._iso2_to_iso3["BR"] == "BRA"
+            assert adapter._iso2_to_iso3["PL"] == "POL"
         finally:
             await adapter.close()

@@ -83,6 +83,12 @@ exclude = ["alembic/versions"]
 module = "yfinance"
 ignore_missing_imports = true
 
+# CLI orchestrator uses Any-typed args to avoid importing every domain type
+# at module level (slows startup). Domain modules remain strict.
+[[tool.mypy.overrides]]
+module = "hornet.cli"
+ignore_errors = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
