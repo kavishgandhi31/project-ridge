@@ -50,7 +50,81 @@ SOURCE_CATEGORIES: dict[str, list[str]] = {
 }
 
 ALL_STAGES = ["seed", "ingest", "quality", "score", "alert", "llm", "digest"]
-PILOT_COUNTRIES = ["NGA", "TUR", "ZAF", "BRA", "POL"]
+PILOT_COUNTRIES = [
+    "NGA",
+    "TUR",
+    "ZAF",
+    "BRA",
+    "POL",  # original 5
+    "MEX",
+    "IND",
+    "IDN",
+    "CHL",
+    "THA",  # EM with deep data
+    "EGY",
+    "KEN",
+    "SAU",
+    "CZE",
+    "COL",  # FM/EM diversity
+]
+
+
+def _export_score_history(score_results: list[Any], run_id: str, run_date: datetime.date) -> None:
+    """Append scores to a CSV file for easy analysis.
+
+    Creates hornet/logs/score_history.csv with one row per country per run.
+    Appends on each run so the file grows as a time series.
+    """
+    import csv
+    from pathlib import Path
+
+    csv_path = Path("logs/score_history.csv")
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not csv_path.exists()
+
+    with open(csv_path, "a", newline="") as f:
+        writer = csv.writer(f)
+        if write_header:
+            writer.writerow(
+                [
+                    "run_id",
+                    "run_date",
+                    "scored_at",
+                    "country_iso3",
+                    "composite",
+                    "coverage",
+                    "growth_momentum",
+                    "external_balance",
+                    "monetary_stance",
+                    "risk_sentiment",
+                    "news_heat_sigma",
+                ]
+            )
+        for sr in score_results:
+            dims = sr.dimensions if hasattr(sr, "dimensions") else {}
+            writer.writerow(
+                [
+                    run_id,
+                    run_date.isoformat(),
+                    sr.scored_at.isoformat() if hasattr(sr, "scored_at") else "",
+                    sr.country_iso3,
+                    f"{sr.composite:.4f}" if sr.composite is not None else "",
+                    f"{sr.coverage_fraction:.2f}",
+                    f"{dims.get('growth_momentum', type('', (), {'value': None})).value:.4f}"
+                    if dims.get("growth_momentum") and dims["growth_momentum"].value is not None
+                    else "",
+                    f"{dims.get('external_balance', type('', (), {'value': None})).value:.4f}"
+                    if dims.get("external_balance") and dims["external_balance"].value is not None
+                    else "",
+                    f"{dims.get('monetary_stance', type('', (), {'value': None})).value:.4f}"
+                    if dims.get("monetary_stance") and dims["monetary_stance"].value is not None
+                    else "",
+                    f"{dims.get('risk_sentiment', type('', (), {'value': None})).value:.4f}"
+                    if dims.get("risk_sentiment") and dims["risk_sentiment"].value is not None
+                    else "",
+                    f"{sr.news_heat.sigma:.2f}" if sr.news_heat else "",
+                ]
+            )
 
 
 def _resolve_sources(sources_str: str) -> list[str]:
@@ -238,6 +312,9 @@ async def _run_pipeline(
                     "score",
                     f"  {sr.country_iso3}: composite={comp}, coverage={sr.coverage_fraction:.0%}",
                 )
+
+            # Append scores to CSV history for analysis
+            _export_score_history(score_results, run_id, today)
             async with session_scope() as session:
                 await mark_stage_completed(session, run_id, "score")
         else:
