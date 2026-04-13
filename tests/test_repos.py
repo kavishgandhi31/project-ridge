@@ -67,13 +67,13 @@ class TestListSourceIndicators:
         await _clean_and_seed()
         async with session_scope() as session:
             indicators = await list_source_indicators(session)
-        assert len(indicators) == 261  # 266 total - 5 disabled
+        assert len(indicators) == 271  # 266 total - 5 disabled
 
     async def test_filter_by_source_id(self) -> None:
         await _clean_and_seed()
         async with session_scope() as session:
             fred_indicators = await list_source_indicators(session, source_id="fred")
-        assert len(fred_indicators) == 34  # 39 total - 5 disabled
+        assert len(fred_indicators) == 44  # 49 total - 5 disabled
         assert all(s.source_id == "fred" for s in fred_indicators)
 
     async def test_filter_by_indicator_code(self) -> None:

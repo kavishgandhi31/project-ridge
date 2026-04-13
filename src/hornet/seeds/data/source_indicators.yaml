@@ -131,6 +131,106 @@ source_indicators:
   enabled: false
   notes: FRED returns 400 -- series code invalid. GDP covered by WorldBank + IMF WEO.
 - source_id: fred
+  source_native_code: FPCPITOTLZGCHL
+  indicator_code: CPI_YOY
+  frequency: annual
+  countries_iso3:
+  - CHL
+  name: Chile inflation, consumer prices (annual %)
+  unit: percent
+  dimension: monetary_stance
+  concept: cpi
+- source_id: fred
+  source_native_code: FPCPITOTLZGCOL
+  indicator_code: CPI_YOY
+  frequency: annual
+  countries_iso3:
+  - COL
+  name: Colombia inflation, consumer prices (annual %)
+  unit: percent
+  dimension: monetary_stance
+  concept: cpi
+- source_id: fred
+  source_native_code: FPCPITOTLZGCZE
+  indicator_code: CPI_YOY
+  frequency: annual
+  countries_iso3:
+  - CZE
+  name: Czech Republic inflation, consumer prices (annual %)
+  unit: percent
+  dimension: monetary_stance
+  concept: cpi
+- source_id: fred
+  source_native_code: FPCPITOTLZGEGY
+  indicator_code: CPI_YOY
+  frequency: annual
+  countries_iso3:
+  - EGY
+  name: Egypt inflation, consumer prices (annual %)
+  unit: percent
+  dimension: monetary_stance
+  concept: cpi
+- source_id: fred
+  source_native_code: FPCPITOTLZGIDN
+  indicator_code: CPI_YOY
+  frequency: annual
+  countries_iso3:
+  - IDN
+  name: Indonesia inflation, consumer prices (annual %)
+  unit: percent
+  dimension: monetary_stance
+  concept: cpi
+- source_id: fred
+  source_native_code: FPCPITOTLZGIND
+  indicator_code: CPI_YOY
+  frequency: annual
+  countries_iso3:
+  - IND
+  name: India inflation, consumer prices (annual %)
+  unit: percent
+  dimension: monetary_stance
+  concept: cpi
+- source_id: fred
+  source_native_code: FPCPITOTLZGKEN
+  indicator_code: CPI_YOY
+  frequency: annual
+  countries_iso3:
+  - KEN
+  name: Kenya inflation, consumer prices (annual %)
+  unit: percent
+  dimension: monetary_stance
+  concept: cpi
+- source_id: fred
+  source_native_code: FPCPITOTLZGMEX
+  indicator_code: CPI_YOY
+  frequency: annual
+  countries_iso3:
+  - MEX
+  name: Mexico inflation, consumer prices (annual %)
+  unit: percent
+  dimension: monetary_stance
+  concept: cpi
+- source_id: fred
+  source_native_code: FPCPITOTLZGSAU
+  indicator_code: CPI_YOY
+  frequency: annual
+  countries_iso3:
+  - SAU
+  name: Saudi Arabia inflation, consumer prices (annual %)
+  unit: percent
+  dimension: monetary_stance
+  concept: cpi
+- source_id: fred
+  source_native_code: FPCPITOTLZGTHA
+  indicator_code: CPI_YOY
+  frequency: annual
+  countries_iso3:
+  - THA
+  name: Thailand inflation, consumer prices (annual %)
+  unit: percent
+  dimension: monetary_stance
+  concept: cpi
+- source_id: fred
   source_native_code: DGS10
   indicator_code: DGS10
   frequency: daily
@@ -2448,12 +2548,177 @@ source_indicators:
   source_native_code: NY.GDP.MKTP.KD.ZG
   indicator_code: GDP_GROWTH
   frequency: annual
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
+  countries_iso3: &id001
+  - AGO
+  - ALB
+  - ARE
+  - ARG
+  - ARM
+  - ATG
+  - AUS
+  - AUT
+  - AZE
+  - BDI
+  - BEL
+  - BEN
+  - BFA
+  - BGD
+  - BGR
+  - BHR
+  - BHS
+  - BIH
+  - BLZ
+  - BOL
   - BRA
+  - BRB
+  - BRN
+  - BTN
+  - BWA
+  - CAF
+  - CAN
+  - CHE
+  - CHL
+  - CHN
+  - CIV
+  - CMR
+  - COD
+  - COG
+  - COL
+  - COM
+  - CPV
+  - CRI
+  - CYP
+  - CZE
+  - DEU
+  - DJI
+  - DMA
+  - DNK
+  - DOM
+  - DZA
+  - ECU
+  - EGY
+  - ERI
+  - ESP
+  - EST
+  - ETH
+  - FIN
+  - FJI
+  - FRA
+  - GAB
+  - GBR
+  - GEO
+  - GHA
+  - GIN
+  - GMB
+  - GNB
+  - GNQ
+  - GRC
+  - GRD
+  - GTM
+  - GUY
+  - HKG
+  - HND
+  - HRV
+  - HTI
+  - HUN
+  - IDN
+  - IND
+  - IRL
+  - IRQ
+  - ISL
+  - ISR
+  - ITA
+  - JAM
+  - JOR
+  - JPN
+  - KAZ
+  - KEN
+  - KGZ
+  - KHM
+  - KNA
+  - KOR
+  - KWT
+  - LAO
+  - LBN
+  - LBR
+  - LCA
+  - LKA
+  - LSO
+  - LTU
+  - LUX
+  - LVA
+  - MAR
+  - MDA
+  - MDG
+  - MDV
+  - MEX
+  - MKD
+  - MLI
+  - MLT
+  - MNE
+  - MNG
+  - MOZ
+  - MRT
+  - MUS
+  - MWI
+  - MYS
+  - NAM
+  - NER
+  - NGA
+  - NIC
+  - NLD
+  - NOR
+  - NPL
+  - NZL
+  - OMN
+  - PAK
+  - PAN
+  - PER
+  - PHL
+  - PNG
   - POL
+  - PRT
+  - PRY
+  - PSE
+  - QAT
+  - ROU
+  - RWA
+  - SAU
+  - SEN
+  - SGP
+  - SLE
+  - SLV
+  - SOM
+  - SRB
+  - STP
+  - SUR
+  - SVK
+  - SVN
+  - SWE
+  - SWZ
+  - SYC
+  - TCD
+  - TGO
+  - THA
+  - TJK
+  - TKM
+  - TLS
+  - TTO
+  - TUN
+  - TUR
+  - TWN
+  - TZA
+  - UGA
+  - UKR
+  - UNK
+  - URY
+  - USA
+  - UZB
+  - VCT
+  - VNM
+  - ZAF
+  - ZMB
+  - ZWE
   name: GDP growth (annual %)
   unit: percent
   dimension: growth_momentum
@@ -2462,12 +2727,7 @@ source_indicators:
   source_native_code: FP.CPI.TOTL.ZG
   indicator_code: CPI_YOY
   frequency: annual
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Inflation, consumer prices (annual %)
   unit: percent
   dimension: monetary_stance
@@ -2476,12 +2736,7 @@ source_indicators:
   source_native_code: BN.CAB.XOKA.GD.ZS
   indicator_code: CURRENT_ACCOUNT_GDP
   frequency: annual
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Current account balance (% of GDP)
   unit: percent
   dimension: external_balance
@@ -2490,12 +2745,7 @@ source_indicators:
   source_native_code: FI.RES.TOTL.MO
   indicator_code: RESERVES_MONTHS_IMPORTS
   frequency: annual
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Total reserves in months of imports
   unit: months
   dimension: external_balance
@@ -2504,12 +2754,7 @@ source_indicators:
   source_native_code: GC.DOD.TOTL.GD.ZS
   indicator_code: GOVT_DEBT_GDP
   frequency: annual
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Central government debt, total (% of GDP)
   unit: percent
   dimension: external_balance
@@ -2518,12 +2763,7 @@ source_indicators:
   source_native_code: SL.UEM.TOTL.ZS
   indicator_code: UNEMPLOYMENT
   frequency: annual
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Unemployment, total (% of total labor force, ILO estimate)
   unit: percent
   dimension: growth_momentum
@@ -2532,12 +2772,7 @@ source_indicators:
   source_native_code: NE.TRD.GNFS.ZS
   indicator_code: TRADE_OPENNESS
   frequency: annual
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Trade (% of GDP)
   unit: percent
   dimension: external_balance
@@ -2637,12 +2872,7 @@ source_indicators:
   source_native_code: weo:NGDP_RPCH
   indicator_code: GDP_GROWTH
   frequency: forecast
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Real GDP growth (WEO forecast)
   unit: percent
   dimension: growth_momentum
@@ -2651,12 +2881,7 @@ source_indicators:
   source_native_code: weo:PCPIPCH
   indicator_code: CPI_YOY
   frequency: forecast
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Inflation rate (WEO forecast)
   unit: percent
   dimension: monetary_stance
@@ -2665,12 +2890,7 @@ source_indicators:
   source_native_code: weo:BCA_NGDPD
   indicator_code: CURRENT_ACCOUNT_GDP
   frequency: forecast
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Current account balance as percent of GDP (WEO forecast)
   unit: percent
   dimension: external_balance
@@ -2679,12 +2899,7 @@ source_indicators:
   source_native_code: weo:GGXWDG_NGDP
   indicator_code: GOVT_DEBT_GDP
   frequency: forecast
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Government gross debt as percent of GDP (WEO forecast)
   unit: percent
   dimension: external_balance
@@ -2693,12 +2908,7 @@ source_indicators:
   source_native_code: weo:LUR
   indicator_code: UNEMPLOYMENT
   frequency: forecast
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Unemployment rate (WEO forecast)
   unit: percent
   dimension: growth_momentum
@@ -2707,12 +2917,7 @@ source_indicators:
   source_native_code: weo:RESERVE
   indicator_code: FX_RESERVES_TOTAL
   frequency: forecast
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Total FX reserves (WEO forecast)
   unit: usd_billions
   dimension: external_balance
@@ -2721,12 +2926,7 @@ source_indicators:
   source_native_code: ifs:PCPI_IX
   indicator_code: CPI_INDEX
   frequency: monthly
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Consumer price index (IFS)
   unit: index
   dimension: monetary_stance
@@ -2735,12 +2935,7 @@ source_indicators:
   source_native_code: ifs:ENDA_XDC_USD_RATE
   indicator_code: FX_RATE
   frequency: monthly
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Exchange rate, domestic currency per USD (IFS)
   unit: exchange_rate
   dimension: risk_sentiment
@@ -2749,12 +2944,7 @@ source_indicators:
   source_native_code: ifs:FITB_PA
   indicator_code: POLICY_RATE
   frequency: monthly
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Treasury bill rate (IFS)
   unit: percent
   dimension: monetary_stance
@@ -2763,12 +2953,7 @@ source_indicators:
   source_native_code: ifs:FMA_XDC
   indicator_code: MONEY_SUPPLY
   frequency: monthly
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Broad money supply (IFS)
   unit: local_currency
   dimension: monetary_stance
@@ -2777,12 +2962,7 @@ source_indicators:
   source_native_code: ifs:RAXGFX_USD
   indicator_code: FX_RESERVES_EX_GOLD
   frequency: monthly
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: FX reserves excluding gold in USD (IFS)
   unit: usd_millions
   dimension: external_balance
@@ -2791,12 +2971,7 @@ source_indicators:
   source_native_code: ifs:FILR_PA
   indicator_code: LENDING_RATE
   frequency: monthly
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Lending rate (IFS)
   unit: percent
   dimension: monetary_stance
@@ -2805,12 +2980,7 @@ source_indicators:
   source_native_code: bop:BCA_BP6_USD
   indicator_code: CURRENT_ACCOUNT_USD
   frequency: quarterly
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Current account balance in USD (BOP)
   unit: usd_millions
   dimension: external_balance
@@ -2819,12 +2989,7 @@ source_indicators:
   source_native_code: bop:BFA_BP6_USD
   indicator_code: FINANCIAL_ACCOUNT_USD
   frequency: quarterly
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Financial account balance in USD (BOP)
   unit: usd_millions
   dimension: external_balance
@@ -2833,12 +2998,7 @@ source_indicators:
   source_native_code: bop:BGS_BP6_USD
   indicator_code: TRADE_BALANCE_USD
   frequency: quarterly
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Goods and services balance in USD (BOP)
   unit: usd_millions
   dimension: external_balance
@@ -2847,12 +3007,7 @@ source_indicators:
   source_native_code: tone
   indicator_code: tone
   frequency: daily
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: GDELT average news tone (sentiment)
   dimension: risk_sentiment
   concept: news_tone
@@ -2860,32 +3015,17 @@ source_indicators:
   source_native_code: volume
   indicator_code: volume
   frequency: daily
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: GDELT article volume (daily count)
 - source_id: gdelt
   source_native_code: headline
   indicator_code: headline
   frequency: daily
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: GDELT article headlines (artlist mode)
 - source_id: googlenews
   source_native_code: headline
   indicator_code: headline
   frequency: daily
-  countries_iso3:
-  - NGA
-  - TUR
-  - ZAF
-  - BRA
-  - POL
+  countries_iso3: *id001
   name: Google News RSS headlines (economy/politics)

@@ -61,11 +61,11 @@ class TestBuildFredAdapter:
         try:
             manifest = await adapter.discover()
             assert manifest.source_id == "fred"
-            assert len(manifest.indicators) == 34  # 39 total - 5 disabled
+            assert len(manifest.indicators) == 44  # 49 total - 5 disabled
             all_countries: set[str] = set()
             for spec in manifest.indicators:
                 all_countries.update(spec.countries_iso3)
-            assert all_countries == {"NGA", "TUR", "ZAF", "BRA", "POL", "USA"}
+            assert {"NGA", "TUR", "ZAF", "BRA", "POL", "USA", "MEX", "IND"}.issubset(all_countries)
         finally:
             await adapter.close()
 

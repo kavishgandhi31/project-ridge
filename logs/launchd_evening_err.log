@@ -1,0 +1,2 @@
+shell-init: error retrieving current directory: getcwd: cannot access parent directories: Operation not permitted
+/bin/bash: /Users/shantanumenawat/Documents/Project Hornet/hornet/scripts/scheduled_run.sh: Operation not permitted
