@@ -190,7 +190,7 @@ def run(
 
     typer.echo(f"Stages: {', '.join(stage_list)}")
     typer.echo(f"Sources: {', '.join(source_list)}")
-    typer.echo(f"Countries: {'all 183' if all_countries else '5 pilots'}")
+    typer.echo(f"Countries: {'all 183' if all_countries else f'{len(PILOT_COUNTRIES)} pilots'}")
     typer.echo("")
 
     asyncio.run(_run_pipeline(stage_list, source_list, all_countries))
