@@ -272,6 +272,8 @@ async def _run_pipeline(
 
         # --- SCORE ---
         if "score" in stages:
+            import time as _time
+
             from hornet.db.repos.event_record import list_events_for_scoring
             from hornet.db.repos.observation import list_observations_for_scoring
             from hornet.db.repos.score_result import upsert_score_results
@@ -287,31 +289,29 @@ async def _run_pipeline(
             specs = load_source_indicators_from_yaml()
             engine = ScoringEngine(config, specs)
 
-            obs_by_country: dict[str, list[Observation]] = {}
-            events_by_country: dict[str, list[object]] = {}
-            async with session_scope() as session:
-                for iso3 in score_countries:
-                    obs_by_country[iso3] = await list_observations_for_scoring(
-                        session, country_iso3=iso3
-                    )
-                    events_by_country[iso3] = await list_events_for_scoring(
-                        session, country_iso3=iso3
-                    )
-
-            score_results = engine.score_all(
-                countries=score_countries,
-                observations_by_country=obs_by_country,
-                events_by_country=events_by_country,
-                reference_date=today,
-            )
-            async with session_scope() as session:
-                await upsert_score_results(session, score_results)
-            for sr in score_results:
+            # Per-country loop: load observations, score, discard. This bounds
+            # peak memory to ~30-50MB (one country's obs) instead of the ~14GB
+            # dict-of-all-countries we had before; and gives the operator
+            # incremental per-country feedback in the log.
+            score_results = []
+            for iso3 in score_countries:
+                async with session_scope() as session:
+                    obs = await list_observations_for_scoring(session, country_iso3=iso3)
+                    events = await list_events_for_scoring(session, country_iso3=iso3)
+                t0 = _time.perf_counter()
+                sr = engine.score_country(iso3, obs, events, today)
+                elapsed = _time.perf_counter() - t0
+                score_results.append(sr)
                 comp = f"{sr.composite:+.2f}" if sr.composite is not None else "N/A"
                 _log(
                     "score",
-                    f"  {sr.country_iso3}: composite={comp}, coverage={sr.coverage_fraction:.0%}",
+                    f"  {sr.country_iso3}: composite={comp}, coverage={sr.coverage_fraction:.0%}, {elapsed:.2f}s",
                 )
+                # obs and events go out of scope here -- GC eligible
+
+            # Single bulk upsert at end (1 round-trip, not 183)
+            async with session_scope() as session:
+                await upsert_score_results(session, score_results)
 
             # Append scores to CSV history for analysis
             _export_score_history(score_results, run_id, today)
@@ -360,7 +360,39 @@ async def _run_pipeline(
 
         # --- LLM ---
         if "llm" in stages and score_results:
-            _log("llm", "Generating narratives...")
+            # Reload obs/events only for countries that will actually be
+            # narrated (escalate/alert/watch tiers). Score stage no longer
+            # pre-builds these dicts -- memory bounded by reloading on demand
+            # for the (typically small) dispatched set.
+            from hornet.db.repos.event_record import list_events_for_scoring
+            from hornet.db.repos.observation import list_observations_for_scoring
+            from hornet.domain.observation import Observation
+
+            dispatched_iso3s = {
+                a.country_iso3
+                for tier_list in (
+                    dispatch_result.escalate,
+                    dispatch_result.alert,
+                    dispatch_result.watch,
+                )
+                for a in tier_list
+            }
+            obs_by_country: dict[str, list[Observation]] = {}
+            events_by_country: dict[str, list[Any]] = {}
+            if dispatched_iso3s:
+                async with session_scope() as session:
+                    for iso3 in dispatched_iso3s:
+                        obs_by_country[iso3] = await list_observations_for_scoring(
+                            session, country_iso3=iso3
+                        )
+                        events_by_country[iso3] = await list_events_for_scoring(
+                            session, country_iso3=iso3
+                        )
+
+            _log(
+                "llm",
+                f"Generating narratives for {len(dispatched_iso3s)} dispatched countries...",
+            )
             await _run_llm(
                 score_results,
                 dispatch_result,
