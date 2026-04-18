@@ -479,14 +479,12 @@ async def _run_ingest(
 
             adapters["googlenews"] = await build_googlenews_adapter(session)
 
-    # Numeric sources
+    # Adapters run concurrently: each has its own rate limiter, HTTP session,
+    # and DB session, so wall time is max() not sum().
     numeric_sources = ["fred", "worldbank", "yfinance", "oecd", "bis", "imf"]
-    total_obs = 0
-    for src in numeric_sources:
-        adapter = adapters.get(src)
-        if adapter is None:
-            continue
-        # Filter countries for sources with limited coverage
+    event_sources = ["gdelt", "googlenews"]
+
+    async def _fetch_numeric(src: str, adapter: object) -> int:
         filtered = filter_countries_for_source(src, countries)
         log("ingest", f"Fetching {src} ({len(filtered)} countries)...")  # type: ignore[operator]
         try:
@@ -496,36 +494,42 @@ async def _run_ingest(
                 start=datetime.date(2020, 1, 1),
             )
             result = await run_ingest(adapter, req)  # type: ignore[arg-type]
-            total_obs += result.observations_written
             log(
                 "ingest",
                 f"  {src}: {result.observations_fetched} fetched, {result.observations_written} written",
             )  # type: ignore[operator]
+            return result.observations_written
         except Exception as e:
             log("ingest", f"  {src}: FAILED -- {type(e).__name__}: {e!s:.100}")  # type: ignore[operator]
+            return 0
 
-    # Event sources
-    event_sources = ["gdelt", "googlenews"]
-    total_events = 0
-    for src in event_sources:
-        adapter = adapters.get(src)
-        if adapter is None:
-            continue
+    async def _fetch_event(src: str, adapter: object) -> int:
         log("ingest", f"Fetching {src}...")  # type: ignore[operator]
         try:
             req = FetchRequest(
                 source_id=src,
                 countries_iso3=country_set,
             )
-            events = await adapter.fetch_events(req)  # type: ignore[union-attr]
+            events = await adapter.fetch_events(req)  # type: ignore[attr-defined]
             result = await run_event_ingest(src, events)
-            total_events += result.events_written
             log(
                 "ingest",
                 f"  {src}: {result.events_received} received, {result.events_written} written",
             )  # type: ignore[operator]
+            return result.events_written
         except Exception as e:
             log("ingest", f"  {src}: FAILED -- {type(e).__name__}: {e!s:.100}")  # type: ignore[operator]
+            return 0
+
+    numeric_task = asyncio.gather(
+        *(_fetch_numeric(src, adapters[src]) for src in numeric_sources if src in adapters)
+    )
+    event_task = asyncio.gather(
+        *(_fetch_event(src, adapters[src]) for src in event_sources if src in adapters)
+    )
+    numeric_counts, event_counts = await asyncio.gather(numeric_task, event_task)
+    total_obs = sum(numeric_counts)
+    total_events = sum(event_counts)
 
     log("ingest", f"Total: {total_obs} observations, {total_events} events")  # type: ignore[operator]
 

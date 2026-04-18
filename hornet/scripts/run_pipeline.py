@@ -122,47 +122,59 @@ async def main() -> None:
             ("IMF", imf),
         ]
 
-        total_obs = 0
-        for name, adapter in numeric_adapters:
-            _log("ingest", f"Fetching {name}...")
-            try:
-                req = FetchRequest(
-                    source_id=adapter.source_id,
-                    countries_iso3=frozenset(INGEST_COUNTRIES),
-                    start=datetime.date(2020, 1, 1),
-                )
-                result = await run_ingest(adapter, req)
-                total_obs += result.observations_written
-                _log(
-                    "ingest",
-                    f"  {name}: {result.observations_fetched} fetched, {result.observations_written} written",
-                )
-            except Exception as e:
-                _log("ingest", f"  {name}: FAILED -- {type(e).__name__}: {e!s:.100}")
-
         # Event sources (produce EventRecords)
         event_adapters = [
             ("GDELT", gdelt),
             ("GoogleNews", googlenews),
         ]
 
-        total_events = 0
-        for name, adapter in event_adapters:
+        # Adapters run concurrently: each has its own rate limiter, HTTP
+        # session, and DB session, so wall time is max() not sum().
+        async def _fetch_numeric(name: str, adapter: object) -> int:
             _log("ingest", f"Fetching {name}...")
             try:
                 req = FetchRequest(
-                    source_id=adapter.source_id,
+                    source_id=adapter.source_id,  # type: ignore[attr-defined]
+                    countries_iso3=frozenset(INGEST_COUNTRIES),
+                    start=datetime.date(2020, 1, 1),
+                )
+                result = await run_ingest(adapter, req)  # type: ignore[arg-type]
+                _log(
+                    "ingest",
+                    f"  {name}: {result.observations_fetched} fetched, {result.observations_written} written",
+                )
+                return result.observations_written
+            except Exception as e:
+                _log("ingest", f"  {name}: FAILED -- {type(e).__name__}: {e!s:.100}")
+                return 0
+
+        async def _fetch_event(name: str, adapter: object) -> int:
+            _log("ingest", f"Fetching {name}...")
+            try:
+                req = FetchRequest(
+                    source_id=adapter.source_id,  # type: ignore[attr-defined]
                     countries_iso3=frozenset(INGEST_COUNTRIES),
                 )
-                events = await adapter.fetch_events(req)
-                result = await run_event_ingest(adapter.source_id, events)
-                total_events += result.events_written
+                events = await adapter.fetch_events(req)  # type: ignore[attr-defined]
+                result = await run_event_ingest(adapter.source_id, events)  # type: ignore[attr-defined]
                 _log(
                     "ingest",
                     f"  {name}: {result.events_received} received, {result.events_written} written",
                 )
+                return result.events_written
             except Exception as e:
                 _log("ingest", f"  {name}: FAILED -- {type(e).__name__}: {e!s:.100}")
+                return 0
+
+        numeric_task = asyncio.gather(
+            *(_fetch_numeric(name, adapter) for name, adapter in numeric_adapters)
+        )
+        event_task = asyncio.gather(
+            *(_fetch_event(name, adapter) for name, adapter in event_adapters)
+        )
+        numeric_counts, event_counts = await asyncio.gather(numeric_task, event_task)
+        total_obs = sum(numeric_counts)
+        total_events = sum(event_counts)
 
         _log("ingest", f"Total: {total_obs} observations, {total_events} events written")
 
