@@ -149,21 +149,36 @@ def build_observation_context(
     if not observations:
         return ("No observation data available for this country.", (), (), ())
 
+    # Separate actuals from forecasts
+    actuals: list[Observation] = []
+    forecasts: list[Observation] = []
+    for obs in observations:
+        if obs.frequency == "forecast":
+            forecasts.append(obs)
+        else:
+            actuals.append(obs)
+
     # Group by indicator_code, then take most recent N per indicator
     by_indicator: dict[str, list[Observation]] = defaultdict(list)
-    for obs in observations:
+    for obs in actuals:
         by_indicator[obs.indicator_code].append(obs)
+
+    by_indicator_forecast: dict[str, list[Observation]] = defaultdict(list)
+    for obs in forecasts:
+        by_indicator_forecast[obs.indicator_code].append(obs)
 
     # Sort each group by date descending, take most recent N
     for code in by_indicator:
         by_indicator[code].sort(key=lambda o: o.date, reverse=True)
         by_indicator[code] = by_indicator[code][:max_points_per_indicator]
 
+    for code in by_indicator_forecast:
+        by_indicator_forecast[code].sort(key=lambda o: o.date)
+        by_indicator_forecast[code] = by_indicator_forecast[code][:max_points_per_indicator]
+
     # Order indicators: by dimension priority if given, else alphabetically
     indicator_codes = sorted(by_indicator.keys())
-    # (Dimension priority ordering would require the indicator-to-dimension
-    #  mapping from source_indicator table. For now, alphabetical is stable
-    #  and deterministic. The template can override ordering if needed.)
+    forecast_codes = sorted(by_indicator_forecast.keys())
 
     lines: list[str] = []
     citations: list[Citation] = []
@@ -172,9 +187,13 @@ def build_observation_context(
     ref_number = 1
     tokens_used = 0
 
+    # Actuals first
+    if actuals:
+        lines.append("=== ACTUAL DATA ===")
+        tokens_used += _TOKENS_PER_SECTION_HEADER
+
     for code in indicator_codes:
         obs_list = by_indicator[code]
-        # Estimate tokens for this indicator's section
         section_tokens = _TOKENS_PER_SECTION_HEADER + (_TOKENS_PER_CITATION_LINE * len(obs_list))
 
         if tokens_used + section_tokens > token_budget:
@@ -205,6 +224,47 @@ def build_observation_context(
             ref_number += 1
 
         tokens_used += section_tokens
+
+    # Forecasts section (IMF WEO projections, etc.)
+    if forecast_codes and tokens_used < token_budget:
+        lines.append("")
+        lines.append("=== IMF/FORECAST PROJECTIONS (not actuals) ===")
+        tokens_used += _TOKENS_PER_SECTION_HEADER * 2
+
+        for code in forecast_codes:
+            obs_list = by_indicator_forecast[code]
+            section_tokens = _TOKENS_PER_SECTION_HEADER + (
+                _TOKENS_PER_CITATION_LINE * len(obs_list)
+            )
+
+            if tokens_used + section_tokens > token_budget:
+                truncated.append(f"{code} (forecast)")
+                continue
+
+            included.append(f"{code} (forecast)")
+            for obs in obs_list:
+                formatted_value = _format_value(obs.value, obs.indicator_code)
+                display_label = (
+                    f"{obs.indicator_code} ({obs.country_iso3}, "
+                    f"{_format_date(obs.date)}, IMF forecast): {formatted_value}"
+                )
+                line = f"  [{ref_number}] {display_label} (source: {obs.source_id})"
+                lines.append(line)
+                citations.append(
+                    Citation(
+                        ref_number=ref_number,
+                        country_iso3=obs.country_iso3,
+                        indicator_code=obs.indicator_code,
+                        source_id=obs.source_id,
+                        date=obs.date,
+                        value=obs.value,
+                        vintage=obs.vintage,
+                        display_label=display_label,
+                    )
+                )
+                ref_number += 1
+
+            tokens_used += section_tokens
 
     context_block = "\n".join(lines) if lines else "No observation data available."
 

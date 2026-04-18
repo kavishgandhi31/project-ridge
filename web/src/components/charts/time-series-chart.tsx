@@ -17,6 +17,7 @@ import {
   Tooltip,
 } from "recharts";
 import { formatObservationValue } from "@/lib/format";
+import { getIndicatorLabel } from "@/lib/indicator-labels";
 import type { Observation } from "@/lib/types";
 
 interface TimeSeriesChartProps {
@@ -87,7 +88,7 @@ export function TimeSeriesChart({
             }}
             formatter={(value) => [
               formatObservationValue(Number(value), code),
-              code,
+              getIndicatorLabel(code),
             ]}
             labelFormatter={(label) => String(label)}
           />

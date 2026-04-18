@@ -8,6 +8,7 @@
 
 import type { Observation } from "@/lib/types";
 import { formatDate, formatObservationValue } from "@/lib/format";
+import { getIndicatorLabel } from "@/lib/indicator-labels";
 
 interface ObservationTableProps {
   observations: Observation[];
@@ -37,17 +38,29 @@ export function ObservationTable({ observations, className }: ObservationTablePr
             </tr>
           </thead>
           <tbody>
-            {observations.map((obs, i) => (
-              <tr key={`${obs.indicator_code}-${obs.date}-${i}`} className="border-b last:border-0">
-                <td className="px-3 py-1.5 font-mono">{obs.indicator_code}</td>
-                <td className="px-3 py-1.5 text-muted-foreground">{obs.source_id}</td>
-                <td className="px-3 py-1.5 text-right font-mono tabular-nums">
-                  {formatObservationValue(obs.value, obs.indicator_code)}
-                </td>
-                <td className="px-3 py-1.5 text-muted-foreground">{formatDate(obs.date)}</td>
-                <td className="px-3 py-1.5 text-muted-foreground">{obs.frequency}</td>
-              </tr>
-            ))}
+            {observations.map((obs, i) => {
+              const isForecast = obs.frequency === "forecast";
+              return (
+                <tr
+                  key={`${obs.indicator_code}-${obs.date}-${i}`}
+                  className={`border-b last:border-0 ${isForecast ? "opacity-60" : ""}`}
+                >
+                  <td className="px-3 py-1.5">{getIndicatorLabel(obs.indicator_code)}</td>
+                  <td className="px-3 py-1.5 text-muted-foreground">{obs.source_id}</td>
+                  <td className="px-3 py-1.5 text-right font-mono tabular-nums">
+                    {formatObservationValue(obs.value, obs.indicator_code)}
+                  </td>
+                  <td className="px-3 py-1.5 text-muted-foreground">{formatDate(obs.date)}</td>
+                  <td className="px-3 py-1.5 text-muted-foreground">
+                    {isForecast ? (
+                      <span className="text-amber-600 dark:text-amber-400">forecast</span>
+                    ) : (
+                      obs.frequency
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

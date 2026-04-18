@@ -18,13 +18,13 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScoreGauge } from "@/components/country/score-gauge";
 import { DimensionBars } from "@/components/country/dimension-bars";
-import { ObservationTable } from "@/components/country/observation-table";
 import { TimeSeriesChart } from "@/components/charts/time-series-chart";
 import { NarrativeBlock } from "@/components/narrative/narrative-block";
 import { AskPanel } from "@/components/ask/ask-panel";
 import { useCountries, useScores, useAlerts, useNarratives, useObservations } from "@/lib/api/hooks";
 import { useDensity } from "@/lib/density";
 import { formatScore, formatPercent, formatRegion, formatRelativeTime, tierBgColor, tierColor } from "@/lib/format";
+import { getIndicatorLabel } from "@/lib/indicator-labels";
 import type { Observation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
@@ -57,10 +57,11 @@ export function CountryDashboard({ iso3 }: CountryDashboardProps) {
 
   const tier = latestAlert?.effective_tier;
 
-  // Group observations by indicator for charts
+  // Group observations by indicator for charts -- exclude forecasts
   const indicatorGroups = new Map<string, Observation[]>();
   if (observations) {
     for (const obs of observations) {
+      if (obs.frequency === "forecast") continue;
       const existing = indicatorGroups.get(obs.indicator_code) ?? [];
       existing.push(obs);
       indicatorGroups.set(obs.indicator_code, existing);
@@ -229,8 +230,8 @@ export function CountryDashboard({ iso3 }: CountryDashboardProps) {
             <Tabs defaultValue={chartIndicators[0]?.[0]}>
               <TabsList>
                 {chartIndicators.map(([code]) => (
-                  <TabsTrigger key={code} value={code} className="text-xs font-mono">
-                    {code}
+                  <TabsTrigger key={code} value={code} className="text-xs">
+                    {getIndicatorLabel(code)}
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -249,19 +250,6 @@ export function CountryDashboard({ iso3 }: CountryDashboardProps) {
         </Card>
       )}
 
-      {/* Raw observations table -- Research only */}
-      {showAtLeast("research") && observations && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              Raw Observations ({observations.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ObservationTable observations={observations} />
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
