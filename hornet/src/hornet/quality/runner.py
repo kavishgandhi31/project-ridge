@@ -48,6 +48,7 @@ async def run_quality_checks(
     prior_scores: Sequence[ScoreResult] | None = None,
     reference_date: datetime.date | None = None,
     config: QualityConfig | None = None,
+    skip_checks: frozenset[str] = frozenset(),
 ) -> list[QualityIssue]:
     """Execute all quality checks and persist results.
 
@@ -104,22 +105,33 @@ async def run_quality_checks(
     all_issues: list[QualityIssue] = []
 
     # --- Observation-based checks (Controls #1, #3, #5, #6, #7, #8, #10) ---
+    # skip_checks takes check names as its elements: "outlier", "flatline",
+    # "structural_break", "cross_source", "revision", "date_consistency",
+    # "source_staleness". Callers skip checks that are known-expensive at
+    # their scale (e.g. cross_source's O(sources^2) grouping at all-countries).
     if observations is not None:
-        all_issues.extend(detect_outliers(observations, config, run_id, detected_at))
-        all_issues.extend(detect_flatlines(observations, config, run_id, detected_at))
-        all_issues.extend(detect_structural_breaks(observations, config, run_id, detected_at))
-        all_issues.extend(validate_cross_source(observations, config, run_id, detected_at))
-        all_issues.extend(detect_revisions(observations, config, run_id, detected_at))
-        all_issues.extend(check_date_consistency(observations, config, run_id, detected_at))
-        all_issues.extend(
-            check_source_staleness(
-                observations,
-                reference_date,
-                config,
-                run_id,
-                detected_at,
+        if "outlier" not in skip_checks:
+            all_issues.extend(detect_outliers(observations, config, run_id, detected_at))
+        if "flatline" not in skip_checks:
+            all_issues.extend(detect_flatlines(observations, config, run_id, detected_at))
+        if "structural_break" not in skip_checks:
+            all_issues.extend(detect_structural_breaks(observations, config, run_id, detected_at))
+        if "cross_source" not in skip_checks:
+            all_issues.extend(validate_cross_source(observations, config, run_id, detected_at))
+        if "revision" not in skip_checks:
+            all_issues.extend(detect_revisions(observations, config, run_id, detected_at))
+        if "date_consistency" not in skip_checks:
+            all_issues.extend(check_date_consistency(observations, config, run_id, detected_at))
+        if "source_staleness" not in skip_checks:
+            all_issues.extend(
+                check_source_staleness(
+                    observations,
+                    reference_date,
+                    config,
+                    run_id,
+                    detected_at,
+                )
             )
-        )
 
     # --- Score-based checks (Controls #4, #9) ---
     if current_scores and prior_scores:

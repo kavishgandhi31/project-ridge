@@ -225,9 +225,23 @@ async def main() -> None:
         # =============================================================
         # Stage 3: QUALITY
         # =============================================================
+        from hornet.db.repos.observation import list_all_observations_for_quality
+
+        _log("quality", "Loading observations for quality checks...")
+        async with session_scope() as session:
+            all_obs = await list_all_observations_for_quality(session)
+        _log("quality", f"  loaded {len(all_obs)} observations")
+
         _log("quality", "Running quality checks...")
         async with session_scope() as session:
-            quality_issues = await run_quality_checks(session, reference_date=today)
+            quality_issues = await run_quality_checks(
+                session,
+                observations=all_obs,
+                reference_date=today,
+            )
+        # Free the big list before score stage per-country loads start.
+        del all_obs
+
         n_critical = sum(1 for i in quality_issues if i.severity == "critical")
         n_warning = sum(1 for i in quality_issues if i.severity == "warning")
         _log(

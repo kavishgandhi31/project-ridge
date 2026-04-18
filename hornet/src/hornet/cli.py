@@ -257,11 +257,36 @@ async def _run_pipeline(
 
         # --- QUALITY ---
         if "quality" in stages:
+            from hornet.db.repos.observation import list_all_observations_for_quality
             from hornet.quality.runner import run_quality_checks
+
+            _log("quality", "Loading observations for quality checks...")
+            async with session_scope() as session:
+                all_obs = await list_all_observations_for_quality(session)
+            _log("quality", f"  loaded {len(all_obs)} observations")
+
+            # cross_source has O(sources^2) grouping per (country, indicator,
+            # date). At all-countries scale (~500k obs, ~200 countries x ~50
+            # indicators x several sources), that cost becomes large enough
+            # to dominate the stage. Skip it on all-countries runs; the
+            # value of cross-source divergence detection is small for low-
+            # priority countries and better handled in a dedicated audit.
+            skip: frozenset[str] = frozenset()
+            if all_countries:
+                skip = frozenset({"cross_source"})
+                _log("quality", "  skipping cross_source check (all-countries scale)")
 
             _log("quality", "Running quality checks...")
             async with session_scope() as session:
-                quality_issues = await run_quality_checks(session, reference_date=today)
+                quality_issues = await run_quality_checks(
+                    session,
+                    observations=all_obs,
+                    reference_date=today,
+                    skip_checks=skip,
+                )
+            # Free the big list before score stage starts loading per-country.
+            del all_obs
+
             n_crit = sum(1 for i in quality_issues if i.severity == "critical")
             n_warn = sum(1 for i in quality_issues if i.severity == "warning")
             _log("quality", f"  {len(quality_issues)} issues ({n_crit} critical, {n_warn} warning)")

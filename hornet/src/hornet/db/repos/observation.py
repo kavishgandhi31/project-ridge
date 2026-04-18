@@ -146,3 +146,72 @@ async def list_observations_for_scoring(
             seen[key] = row
 
     return [row.to_domain() for row in seen.values()]
+
+
+async def list_all_observations_for_quality(
+    session: AsyncSession,
+    *,
+    start_date: datetime.date | None = None,
+) -> list[Observation]:
+    """Return latest-vintage observations across all countries for scored indicators.
+
+    Used by the quality stage to run observation-based checks (outlier,
+    flatline, structural break, cross-source divergence, revision,
+    date consistency, source staleness, series audit) over the full
+    dataset in a single bulk query. Called once per pipeline run,
+    freed before the score stage starts.
+
+    Same filtering semantics as ``list_observations_for_scoring`` but
+    with no country filter and no global-signal expansion (each obs
+    appears exactly once at its recorded country_iso3).
+    """
+    scored_indicators = (
+        select(
+            SourceIndicatorRow.source_id,
+            SourceIndicatorRow.indicator_code,
+        )
+        .where(
+            and_(
+                SourceIndicatorRow.enabled.is_(True),
+                SourceIndicatorRow.dimension.is_not(None),
+            )
+        )
+        .subquery()
+    )
+
+    stmt = (
+        select(ObservationRow)
+        .where(
+            select(text("1"))
+            .where(
+                and_(
+                    scored_indicators.c.source_id == ObservationRow.source_id,
+                    scored_indicators.c.indicator_code == ObservationRow.indicator_code,
+                )
+            )
+            .correlate(ObservationRow)
+            .exists()
+        )
+        .order_by(
+            ObservationRow.country_iso3,
+            ObservationRow.indicator_code,
+            ObservationRow.source_id,
+            ObservationRow.date,
+            ObservationRow.vintage.desc(),
+        )
+    )
+
+    if start_date is not None:
+        stmt = stmt.where(ObservationRow.date >= start_date)
+
+    result = await session.execute(stmt)
+    rows = result.scalars().all()
+
+    seen: dict[tuple[str, str, str, datetime.date], ObservationRow] = {}
+    for row in rows:
+        key = (row.country_iso3, row.indicator_code, row.source_id, row.date)
+        existing = seen.get(key)
+        if existing is None or row.vintage > existing.vintage:
+            seen[key] = row
+
+    return [row.to_domain() for row in seen.values()]
