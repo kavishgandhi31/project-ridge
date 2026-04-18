@@ -1,28 +1,32 @@
-"""IMF data source adapter -- ports v1's IMFClient to Hornet.
+"""IMF data source adapter -- new SDMX 3.0 API backend.
 
-Covers three distinct IMF datasets via a single adapter with three
-fetch paths:
+The IMF retired its legacy SDMX-JSON 1.0 endpoint at ``dataservices.imf.org``
+in June 2025 and restructured the IFS dataset into topical dataflows (CPI,
+ER, MFS_IR, MFS_MA, IRFCL). This adapter targets the replacement SDMX 3.0
+API at ``api.imf.org`` and uses ``parse_sdmx3_json`` for responses.
 
-1. **WEO** (World Economic Outlook) -- semi-annual macro forecasts.
-   Simple JSON REST API at ``https://www.imf.org/external/datamapper``.
-   One call returns all countries for one indicator. Frequency =
-   "forecast" (a semantic tag, not a calendar cadence).
+Three distinct fetch paths, routed by the ``source_native_code`` prefix:
 
-2. **IFS** (International Financial Statistics) -- monthly/quarterly
-   actuals. SDMX CompactData format at ``dataservices.imf.org``.
-   Per-country per-indicator. Tries monthly first, falls back to
-   quarterly if empty.
+1. **WEO** (prefix ``weo:``) -- World Economic Outlook forecasts at
+   ``imf.org/external/datamapper``. A single REST call returns all countries
+   for one indicator. Frequency = "forecast".
 
-3. **BOP** (Balance of Payments) -- quarterly flows. Same SDMX
-   endpoint as IFS, different dataset. Per-country per-indicator.
+2. **Actuals via SDMX 3.0** (prefixes ``cpi:``, ``er:``, ``mfs_ir:``,
+   ``mfs_ma:``, ``irfcl:``, ``bop:``) -- live time series from
+   ``api.imf.org/external/sdmx/3.0``. Per-country per-indicator requests
+   with fully specified keys. The prefix names the dataflow; the key
+   after the colon is the full dimension key after COUNTRY.
 
-Routing: the ``source_native_code`` in the seed data uses a prefix
-to identify the sub-API: ``weo:NGDP_RPCH``, ``ifs:PCPI_IX``,
-``bop:BCA_BP6_USD``. The adapter parses the prefix to dispatch to
-the right fetch method.
+The YAML ``source_native_code`` encodes the dataflow + full key so the
+adapter doesn't need a hardcoded mapping:
 
-Coverage: 190+ countries for WEO, ~150 for IFS/BOP. All 5 pilot
-countries are covered (including NGA, unlike OECD/BIS).
+    weo:NGDP_RPCH                          -> WEO indicator id
+    cpi:CPI._T.IX.M                        -> IMF.STA:CPI / {C}.CPI._T.IX.M
+    er:XDC_USD.PA_RT.M                     -> IMF.STA:ER  / {C}.XDC_USD.PA_RT.M
+    mfs_ir:MFS162_RT_PT_A_PT.M             -> IMF.STA:MFS_IR / {C}.MFS162_RT_PT_A_PT.M
+    mfs_ma:BM_MAI.XDC.M                    -> IMF.STA:MFS_MA / {C}.BM_MAI.XDC.M
+    irfcl:IRFCLDT1_IRFCL65_USD.S1XS1311.M  -> IMF.STA:IRFCL / {C}.IRFCLDT1_IRFCL65_USD.S1XS1311.M
+    bop:NETCD_T.CAB.USD.Q                  -> IMF.STA:BOP / {C}.NETCD_T.CAB.USD.Q
 """
 
 from __future__ import annotations
@@ -38,7 +42,7 @@ import structlog
 
 from hornet.adapters.base import HealthReport
 from hornet.adapters.base_client import BaseClient
-from hornet.adapters.sdmx import parse_sdmx_json
+from hornet.adapters.sdmx3 import parse_sdmx3_json
 from hornet.domain import (
     FetchRequest,
     Observation,
@@ -50,20 +54,39 @@ logger = structlog.get_logger(__name__)
 
 
 WEO_BASE_URL = "https://www.imf.org/external/datamapper/api/v1"
-IMF_SDMX_BASE = "http://dataservices.imf.org/REST/SDMX_JSON.svc"
+IMF_SDMX3_BASE = "https://api.imf.org/external/sdmx/3.0"
+IMF_SDMX3_AGENCY = "IMF.STA"
+
+# SDMX 3.0 REST requires explicit content negotiation; without this header
+# the server returns structure-only skeletons with no observations.
+IMF_SDMX3_HEADERS = {
+    "Accept": "application/vnd.sdmx.data+json;version=2.0.0",
+}
+
+# Prefix -> SDMX 3.0 dataflow ID. "weo" is handled separately (different endpoint).
+SDMX3_PREFIXES: dict[str, str] = {
+    "cpi": "CPI",
+    "er": "ER",
+    "mfs_ir": "MFS_IR",
+    "mfs_ma": "MFS_MA",
+    "irfcl": "IRFCL",
+    "bop": "BOP",
+}
+
+# How much history to request per series. SDMX 3.0's only working time filter
+# is ``lastNObservations``; start/endPeriod are silently ignored. 60 gives us
+# 5 years of monthly or 15 years of quarterly -- enough for any downstream
+# rolling window computation.
+SDMX3_LAST_N_OBS = 60
 
 
 class IMFAdapter(BaseClient):
-    """Fetches IMF WEO forecasts, IFS actuals, and BOP flows.
+    """Fetches IMF WEO forecasts and SDMX 3.0 actuals (CPI, ER, MFS, IRFCL, BOP).
 
-    Satisfies the ``SourceAdapter`` protocol. Inherits HTTP session,
-    rate limiting, and retries from ``BaseClient``. The WEO base URL
-    is used for the initial BaseClient setup; IFS/BOP use their own
-    SDMX base URL directly.
-
-    Indicators are classified by their ``source_native_code`` prefix:
-    ``weo:`` for WEO, ``ifs:`` for IFS, ``bop:`` for BOP. The prefix
-    is stripped to get the native API identifier.
+    Satisfies the ``SourceAdapter`` protocol. Inherits HTTP session, rate
+    limiting, and retries from ``BaseClient``. The default_headers wire the
+    mandatory SDMX 3.0 Accept header onto every outbound request; WEO is
+    tolerant to the extra header.
     """
 
     source_id: str = "imf"
@@ -83,6 +106,7 @@ class IMFAdapter(BaseClient):
             timeout_seconds=timeout_seconds,
             max_retries=max_retries,
             transport=transport,
+            default_headers=IMF_SDMX3_HEADERS,
         )
         self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(
             self._validate_indicators(indicators)
@@ -90,29 +114,25 @@ class IMFAdapter(BaseClient):
         self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = self._group_by_country(
             self._indicators
         )
+        self._weo_specs: list[SourceIndicatorSpec] = [
+            s for s in self._indicators if self._get_prefix(s.source_native_code) == "weo"
+        ]
+        self._sdmx3_specs: list[SourceIndicatorSpec] = [
+            s for s in self._indicators if self._get_prefix(s.source_native_code) in SDMX3_PREFIXES
+        ]
 
-        self._weo_specs: list[SourceIndicatorSpec] = []
-        self._ifs_specs: list[SourceIndicatorSpec] = []
-        self._bop_specs: list[SourceIndicatorSpec] = []
-        for spec in self._indicators:
-            prefix = self._get_prefix(spec.source_native_code)
-            if prefix == "weo":
-                self._weo_specs.append(spec)
-            elif prefix == "ifs":
-                self._ifs_specs.append(spec)
-            elif prefix == "bop":
-                self._bop_specs.append(spec)
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
 
     @staticmethod
     def _get_prefix(native_code: str) -> str:
-        """Extract the sub-API prefix from a source_native_code."""
         if ":" in native_code:
             return native_code.split(":", 1)[0].lower()
         return ""
 
     @staticmethod
-    def _get_api_id(native_code: str) -> str:
-        """Extract the API-specific identifier after the prefix."""
+    def _get_key(native_code: str) -> str:
         if ":" in native_code:
             return native_code.split(":", 1)[1]
         return native_code
@@ -132,10 +152,11 @@ class IMFAdapter(BaseClient):
                 )
                 continue
             prefix = cls._get_prefix(spec.source_native_code)
-            if prefix not in ("weo", "ifs", "bop"):
+            if prefix != "weo" and prefix not in SDMX3_PREFIXES:
                 logger.warning(
                     "imf.indicator.unknown_prefix",
                     native_code=spec.source_native_code,
+                    prefix=prefix,
                 )
                 continue
             kept.append(spec)
@@ -151,6 +172,10 @@ class IMFAdapter(BaseClient):
                 by_country[iso3].append(spec)
         return {iso3: tuple(specs) for iso3, specs in by_country.items()}
 
+    # ------------------------------------------------------------------
+    # SourceAdapter protocol
+    # ------------------------------------------------------------------
+
     async def discover(self) -> SourceManifest:
         return SourceManifest(
             source_id=self.source_id,
@@ -158,23 +183,26 @@ class IMFAdapter(BaseClient):
             discovered_at=datetime.datetime.now(datetime.UTC),
         )
 
-    async def fetch(self, request: FetchRequest) -> list[Observation]:
-        """Fetch observations across WEO, IFS, and BOP sub-APIs.
+    async def health(self) -> HealthReport:
+        return HealthReport(source_id=self.source_id, healthy=True)
 
-        WEO: bulk fetch (one request returns all countries per indicator).
-        IFS/BOP: per-country per-indicator.
+    async def fetch(self, request: FetchRequest) -> list[Observation]:
+        """Fetch observations across WEO and SDMX 3.0 sub-APIs.
+
+        WEO: bulk fetch per indicator (one call per indicator returns all
+        countries). SDMX 3.0: per-country per-indicator (one call per series).
         """
         ingested_at = datetime.datetime.now(datetime.UTC)
         requested_countries = request.countries_iso3 or frozenset(self._by_country.keys())
 
         results: list[Observation] = []
 
-        # WEO: bulk fetch per indicator
+        # ---- WEO: bulk per indicator ----
         for spec in self._weo_specs:
             if request.indicator_codes and spec.indicator_code not in request.indicator_codes:
                 continue
-            api_id = self._get_api_id(spec.source_native_code)
-            weo_df = await self._fetch_weo(api_id)
+            indicator_id = self._get_key(spec.source_native_code)
+            weo_df = await self._fetch_weo(indicator_id)
             if weo_df.empty or "iso3" not in weo_df.columns:
                 continue
 
@@ -202,60 +230,30 @@ class IMFAdapter(BaseClient):
                     )
                 )
 
-        # IFS + BOP: per-country per-indicator
+        # ---- SDMX 3.0: per-country per-indicator ----
         for iso3 in requested_countries:
             specs = self._by_country.get(iso3)
             if specs is None:
                 continue
 
             for spec in specs:
+                prefix = self._get_prefix(spec.source_native_code)
+                if prefix not in SDMX3_PREFIXES:
+                    continue
                 if request.indicator_codes and spec.indicator_code not in request.indicator_codes:
                     continue
 
-                prefix = self._get_prefix(spec.source_native_code)
-                api_id = self._get_api_id(spec.source_native_code)
-
-                if prefix == "weo":
-                    continue  # already handled above
-                elif prefix == "ifs":
-                    df = await self._fetch_ifs(api_id, iso3)
-                elif prefix == "bop":
-                    df = await self._fetch_bop(api_id, iso3)
-                else:
-                    continue
-
-                for _, row in df.iterrows():
-                    obs_date = row["date"]
-                    if hasattr(obs_date, "date"):
-                        obs_date = obs_date.date()
-
-                    results.append(
-                        Observation(
-                            country_iso3=iso3,
-                            indicator_code=spec.indicator_code,
-                            source_id=self.source_id,
-                            date=obs_date,
-                            value=float(row["value"]),
-                            frequency=spec.frequency,
-                            vintage=ingested_at,
-                            ingested_at=ingested_at,
-                        )
-                    )
+                observations = await self._fetch_sdmx3(iso3, spec, ingested_at)
+                results.extend(observations)
 
         return results
 
-    async def health(self) -> HealthReport:
-        return HealthReport(source_id=self.source_id, healthy=True)
-
     # ------------------------------------------------------------------
-    # WEO fetch + parse
+    # WEO fetch + parse (unchanged from v1 -- still works)
     # ------------------------------------------------------------------
 
     async def _fetch_weo(self, indicator_id: str) -> pd.DataFrame:
-        """Fetch a WEO indicator for all countries (one bulk call).
-
-        Returns DataFrame with columns: iso3, date, value.
-        """
+        """Fetch one WEO indicator for all countries in a single bulk request."""
         url = f"{WEO_BASE_URL}/{indicator_id}"
         try:
             data = await self.get_json(url)
@@ -267,11 +265,10 @@ class IMFAdapter(BaseClient):
 
     @staticmethod
     def _parse_weo(data: Any, indicator_id: str) -> pd.DataFrame:
-        """Parse WEO JSON: {values: {indicator: {iso3: {year: value}}}}.
+        """Parse WEO JSON: ``{values: {indicator: {iso3: {year: value}}}}``.
 
-        Ported verbatim from v1. WEO response shape varies slightly
-        between endpoints; we check both ``data.values.{id}`` and
-        ``data.{id}`` as fallback.
+        WEO response shape varies slightly between endpoints; check both
+        ``data.values.{id}`` and ``data.{id}`` as fallback.
         """
         if not isinstance(data, dict):
             return pd.DataFrame(columns=["iso3", "date", "value"])
@@ -308,60 +305,55 @@ class IMFAdapter(BaseClient):
         return df
 
     # ------------------------------------------------------------------
-    # IFS fetch (SDMX CompactData)
+    # SDMX 3.0 fetch + adapt
     # ------------------------------------------------------------------
 
-    async def _fetch_ifs(self, indicator_id: str, iso3: str) -> pd.DataFrame:
-        """Fetch an IFS indicator for one country.
+    async def _fetch_sdmx3(
+        self,
+        iso3: str,
+        spec: SourceIndicatorSpec,
+        ingested_at: datetime.datetime,
+    ) -> list[Observation]:
+        """Fetch a single SDMX 3.0 series and return Observation records."""
+        prefix = self._get_prefix(spec.source_native_code)
+        flow = SDMX3_PREFIXES[prefix]
+        key_suffix = self._get_key(spec.source_native_code)
+        full_key = f"{iso3}.{key_suffix}"
+        url = f"{IMF_SDMX3_BASE}/data/dataflow/{IMF_SDMX3_AGENCY}/{flow}/+/{full_key}"
+        params: dict[str, Any] = {"lastNObservations": SDMX3_LAST_N_OBS}
 
-        Tries monthly frequency first; falls back to quarterly if
-        the monthly response is empty (some IFS series are quarterly
-        only). Ported from v1.
-        """
-        current_year = datetime.datetime.now(datetime.UTC).year
-        params: dict[str, str] = {
-            "startPeriod": "2010",
-            "endPeriod": str(current_year),
-        }
-
-        url_m = f"{IMF_SDMX_BASE}/CompactData/IFS/M.{iso3}.{indicator_id}"
         try:
-            data = await self.get_json(url_m, params=params)
-            df = parse_sdmx_json(data)
-            if not df.empty:
-                return df
+            payload = await self.get_json(url, params=params)
         except Exception as exc:
             logger.debug(
-                "imf.ifs.monthly_failed", iso3=iso3, indicator=indicator_id, error=str(exc)
+                "imf.sdmx3.fetch_failed",
+                flow=flow,
+                country=iso3,
+                indicator=spec.indicator_code,
+                error=str(exc),
             )
+            return []
 
-        # Fallback to quarterly
-        url_q = f"{IMF_SDMX_BASE}/CompactData/IFS/Q.{iso3}.{indicator_id}"
-        try:
-            data_q = await self.get_json(url_q, params=params)
-            return parse_sdmx_json(data_q)
-        except Exception as exc:
+        records = parse_sdmx3_json(payload)
+        if not records:
             logger.debug(
-                "imf.ifs.quarterly_failed", iso3=iso3, indicator=indicator_id, error=str(exc)
+                "imf.sdmx3.empty",
+                flow=flow,
+                country=iso3,
+                indicator=spec.indicator_code,
             )
-            return pd.DataFrame(columns=["date", "value"])
+            return []
 
-    # ------------------------------------------------------------------
-    # BOP fetch (SDMX CompactData)
-    # ------------------------------------------------------------------
-
-    async def _fetch_bop(self, indicator_id: str, iso3: str) -> pd.DataFrame:
-        """Fetch a BOP indicator for one country (quarterly)."""
-        current_year = datetime.datetime.now(datetime.UTC).year
-        params: dict[str, str] = {
-            "startPeriod": "2010",
-            "endPeriod": str(current_year),
-        }
-
-        url = f"{IMF_SDMX_BASE}/CompactData/BOP/Q.{iso3}.{indicator_id}"
-        try:
-            data = await self.get_json(url, params=params)
-            return parse_sdmx_json(data)
-        except Exception as exc:
-            logger.debug("imf.bop.failed", iso3=iso3, indicator=indicator_id, error=str(exc))
-            return pd.DataFrame(columns=["date", "value"])
+        return [
+            Observation(
+                country_iso3=iso3,
+                indicator_code=spec.indicator_code,
+                source_id=self.source_id,
+                date=r["date"],
+                value=r["value"],
+                frequency=spec.frequency,
+                vintage=ingested_at,
+                ingested_at=ingested_at,
+            )
+            for r in records
+        ]

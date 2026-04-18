@@ -1,0 +1,351 @@
+{
+  "meta": {},
+  "data": {
+    "dataSets": [
+      {
+        "structure": 0,
+        "action": "Replace",
+        "series": {
+          "0:0:0:0": {
+            "attributes": [
+              0,
+              null,
+              null
+            ],
+            "observations": {
+              "0": [
+                "262466109000",
+                null,
+                0,
+                null
+              ],
+              "1": [
+                "263955357000",
+                null,
+                0,
+                null
+              ],
+              "2": [
+                "265005581000",
+                null,
+                0,
+                null
+              ],
+              "3": [
+                "271117391000",
+                null,
+                0,
+                null
+              ],
+              "4": [
+                "293852833000",
+                null,
+                0,
+                null
+              ],
+              "5": [
+                "305804447000",
+                null,
+                0,
+                null
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "structures": [
+      {
+        "dataSets": [
+          0
+        ],
+        "links": [
+          {
+            "urn": "urn:sdmx:org.sdmx.infomodel.datastructure.Dataflow=IMF.STA:IRFCL(11.0.0)",
+            "title": "Dataflow"
+          },
+          {
+            "urn": "urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=IMF.STA:DSD_IRFCL_PUB(12.0.0)",
+            "title": "DataStructureDefinition"
+          }
+        ],
+        "dimensions": {
+          "series": [
+            {
+              "id": "COUNTRY",
+              "keyPosition": 0,
+              "roles": [],
+              "values": [
+                {
+                  "id": "POL"
+                }
+              ]
+            },
+            {
+              "id": "INDICATOR",
+              "keyPosition": 1,
+              "roles": [],
+              "values": [
+                {
+                  "id": "IRFCLDT1_IRFCL65_USD"
+                }
+              ]
+            },
+            {
+              "id": "SECTOR",
+              "keyPosition": 2,
+              "roles": [],
+              "values": [
+                {
+                  "id": "S1XS1311"
+                }
+              ]
+            },
+            {
+              "id": "FREQUENCY",
+              "keyPosition": 3,
+              "roles": [
+                "FREQ"
+              ],
+              "values": [
+                {
+                  "id": "M"
+                }
+              ]
+            }
+          ],
+          "observation": [
+            {
+              "id": "TIME_PERIOD",
+              "keyPosition": 4,
+              "values": [
+                {
+                  "value": "2025-M09"
+                },
+                {
+                  "value": "2025-M10"
+                },
+                {
+                  "value": "2025-M11"
+                },
+                {
+                  "value": "2025-M12"
+                },
+                {
+                  "value": "2026-M01"
+                },
+                {
+                  "value": "2026-M02"
+                }
+              ]
+            }
+          ]
+        },
+        "measures": {
+          "observation": [
+            {
+              "id": "OBS_VALUE",
+              "roles": []
+            }
+          ]
+        },
+        "attributes": {
+          "dimensionGroup": [
+            {
+              "id": "IRFCL_SECTION",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "FI_MATURITY",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "IRFCL_INSTR",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "IRFCL_CALLS",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "CURRENCY",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "IRFCL_SECT",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "ACCOUNTING_ENTRY",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "IRFCL_DR",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "FLOW_STOCK_ENTRY",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "UNIT",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            }
+          ],
+          "series": [
+            {
+              "id": "SCALE",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY",
+                  "INDICATOR",
+                  "SECTOR",
+                  "FREQUENCY"
+                ]
+              },
+              "values": [
+                {
+                  "id": "6"
+                }
+              ]
+            },
+            {
+              "id": "DECIMALS_DISPLAYED",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY",
+                  "INDICATOR",
+                  "SECTOR",
+                  "FREQUENCY"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "OVERLAP",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY",
+                  "INDICATOR",
+                  "SECTOR",
+                  "FREQUENCY"
+                ]
+              },
+              "values": []
+            }
+          ],
+          "observation": [
+            {
+              "id": "PRECISION",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "observation": {}
+              },
+              "values": []
+            },
+            {
+              "id": "DERIVATION_TYPE",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "observation": {}
+              },
+              "values": [
+                {
+                  "id": "O"
+                }
+              ]
+            },
+            {
+              "id": "STATUS",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "observation": {}
+              },
+              "values": []
+            }
+          ]
+        },
+        "annotations": []
+      }
+    ]
+  }
+}

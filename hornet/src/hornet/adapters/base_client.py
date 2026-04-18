@@ -79,6 +79,7 @@ class BaseClient:
         max_retries: int = 3,
         circuit_breaker_threshold: int = 5,
         transport: httpx.AsyncBaseTransport | None = None,
+        default_headers: dict[str, str] | None = None,
     ) -> None:
         """Initialize a BaseClient.
 
@@ -110,6 +111,7 @@ class BaseClient:
         self._max_retries = max_retries
         self._circuit_threshold = circuit_breaker_threshold
         self._transport = transport
+        self._default_headers = default_headers
         self._client: httpx.AsyncClient | None = None
         self._last_request_monotonic: float = 0.0
         self._consecutive_failures: int = 0
@@ -140,6 +142,7 @@ class BaseClient:
                 timeout=self._timeout_seconds,
                 transport=self._transport,
                 follow_redirects=True,
+                headers=self._default_headers,
             )
         return self._client
 

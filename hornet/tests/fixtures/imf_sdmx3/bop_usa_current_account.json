@@ -1,0 +1,457 @@
+{
+  "meta": {},
+  "data": {
+    "dataSets": [
+      {
+        "structure": 0,
+        "action": "Replace",
+        "series": {
+          "0:0:0:0:0": {
+            "attributes": [
+              0,
+              null,
+              0,
+              null
+            ],
+            "observations": {
+              "0": [
+                "-235563000000",
+                0,
+                0,
+                null
+              ],
+              "1": [
+                "-291058000000",
+                0,
+                0,
+                null
+              ],
+              "2": [
+                "-352163000000",
+                0,
+                0,
+                null
+              ],
+              "3": [
+                "-306510000000",
+                0,
+                0,
+                null
+              ],
+              "4": [
+                "-399867000000",
+                0,
+                0,
+                null
+              ],
+              "5": [
+                "-254206000000",
+                0,
+                0,
+                null
+              ],
+              "6": [
+                "-268433000000",
+                0,
+                0,
+                null
+              ],
+              "7": [
+                "-193507000000",
+                0,
+                0,
+                null
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "structures": [
+      {
+        "dataSets": [
+          0
+        ],
+        "links": [
+          {
+            "urn": "urn:sdmx:org.sdmx.infomodel.datastructure.Dataflow=IMF.STA:BOP(21.0.0)",
+            "title": "Dataflow"
+          },
+          {
+            "urn": "urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=IMF.STA:DSD_BOP(24.0.0)",
+            "title": "DataStructureDefinition"
+          }
+        ],
+        "dimensions": {
+          "series": [
+            {
+              "id": "COUNTRY",
+              "keyPosition": 0,
+              "roles": [],
+              "values": [
+                {
+                  "id": "USA"
+                }
+              ]
+            },
+            {
+              "id": "BOP_ACCOUNTING_ENTRY",
+              "keyPosition": 1,
+              "roles": [],
+              "values": [
+                {
+                  "id": "NETCD_T"
+                }
+              ]
+            },
+            {
+              "id": "INDICATOR",
+              "keyPosition": 2,
+              "roles": [],
+              "values": [
+                {
+                  "id": "CAB"
+                }
+              ]
+            },
+            {
+              "id": "UNIT",
+              "keyPosition": 3,
+              "roles": [],
+              "values": [
+                {
+                  "id": "USD"
+                }
+              ]
+            },
+            {
+              "id": "FREQUENCY",
+              "keyPosition": 4,
+              "roles": [
+                "FREQ"
+              ],
+              "values": [
+                {
+                  "id": "Q"
+                }
+              ]
+            }
+          ],
+          "observation": [
+            {
+              "id": "TIME_PERIOD",
+              "keyPosition": 5,
+              "values": [
+                {
+                  "value": "2024-Q1"
+                },
+                {
+                  "value": "2024-Q2"
+                },
+                {
+                  "value": "2024-Q3"
+                },
+                {
+                  "value": "2024-Q4"
+                },
+                {
+                  "value": "2025-Q1"
+                },
+                {
+                  "value": "2025-Q2"
+                },
+                {
+                  "value": "2025-Q3"
+                },
+                {
+                  "value": "2025-Q4"
+                }
+              ]
+            }
+          ]
+        },
+        "measures": {
+          "observation": [
+            {
+              "id": "OBS_VALUE",
+              "roles": []
+            }
+          ]
+        },
+        "attributes": {
+          "dimensionGroup": [
+            {
+              "id": "INSTR_ASSET",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "UNIT"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "FUNCTIONAL_CAT",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "UNIT"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "INT_ACC_ITEM",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "UNIT"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "SECTOR",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "UNIT"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "ACCOUNTING_ENTRY",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "ACCOUNTS",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "UNIT"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "FLOW_STOCK_ENTRY",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "FI_MATURITY",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "UNIT"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "VALUATION",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "UNIT"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "AL_TYPE",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "BOP_TYPE",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "UNIT"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "FR_ADJ",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "UNIT"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "BPM6_BASIS_START_DATE",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY"
+                ]
+              },
+              "values": []
+            }
+          ],
+          "series": [
+            {
+              "id": "SCALE",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY",
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "FREQUENCY",
+                  "UNIT"
+                ]
+              },
+              "values": [
+                {
+                  "id": "6"
+                }
+              ]
+            },
+            {
+              "id": "DECIMALS_DISPLAYED",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY",
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "FREQUENCY",
+                  "UNIT"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "OVERLAP",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY",
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "FREQUENCY",
+                  "UNIT"
+                ]
+              },
+              "values": [
+                {
+                  "id": "OL"
+                }
+              ]
+            },
+            {
+              "id": "IFS_FLAG",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY",
+                  "BOP_ACCOUNTING_ENTRY",
+                  "INDICATOR",
+                  "FREQUENCY",
+                  "UNIT"
+                ]
+              },
+              "values": []
+            }
+          ],
+          "observation": [
+            {
+              "id": "PRECISION",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "observation": {}
+              },
+              "values": [
+                {
+                  "id": "6"
+                }
+              ]
+            },
+            {
+              "id": "DERIVATION_TYPE",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "observation": {}
+              },
+              "values": [
+                {
+                  "id": "O"
+                }
+              ]
+            },
+            {
+              "id": "STATUS",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "observation": {}
+              },
+              "values": []
+            }
+          ]
+        },
+        "annotations": []
+      }
+    ]
+  }
+}

@@ -12,7 +12,11 @@ HORNET_DIR="/Users/shantanumenawat/Documents/Project Hornet/hornet"
 VENV="$HORNET_DIR/.venv/bin"
 LOG_DIR="$HORNET_DIR/logs"
 TIMESTAMP=$(date +%Y-%m-%d_%H%M)
-RUN_TYPE="${1:-morning}"  # "morning" or "evening"
+RUN_TYPE="${1:-morning}"  # "morning", "evening", or "imf_weekly"
+
+# Daily runs exclude IMF -- it publishes monthly, so running it 2x daily wastes
+# bandwidth and clutters logs. Weekly IMF refresh runs via com.hornet.imf_weekly.
+DAILY_SOURCES="fred,worldbank,yfinance,oecd,bis,gdelt,googlenews"
 
 mkdir -p "$LOG_DIR"
 
@@ -47,13 +51,20 @@ fi
 cd "$HORNET_DIR"
 
 if [ "$RUN_TYPE" = "morning" ]; then
-    # Morning: full pipeline with LLM narratives
-    echo "Running full pipeline (with LLM)..." >> "$LOG_FILE"
-    "$VENV/python" -m hornet.cli >> "$LOG_FILE" 2>&1
+    # Morning: full pipeline with LLM narratives, no IMF
+    echo "Running full pipeline (with LLM, no IMF)..." >> "$LOG_FILE"
+    "$VENV/python" -m hornet.cli --sources "$DAILY_SOURCES" >> "$LOG_FILE" 2>&1
+elif [ "$RUN_TYPE" = "evening" ]; then
+    # Evening: data refresh only, no IMF
+    echo "Running data pipeline (skip LLM, no IMF)..." >> "$LOG_FILE"
+    "$VENV/python" -m hornet.cli --sources "$DAILY_SOURCES" --skip-llm >> "$LOG_FILE" 2>&1
+elif [ "$RUN_TYPE" = "imf_weekly" ]; then
+    # Weekly: IMF data only (monthly publication cadence)
+    echo "Running IMF-only weekly refresh..." >> "$LOG_FILE"
+    "$VENV/python" -m hornet.cli --sources imf --skip-llm >> "$LOG_FILE" 2>&1
 else
-    # Evening: data refresh only (no LLM, saves 10 min)
-    echo "Running data pipeline (skip LLM)..." >> "$LOG_FILE"
-    "$VENV/python" -m hornet.cli --skip-llm >> "$LOG_FILE" 2>&1
+    echo "ERROR: Unknown RUN_TYPE '$RUN_TYPE'. Expected morning, evening, or imf_weekly." >> "$LOG_FILE"
+    exit 1
 fi
 
 echo "Completed: $(date)" >> "$LOG_FILE"

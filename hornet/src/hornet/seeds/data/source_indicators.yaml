@@ -2921,93 +2921,77 @@ source_indicators:
   dimension: growth_momentum
   concept: unemployment
 - source_id: imf
-  source_native_code: weo:RESERVE
-  indicator_code: FX_RESERVES_TOTAL
-  frequency: forecast
-  countries_iso3: *id001
-  name: Total FX reserves (WEO forecast)
-  unit: usd_billions
-  dimension: external_balance
-  concept: fx_reserves
-- source_id: imf
-  source_native_code: ifs:PCPI_IX
+  source_native_code: cpi:CPI._T.IX.M
   indicator_code: CPI_INDEX
   frequency: monthly
   countries_iso3: *id001
-  name: Consumer price index (IFS)
+  name: Consumer price index, all items, monthly (CPI)
   unit: index
   dimension: monetary_stance
   concept: cpi
 - source_id: imf
-  source_native_code: ifs:ENDA_XDC_USD_RATE
+  source_native_code: er:XDC_USD.PA_RT.M
   indicator_code: FX_RATE
   frequency: monthly
   countries_iso3: *id001
-  name: Exchange rate, domestic currency per USD (IFS)
+  name: Exchange rate, domestic currency per USD, period average (ER)
   unit: exchange_rate
   dimension: risk_sentiment
   concept: fx_rate
 - source_id: imf
-  source_native_code: ifs:FITB_PA
+  source_native_code: mfs_ir:GSTBILY_RT_PT_A_PT.M
   indicator_code: POLICY_RATE
   frequency: monthly
   countries_iso3: *id001
-  name: Treasury bill rate (IFS)
+  name: Government securities, Treasury bill yield, monthly (MFS_IR)
   unit: percent
   dimension: monetary_stance
   concept: policy_rate
+  notes: "Coverage gaps -- IMF MFS_IR data is stale or missing for several pilot countries. Consider BIS WS_CBPOL_CUR as follow-up."
 - source_id: imf
-  source_native_code: ifs:FMA_XDC
-  indicator_code: MONEY_SUPPLY
+  source_native_code: irfcl:IRFCLDT1_IRFCL65_USD.S1XS1311.M
+  indicator_code: FX_RESERVES_MONTHLY
   frequency: monthly
   countries_iso3: *id001
-  name: Broad money supply (IFS)
-  unit: local_currency
-  dimension: monetary_stance
-  concept: money_supply
-- source_id: imf
-  source_native_code: ifs:RAXGFX_USD
-  indicator_code: FX_RESERVES_EX_GOLD
-  frequency: monthly
-  countries_iso3: *id001
-  name: FX reserves excluding gold in USD (IFS)
-  unit: usd_millions
+  name: Total official reserve assets in USD, monthly (IRFCL)
+  unit: usd
   dimension: external_balance
   concept: fx_reserves
+  notes: "Includes gold at market value. Supersedes retired FX_RESERVES_EX_GOLD concept -- IRFCL does not publish a clean ex-gold monthly aggregate."
 - source_id: imf
-  source_native_code: ifs:FILR_PA
+  source_native_code: mfs_ir:MFS162_RT_PT_A_PT.M
   indicator_code: LENDING_RATE
   frequency: monthly
   countries_iso3: *id001
-  name: Lending rate (IFS)
+  name: Lending rate, monthly (MFS_IR)
   unit: percent
   dimension: monetary_stance
   concept: lending_rate
 - source_id: imf
-  source_native_code: bop:BCA_BP6_USD
+  source_native_code: bop:NETCD_T.CAB.USD.Q
   indicator_code: CURRENT_ACCOUNT_USD
   frequency: quarterly
   countries_iso3: *id001
-  name: Current account balance in USD (BOP)
-  unit: usd_millions
+  name: Current account balance, net (credits less debits), USD (BOP)
+  unit: usd
   dimension: external_balance
   concept: current_account
 - source_id: imf
-  source_native_code: bop:BFA_BP6_USD
+  source_native_code: bop:NNAFANIL_T.FAB.USD.Q
   indicator_code: FINANCIAL_ACCOUNT_USD
   frequency: quarterly
   countries_iso3: *id001
-  name: Financial account balance in USD (BOP)
-  unit: usd_millions
+  name: Financial account balance, net (NAFA less NIL), USD (BOP)
+  unit: usd
   dimension: external_balance
   concept: financial_flows
 - source_id: imf
-  source_native_code: bop:BGS_BP6_USD
+  source_native_code: bop:NETCD_T.GS.USD.Q
   indicator_code: TRADE_BALANCE_USD
   frequency: quarterly
   countries_iso3: *id001
-  name: Goods and services balance in USD (BOP)
-  unit: usd_millions
+  name: Goods and services balance, net (credits less debits), USD (BOP)
+  unit: usd
   dimension: external_balance
   concept: trade_balance
 - source_id: gdelt

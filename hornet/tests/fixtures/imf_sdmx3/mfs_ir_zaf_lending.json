@@ -1,0 +1,312 @@
+{
+  "meta": {},
+  "data": {
+    "dataSets": [
+      {
+        "structure": 0,
+        "action": "Replace",
+        "series": {
+          "0:0:0": {
+            "attributes": [
+              0,
+              null,
+              0,
+              "true"
+            ],
+            "observations": {
+              "0": [
+                "10.5",
+                null,
+                0,
+                null
+              ],
+              "1": [
+                "10.5",
+                null,
+                0,
+                null
+              ],
+              "2": [
+                "10.25",
+                null,
+                0,
+                null
+              ],
+              "3": [
+                "10.25",
+                null,
+                0,
+                null
+              ],
+              "4": [
+                "10.25",
+                null,
+                0,
+                null
+              ],
+              "5": [
+                "10.25",
+                null,
+                0,
+                null
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "structures": [
+      {
+        "dataSets": [
+          0
+        ],
+        "links": [
+          {
+            "urn": "urn:sdmx:org.sdmx.infomodel.datastructure.Dataflow=IMF.STA:MFS_IR(8.0.1)",
+            "title": "Dataflow"
+          },
+          {
+            "urn": "urn:sdmx:org.sdmx.infomodel.datastructure.DataStructure=IMF.STA:DSD_MFS_IR(8.0.0)",
+            "title": "DataStructureDefinition"
+          }
+        ],
+        "dimensions": {
+          "series": [
+            {
+              "id": "COUNTRY",
+              "keyPosition": 0,
+              "roles": [],
+              "values": [
+                {
+                  "id": "ZAF"
+                }
+              ]
+            },
+            {
+              "id": "INDICATOR",
+              "keyPosition": 1,
+              "roles": [],
+              "values": [
+                {
+                  "id": "MFS162_RT_PT_A_PT"
+                }
+              ]
+            },
+            {
+              "id": "FREQUENCY",
+              "keyPosition": 2,
+              "roles": [
+                "FREQ"
+              ],
+              "values": [
+                {
+                  "id": "M"
+                }
+              ]
+            }
+          ],
+          "observation": [
+            {
+              "id": "TIME_PERIOD",
+              "keyPosition": 3,
+              "values": [
+                {
+                  "value": "2025-M09"
+                },
+                {
+                  "value": "2025-M10"
+                },
+                {
+                  "value": "2025-M11"
+                },
+                {
+                  "value": "2025-M12"
+                },
+                {
+                  "value": "2026-M01"
+                },
+                {
+                  "value": "2026-M02"
+                }
+              ]
+            }
+          ]
+        },
+        "measures": {
+          "observation": [
+            {
+              "id": "OBS_VALUE",
+              "roles": []
+            }
+          ]
+        },
+        "attributes": {
+          "dimensionGroup": [
+            {
+              "id": "INT_TTC",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "FI_MATURITY",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "CURRENCY",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "STATISTICAL_MEASURES",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "TRANSFORMATION",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "UNIT",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "INDICATOR"
+                ]
+              },
+              "values": []
+            }
+          ],
+          "series": [
+            {
+              "id": "SCALE",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY",
+                  "INDICATOR",
+                  "FREQUENCY"
+                ]
+              },
+              "values": [
+                {
+                  "id": "0"
+                }
+              ]
+            },
+            {
+              "id": "DECIMALS_DISPLAYED",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY",
+                  "INDICATOR",
+                  "FREQUENCY"
+                ]
+              },
+              "values": []
+            },
+            {
+              "id": "OVERLAP",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY",
+                  "INDICATOR",
+                  "FREQUENCY"
+                ]
+              },
+              "values": [
+                {
+                  "id": "OL"
+                }
+              ]
+            },
+            {
+              "id": "IFS_FLAG",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "dimensions": [
+                  "COUNTRY",
+                  "INDICATOR",
+                  "FREQUENCY"
+                ]
+              },
+              "values": []
+            }
+          ],
+          "observation": [
+            {
+              "id": "PRECISION",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "observation": {}
+              },
+              "values": []
+            },
+            {
+              "id": "DERIVATION_TYPE",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "observation": {}
+              },
+              "values": [
+                {
+                  "id": "O"
+                }
+              ]
+            },
+            {
+              "id": "STATUS",
+              "roles": [],
+              "isMandatory": false,
+              "relationship": {
+                "observation": {}
+              },
+              "values": []
+            }
+          ]
+        },
+        "annotations": []
+      }
+    ]
+  }
+}
