@@ -2084,16 +2084,19 @@ source_indicators:
   unit: index_level
   dimension: risk_sentiment
   concept: equity_momentum
+  enabled: false
+  notes: ^CASE delisted, no ETF proxy available
 - source_id: yfinance
-  source_native_code: ^COLCAP
+  source_native_code: GXG
   indicator_code: EQUITY_INDEX
   frequency: daily
   countries_iso3:
   - COL
-  name: Colombia equity index
+  name: Global X MSCI Colombia ETF
   unit: index_level
   dimension: risk_sentiment
   concept: equity_momentum
+  notes: Replaced ^COLCAP (delisted on yfinance)
 - source_id: yfinance
   source_native_code: ^CROBEX
   indicator_code: EQUITY_INDEX
@@ -2215,15 +2218,16 @@ source_indicators:
   dimension: risk_sentiment
   concept: equity_momentum
 - source_id: yfinance
-  source_native_code: ^IPSA
+  source_native_code: ECH
   indicator_code: EQUITY_INDEX
   frequency: daily
   countries_iso3:
   - CHL
-  name: Chile equity index
+  name: iShares MSCI Chile ETF
   unit: index_level
   dimension: risk_sentiment
   concept: equity_momentum
+  notes: Replaced ^IPSA (delisted on yfinance)
 - source_id: yfinance
   source_native_code: ^J203.JO
   indicator_code: EQUITY_INDEX
@@ -2404,6 +2408,8 @@ source_indicators:
   unit: index_level
   dimension: risk_sentiment
   concept: equity_momentum
+  enabled: false
+  notes: ^PX1 delisted, no ETF proxy available
 - source_id: yfinance
   source_native_code: ^QSI
   indicator_code: EQUITY_INDEX
@@ -2535,15 +2541,16 @@ source_indicators:
   dimension: risk_sentiment
   concept: equity_momentum
 - source_id: yfinance
-  source_native_code: ^WIG20
+  source_native_code: EPOL
   indicator_code: EQUITY_INDEX
   frequency: daily
   countries_iso3:
   - POL
-  name: Poland equity index
+  name: iShares MSCI Poland ETF
   unit: index_level
   dimension: risk_sentiment
   concept: equity_momentum
+  notes: Replaced ^WIG20 (delisted on yfinance)
 - source_id: worldbank
   source_native_code: NY.GDP.MKTP.KD.ZG
   indicator_code: GDP_GROWTH
