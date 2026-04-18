@@ -35,11 +35,14 @@ repos:
   # mypy as a local hook using our project venv. Pre-commit's isolated
   # envs cannot see our installed type stubs, so running via `uv run`
   # is the only way to get accurate strict-mode results.
+  #
+  # Pre-commit invokes hooks from the repo root, but the hornet/ subpackage
+  # is where pyproject.toml (and mypy config) lives -- hence the bash cd.
   - repo: local
     hooks:
       - id: mypy
         name: mypy (strict)
-        entry: uv run mypy src tests
+        entry: bash -c 'cd hornet && uv run mypy src tests'
         language: system
         types: [python]
         pass_filenames: false
