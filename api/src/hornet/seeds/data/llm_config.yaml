@@ -8,7 +8,7 @@
 # variables via Settings (HORNET_ANTHROPIC_API_KEY, etc.).
 
 ollama:
-  base_url: "http://localhost:11434"
+  base_url: "http://100.74.213.63:11434"
   model: "qwen3:14b-q4_K_M"
   max_context_tokens: 32768
   timeout_seconds: 300

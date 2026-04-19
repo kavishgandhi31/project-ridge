@@ -2,13 +2,13 @@
 # Hornet v2 scheduled pipeline run.
 # Called by launchd twice daily: 6AM (morning) and 7PM (evening).
 #
-# Logs to hornet/logs/ with timestamped filenames.
+# Logs to logs/ with timestamped filenames.
 # Checks that Postgres is reachable before running.
 # LLM stage runs on the morning job only (evening is data-only).
 
 set -euo pipefail
 
-HORNET_DIR="/Users/shantanumenawat/Documents/Project Hornet/hornet"
+HORNET_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 VENV="$HORNET_DIR/.venv/bin"
 LOG_DIR="$HORNET_DIR/logs"
 TIMESTAMP=$(date +%Y-%m-%d_%H%M)

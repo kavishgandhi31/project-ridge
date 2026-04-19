@@ -66,7 +66,7 @@ ignore = [
 # TCH would force us to either break Pydantic or sprinkle noqa everywhere.
 
 [tool.ruff.lint.per-file-ignores]
-"alembic/versions/*" = ["E", "F"]
+"migrations/versions/*" = ["E", "F"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -75,7 +75,7 @@ quote-style = "double"
 python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
-exclude = ["alembic/versions"]
+exclude = ["migrations/versions"]
 
 # Third-party libraries without type stubs or py.typed markers.
 # Each entry documents an upstream gap, not a local suppression.

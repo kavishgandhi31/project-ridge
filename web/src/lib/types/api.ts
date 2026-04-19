@@ -1,31 +1,16 @@
 /**
  * TypeScript types matching the Hornet FastAPI response DTOs.
  *
- * These are the shapes returned by the API at localhost:8000.
- * Keep in sync with src/hornet/domain/ and src/hornet/api/routes/.
+ * Keep in sync with api/src/hornet/domain/ and api/src/hornet/api/routes/.
  */
 
-// --- Enums ---
-
-export type AlertTier = "WATCH" | "ALERT" | "ESCALATE";
-
-export type DensityMode = "overview" | "analyst" | "research";
-
-export type Frequency =
-  | "daily"
-  | "weekly"
-  | "monthly"
-  | "quarterly"
-  | "annual"
-  | "forecast";
-
-export type PipelineStatus = "running" | "completed" | "failed";
-
-export type RunType = "daily" | "manual" | "backfill";
-
-export type TemplateName = "country_narrative" | "alert_rationale";
-
-// --- API Response Types ---
+import type {
+  AlertTier,
+  Frequency,
+  PipelineStatus,
+  RunType,
+  TemplateName,
+} from "./enums";
 
 export interface HealthResponse {
   status: "ok" | "degraded";
@@ -142,32 +127,3 @@ export interface Observation {
   frequency: Frequency;
   vintage: string;
 }
-
-// --- Derived / UI types ---
-
-/** Country enriched with its latest score and alert tier for the home grid. */
-export interface CountryWithScore extends Country {
-  score: ScoreResult | null;
-  alert: AlertRecord | null;
-}
-
-/** The four scoring dimensions in display order. */
-export const DIMENSION_ORDER = [
-  "growth_momentum",
-  "external_balance",
-  "monetary_stance",
-  "risk_sentiment",
-] as const;
-
-export const DIMENSION_LABELS: Record<string, string> = {
-  growth_momentum: "Growth Momentum",
-  external_balance: "External Balance",
-  monetary_stance: "Monetary Stance",
-  risk_sentiment: "Risk Sentiment",
-};
-
-export const TIER_SEVERITY: Record<AlertTier, number> = {
-  WATCH: 0,
-  ALERT: 1,
-  ESCALATE: 2,
-};

@@ -20,7 +20,7 @@ Usage examples:
     hornet run --all-countries
 
 Launch:
-    cd hornet && .venv/bin/python -m hornet.cli run
+    cd api && .venv/bin/python -m hornet.cli run
 """
 
 from __future__ import annotations
@@ -72,7 +72,7 @@ PILOT_COUNTRIES = [
 def _export_score_history(score_results: list[Any], run_id: str, run_date: datetime.date) -> None:
     """Append scores to a CSV file for easy analysis.
 
-    Creates hornet/logs/score_history.csv with one row per country per run.
+    Creates api/logs/score_history.csv with one row per country per run.
     Appends on each run so the file grows as a time series.
     """
     import csv

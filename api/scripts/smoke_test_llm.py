@@ -5,7 +5,7 @@ Requires:
 - No DB needed -- uses synthetic observations
 
 Usage:
-    cd hornet && .venv/bin/python scripts/smoke_test_llm.py
+    cd api && .venv/bin/python scripts/smoke_test_llm.py
 """
 
 from __future__ import annotations

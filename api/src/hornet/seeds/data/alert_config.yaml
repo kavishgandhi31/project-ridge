@@ -10,9 +10,9 @@
 
 alert_config:
   # Tier thresholds (applied to abs(composite))
-  watch_threshold: 1.0
-  alert_threshold: 1.5
-  escalate_threshold: 2.0
+  watch_threshold: 0.1
+  alert_threshold: 0.3
+  escalate_threshold: 0.6
 
   # Coverage gate: countries with coverage below this fraction
   # cap at ALERT (prevents spending Claude API on thin data)
@@ -20,7 +20,7 @@ alert_config:
 
   # Streak requirement: consecutive prior ALERT+ runs needed
   # before ESCALATE is allowed (prevents single-run spikes)
-  streak_required: 2
+  streak_required: 0
 
   # Velocity boost: minimum |delta(composite)| between runs to
   # trigger a one-level promotion (only for deteriorating countries)

@@ -5,7 +5,7 @@ and errors are caught per-source/per-country so one failure doesn't
 block the rest.
 
 Usage:
-    cd hornet && .venv/bin/python scripts/run_pipeline.py
+    cd api && .venv/bin/python scripts/run_pipeline.py
 
 Requires:
     - Postgres running (docker-compose up)
@@ -124,7 +124,7 @@ async def main() -> None:
 
         # Event sources (produce EventRecords)
         event_adapters = [
-            ("GDELT", gdelt),
+            # ("GDELT", gdelt),
             ("GoogleNews", googlenews),
         ]
 

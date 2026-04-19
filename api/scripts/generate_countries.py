@@ -5,14 +5,15 @@ countries.yaml with the fields the Hornet v2 CountrySpec needs,
 plus metadata for source coverage filtering.
 
 Usage:
-    cd hornet && .venv/bin/python scripts/generate_countries.py
+    cd api && .venv/bin/python scripts/generate_countries.py
 """
 
 from __future__ import annotations
 
 import yaml
 
-V1_PATH = "../v1-reference/config/countries.yaml"
+# v1-reference symlink removed; seed data already captured in seeds/data/countries.yaml
+V1_PATH = "../v1-reference/config/countries.yaml"  # historical — v1 data already imported
 V2_PATH = "src/hornet/seeds/data/countries.yaml"
 
 # Sources and their approximate country coverage.

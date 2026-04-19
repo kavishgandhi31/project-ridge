@@ -6,7 +6,7 @@ Requires:
 - Docker compose up for TimescaleDB
 
 Usage:
-    cd hornet && .venv/bin/python scripts/validate_live_data.py
+    cd api && .venv/bin/python scripts/validate_live_data.py
 """
 
 from __future__ import annotations

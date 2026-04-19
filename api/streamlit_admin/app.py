@@ -4,7 +4,7 @@ NOT customer-facing. This is the Phase 7 admin/debug tool that reads
 from the FastAPI API to validate all pipeline layers visually.
 
 Launch:
-    cd hornet
+    cd api
     # Start the API first:
     uv run uvicorn hornet.api.main:app --port 8000
     # Then start Streamlit:

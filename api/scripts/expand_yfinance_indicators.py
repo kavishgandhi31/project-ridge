@@ -6,7 +6,7 @@ while preserving all other sources and the yfinance global entries
 (commodity futures, S&P 500, EM ETFs).
 
 Usage:
-    cd hornet && .venv/bin/python scripts/expand_yfinance_indicators.py
+    cd api && .venv/bin/python scripts/expand_yfinance_indicators.py
 """
 
 from __future__ import annotations
@@ -15,7 +15,8 @@ from typing import Any
 
 import yaml
 
-V1_PATH = "../v1-reference/config/countries.yaml"
+# v1-reference symlink removed; seed data already captured
+V1_PATH = "../v1-reference/config/countries.yaml"  # historical — v1 data already imported
 SI_PATH = "src/hornet/seeds/data/source_indicators.yaml"
 
 # Indicator codes that are global yfinance entries (not per-country)

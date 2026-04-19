@@ -77,10 +77,10 @@ class OllamaProvider:
                 "temperature": request.temperature,
                 "num_predict": request.max_tokens,
             },
-            # Disable Qwen3's thinking/reasoning mode. Without this,
-            # the model generates a long internal chain-of-thought
-            # before the answer, adding 1-2 minutes of hidden latency.
-            "think": False,
+            # Qwen3 needs thinking mode to reliably follow structured
+            # output instructions (JSON schema + citation markers).
+            # Trades 30-90s latency for correctness.
+            "think": True,
         }
 
         if request.response_format == "json":
