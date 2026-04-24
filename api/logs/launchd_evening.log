@@ -1,0 +1,513 @@
+Stages: seed, ingest, quality, score, alert, digest
+Sources: fred, worldbank, yfinance, oecd, bis, imf, gdelt, googlenews
+Countries: 15 pilots
+
+[13:45:11] [seed        ] Seeding registry tables...
+2026-04-18 09:45:11 [info     ] seeds.countries.upserted       count=183
+2026-04-18 09:45:11 [info     ] seeds.source_indicators.upserted count=276
+[13:45:11] [seed        ] Seeded 183 countries, 276 indicators
+[13:45:11] [ingest      ] Ingesting from 8 sources...
+2026-04-18 09:45:11 [info     ] factory.fred.built             indicator_count=44
+2026-04-18 09:45:11 [info     ] factory.worldbank.built        country_count=183 indicator_count=7
+2026-04-18 09:45:11 [info     ] factory.yfinance.built         indicator_count=195
+2026-04-18 09:45:11 [info     ] factory.oecd.built             indicator_count=4
+2026-04-18 09:45:11 [info     ] factory.bis.built              country_count=183 indicator_count=3
+2026-04-18 09:45:11 [info     ] factory.imf.built              indicator_count=15
+2026-04-18 09:45:11 [info     ] factory.gdelt.built            country_count=183 indicator_count=3
+2026-04-18 09:45:11 [info     ] factory.googlenews.built       country_count=183 indicator_count=1
+[13:45:11] [ingest      ] Fetching fred (16 countries)...
+2026-04-18 09:45:12 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=BRANGDPRPCH&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=BRANGDPRPCH
+2026-04-18 09:45:13 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGBRA&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGBRA
+2026-04-18 09:45:14 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGTHA&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGTHA
+2026-04-18 09:45:15 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGCOL&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGCOL
+2026-04-18 09:45:16 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGSAU&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGSAU
+2026-04-18 09:45:17 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGKEN&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGKEN
+2026-04-18 09:45:18 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGCZE&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGCZE
+2026-04-18 09:45:19 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGPOL&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGPOL
+2026-04-18 09:45:20 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGNGA&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGNGA
+2026-04-18 09:45:21 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGMEX&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGMEX
+2026-04-18 09:45:22 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGIDN&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGIDN
+2026-04-18 09:45:23 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGEGY&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGEGY
+2026-04-18 09:45:24 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGCHL&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGCHL
+2026-04-18 09:45:25 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGZAF&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGZAF
+2026-04-18 09:45:26 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=BAMLEMCBPIOAS&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=BAMLEMCBPIOAS
+2026-04-18 09:45:27 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=BAMLH0A0HYM2
+2026-04-18 09:45:28 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DCOILBRENTEU&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DCOILBRENTEU
+2026-04-18 09:45:29 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DCOILWTICO&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DCOILWTICO
+2026-04-18 09:45:30 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DFII10&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DFII10
+2026-04-18 09:45:31 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DFII20&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DFII20
+2026-04-18 09:45:32 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DFII30&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DFII30
+2026-04-18 09:45:33 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DFII5&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DFII5
+2026-04-18 09:45:34 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DFII7&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DFII7
+2026-04-18 09:45:35 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DGS1&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DGS1
+2026-04-18 09:45:36 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DGS10
+2026-04-18 09:45:37 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DGS1MO&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DGS1MO
+2026-04-18 09:45:38 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DGS2&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DGS2
+2026-04-18 09:45:39 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DGS20&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DGS20
+2026-04-18 09:45:40 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DGS3&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DGS3
+2026-04-18 09:45:41 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DGS30&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DGS30
+2026-04-18 09:45:42 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DGS3MO&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DGS3MO
+2026-04-18 09:45:43 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DGS5&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DGS5
+2026-04-18 09:45:44 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DGS6MO&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DGS6MO
+2026-04-18 09:45:45 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DGS7&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DGS7
+2026-04-18 09:45:46 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DHHNGSP&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DHHNGSP
+2026-04-18 09:45:47 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=DTWEXBGS&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=DTWEXBGS
+2026-04-18 09:45:48 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=NFCI&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=NFCI
+2026-04-18 09:45:49 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=PCOPPUSDM&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=PCOPPUSDM
+2026-04-18 09:45:50 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=T10Y2Y&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=T10Y2Y
+2026-04-18 09:45:51 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=T10YIE&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=T10YIE
+2026-04-18 09:45:52 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=T5YIE&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=T5YIE
+2026-04-18 09:45:54 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=VIXCLS
+2026-04-18 09:45:55 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGTUR&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGTUR
+2026-04-18 09:45:57 [warning  ] fred.fetch.failed              error="Client error '400 Bad Request' for url 'https://api.stlouisfed.org/fred/series/observations?series_id=FPCPITOTLZGIND&api_key=+a506a26fe069fa882207e39bbad3b5d6&file_type=json&observation_start=2020-01-01&observation_end=2026-04-18'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" series_id=FPCPITOTLZGIND
+[13:45:57] [ingest      ]   fred: 0 fetched, 0 written
+[13:45:57] [ingest      ] Fetching worldbank (16 countries)...
+[13:46:46] [ingest      ]   worldbank: 2533 fetched, 2533 written
+[13:46:46] [ingest      ] Fetching yfinance (16 countries)...
+2026-04-18 09:46:48 [debug    ] yfinance.fetch.empty           ticker=^COLCAP
+2026-04-18 09:46:50 [debug    ] yfinance.fetch.empty           ticker=^WIG20
+[13:47:01] [ingest      ]   yfinance: 60731 fetched, 60730 written
+2026-04-18 09:47:01 [debug    ] coverage.filtered              n_covered=11 n_skipped=5 source=oecd
+[13:47:01] [ingest      ] Fetching oecd (11 countries)...
+2026-04-18 09:47:41 [debug    ] oecd.bulk_fetch.ok             countries_returned=3 indicator=BCI
+2026-04-18 09:48:45 [debug    ] oecd.bulk_fetch.ok             countries_returned=3 indicator=CCI
+2026-04-18 09:50:52 [debug    ] oecd.bulk_fetch.ok             countries_returned=3 indicator=CLI
+2026-04-18 09:53:01 [debug    ] oecd.bulk_fetch.ok             countries_returned=3 indicator=INDPROD
+[13:53:01] [ingest      ]   oecd: 152 fetched, 152 written
+2026-04-18 09:53:01 [debug    ] coverage.filtered              n_covered=13 n_skipped=3 source=bis
+[13:53:01] [ingest      ] Fetching bis (13 countries)...
+2026-04-18 09:53:13 [debug    ] bis.fetch.unknown_country      iso3=THA
+2026-04-18 09:53:13 [debug    ] bis.fetch.unknown_country      iso3=COL
+2026-04-18 09:53:13 [debug    ] bis.fetch.unknown_country      iso3=SAU
+2026-04-18 09:53:13 [debug    ] bis.fetch.unknown_country      iso3=CZE
+2026-04-18 09:53:32 [debug    ] bis.fetch.unknown_country      iso3=MEX
+2026-04-18 09:53:32 [debug    ] bis.fetch.unknown_country      iso3=IDN
+2026-04-18 09:53:32 [debug    ] bis.fetch.unknown_country      iso3=CHL
+2026-04-18 09:53:49 [debug    ] bis.fetch.unknown_country      iso3=USA
+2026-04-18 09:54:07 [debug    ] bis.fetch.unknown_country      iso3=IND
+[13:54:07] [ingest      ]   bis: 1955 fetched, 1955 written
+[13:54:07] [ingest      ] Fetching imf (16 countries)...
+2026-04-18 09:54:33 [debug    ] imf.bop.failed                 error='All connection attempts failed' indicator=BCA_BP6_USD iso3=BRA
+2026-04-18 09:54:39 [warning  ] base_client.circuit_open       failures=5 source=imf url=http://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/BOP/Q.BRA.BFA_BP6_USD
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='All connection attempts failed' indicator=BFA_BP6_USD iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=BRA
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=THA
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=COL
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=SAU
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=KEN
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=CZE
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=POL
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=NGA
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=MEX
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=IDN
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=EGY
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=CHL
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=ZAF
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=USA
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=TUR
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BCA_BP6_USD iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BFA_BP6_USD iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.bop.failed                 error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=BGS_BP6_USD iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=ENDA_XDC_USD_RATE iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FILR_PA iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FITB_PA iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=FMA_XDC iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=PCPI_IX iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.monthly_failed         error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=IND
+2026-04-18 09:54:42 [debug    ] imf.ifs.quarterly_failed       error='[imf] Circuit breaker open after 6 consecutive connection failures' indicator=RAXGFX_USD iso3=IND
+[13:54:42] [ingest      ]   imf: 3599 fetched, 3599 written
+[13:54:42] [ingest      ] Fetching gdelt...
+2026-04-18 09:55:51 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Thailand%22&mode=timelinetone&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=tone iso3=THA
+2026-04-18 09:56:47 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Colombia%22&mode=timelinevolinfo&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=volume iso3=COL
+2026-04-18 09:57:05 [debug    ] gdelt.headlines.failed         error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Saudi+Arabia%22&mode=artlist&maxrecords=25&format=json&timespan=7d&sort=hybridrel'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" iso3=SAU
+2026-04-18 09:57:29 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Saudi+Arabia%22&mode=timelinevolinfo&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=volume iso3=SAU
+2026-04-18 09:57:59 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Kenya%22&mode=timelinevolinfo&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=volume iso3=KEN
+2026-04-18 09:59:13 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Poland%22&mode=timelinevolinfo&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=volume iso3=POL
+2026-04-18 09:59:31 [debug    ] gdelt.headlines.failed         error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Nigeria%22&mode=artlist&maxrecords=25&format=json&timespan=7d&sort=hybridrel'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" iso3=NGA
+2026-04-18 09:59:49 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Nigeria%22&mode=timelinetone&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=tone iso3=NGA
+2026-04-18 10:01:36 [debug    ] gdelt.headlines.failed         error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Indonesia%22&mode=artlist&maxrecords=25&format=json&timespan=7d&sort=hybridrel'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" iso3=IDN
+2026-04-18 10:02:07 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Indonesia%22&mode=timelinevolinfo&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=volume iso3=IDN
+2026-04-18 10:02:48 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Egypt%22&mode=timelinevolinfo&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=volume iso3=EGY
+2026-04-18 10:03:39 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Chile%22&mode=timelinevolinfo&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=volume iso3=CHL
+2026-04-18 10:03:56 [debug    ] gdelt.headlines.failed         error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22South+Africa%22&mode=artlist&maxrecords=25&format=json&timespan=7d&sort=hybridrel'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" iso3=ZAF
+2026-04-18 10:04:15 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22South+Africa%22&mode=timelinetone&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=tone iso3=ZAF
+2026-04-18 10:04:38 [debug    ] gdelt.headlines.failed         error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22United+States%22&mode=artlist&maxrecords=25&format=json&timespan=7d&sort=hybridrel'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" iso3=USA
+2026-04-18 10:05:19 [debug    ] gdelt.headlines.failed         error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Turkey%22&mode=artlist&maxrecords=25&format=json&timespan=7d&sort=hybridrel'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" iso3=TUR
+2026-04-18 10:05:34 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22Turkey%22&mode=timelinetone&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=tone iso3=TUR
+2026-04-18 10:06:06 [debug    ] gdelt.headlines.failed         error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22India%22&mode=artlist&maxrecords=25&format=json&timespan=7d&sort=hybridrel'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" iso3=IND
+2026-04-18 10:06:22 [debug    ] gdelt.timeline.failed          error="Client error '429 Too Many Requests' for url 'https://api.gdeltproject.org/api/v2/doc/doc?query=%22India%22&mode=timelinetone&timespan=90d&format=json'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429" event_type=tone iso3=IND
+[14:06:53] [ingest      ]   gdelt: 2025 received, 52 written
+[14:06:53] [ingest      ] Fetching googlenews...
+[14:07:24] [ingest      ]   googlenews: 240 received, 49 written
+[14:07:24] [ingest      ] Total: 68969 observations, 101 events
+[14:07:24] [ingest      ] Computing yield spreads...
+2026-04-18 10:07:26 [info     ] spreads.computed               latest_date=2026-04-16 n_points=1573 spread=SPREAD_10Y_2Y
+2026-04-18 10:07:26 [info     ] spreads.computed               latest_date=2026-04-16 n_points=1573 spread=SPREAD_10Y_3M
+2026-04-18 10:07:26 [info     ] spreads.computed               latest_date=2026-04-16 n_points=1573 spread=SPREAD_30Y_10Y
+2026-04-18 10:07:26 [info     ] spreads.computed               latest_date=2026-04-16 n_points=1573 spread=SPREAD_5Y_2Y
+2026-04-18 10:07:26 [info     ] spreads.all_computed           n_specs=4 n_spreads=6292
+[14:07:27] [ingest      ]   Spreads: 6292 computed
+[14:07:27] [quality     ] Running quality checks...
+2026-04-18 10:07:27 [info     ] quality.run_start              n_current_scores=70 n_indicators=272 n_observations=not_loaded n_prior_scores=55 run_id=b7d84e97-7c88-41f4-ab33-d4a783337739
+2026-04-18 10:07:27 [info     ] quality.run_complete           by_severity={'warning': 30} persisted=30 run_id=b7d84e97-7c88-41f4-ab33-d4a783337739 total_issues=30
+[14:07:27] [quality     ]   30 issues (0 critical, 30 warning)
+[14:07:27] [score       ] Scoring 15 countries...
+2026-04-18 10:07:27 [info     ] scoring_engine.init            n_dimensions=4 n_global_indicators=41 n_indicators=276
+2026-04-18 10:08:18 [info     ] scoring_engine.batch_start     n_countries=15 run_id=ececad36-0fed-4e62-a755-10cebe6ffda4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=BRA stale_count=5
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=BRA stale_count=5
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=BRA stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=0.22 iso3=BRA scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=CHL stale_count=1
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=CHL stale_count=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=CHL stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=0.19 iso3=CHL scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=COL stale_count=1
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=COL stale_count=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=COL stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=-0.02 iso3=COL scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=CZE stale_count=1
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=CZE stale_count=3
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=CZE stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=0.17 iso3=CZE scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=EGY stale_count=1
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=EGY stale_count=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=EGY stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=-0.15 iso3=EGY scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=IDN stale_count=1
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=IDN stale_count=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=IDN stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=-0.1 iso3=IDN scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=IND stale_count=1
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=IND stale_count=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=IND stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=-0.37 iso3=IND scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=KEN stale_count=1
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=KEN stale_count=3
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=KEN stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=0.11 iso3=KEN scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=MEX stale_count=1
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=MEX stale_count=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=MEX stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=-0.03 iso3=MEX scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=NGA stale_count=2
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=NGA stale_count=2
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=NGA stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=-0.22 iso3=NGA scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=POL stale_count=3
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=POL stale_count=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=POL stale_count=2
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=risk_sentiment iso3=POL stale_count=1
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=0.4 iso3=POL scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=SAU stale_count=2
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=SAU stale_count=3
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=SAU stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=-0.0 iso3=SAU scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=THA stale_count=1
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=external_balance iso3=THA stale_count=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=THA stale_count=2
+2026-04-18 10:08:18 [debug    ] scoring_engine.scored_country  composite=0.24 iso3=THA scored_dims=4 total_dims=4
+2026-04-18 10:08:18 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=TUR stale_count=4
+2026-04-18 10:08:19 [debug    ] dimension.stale_series         dimension=external_balance iso3=TUR stale_count=5
+2026-04-18 10:08:19 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=TUR stale_count=2
+2026-04-18 10:08:19 [debug    ] scoring_engine.scored_country  composite=0.24 iso3=TUR scored_dims=4 total_dims=4
+2026-04-18 10:08:19 [debug    ] dimension.stale_series         dimension=growth_momentum iso3=ZAF stale_count=2
+2026-04-18 10:08:19 [debug    ] dimension.stale_series         dimension=external_balance iso3=ZAF stale_count=5
+2026-04-18 10:08:19 [debug    ] dimension.stale_series         dimension=monetary_stance iso3=ZAF stale_count=2
+2026-04-18 10:08:19 [debug    ] scoring_engine.scored_country  composite=0.37 iso3=ZAF scored_dims=4 total_dims=4
+2026-04-18 10:08:19 [info     ] scoring_engine.batch_complete  n_scored=15 n_total=15 run_id=ececad36-0fed-4e62-a755-10cebe6ffda4
+[14:08:19] [score       ]   BRA: composite=+0.22, coverage=100%
+[14:08:19] [score       ]   CHL: composite=+0.19, coverage=100%
+[14:08:19] [score       ]   COL: composite=-0.02, coverage=100%
+[14:08:19] [score       ]   CZE: composite=+0.17, coverage=100%
+[14:08:19] [score       ]   EGY: composite=-0.15, coverage=100%
+[14:08:19] [score       ]   IDN: composite=-0.10, coverage=100%
+[14:08:19] [score       ]   IND: composite=-0.37, coverage=100%
+[14:08:19] [score       ]   KEN: composite=+0.11, coverage=100%
+[14:08:19] [score       ]   MEX: composite=-0.03, coverage=100%
+[14:08:19] [score       ]   NGA: composite=-0.22, coverage=100%
+[14:08:19] [score       ]   POL: composite=+0.40, coverage=100%
+[14:08:19] [score       ]   SAU: composite=-0.00, coverage=100%
+[14:08:19] [score       ]   THA: composite=+0.24, coverage=100%
+[14:08:19] [score       ]   TUR: composite=+0.24, coverage=100%
+[14:08:19] [score       ]   ZAF: composite=+0.37, coverage=100%
+[14:08:19] [alert       ] Evaluating alert tiers...
+[14:08:19] [alert       ]   BRA: none
+[14:08:19] [alert       ]   CHL: none
+[14:08:19] [alert       ]   COL: none
+[14:08:19] [alert       ]   CZE: none
+[14:08:19] [alert       ]   EGY: none
+[14:08:19] [alert       ]   IDN: none
+[14:08:19] [alert       ]   IND: none
+[14:08:19] [alert       ]   KEN: none
+[14:08:19] [alert       ]   MEX: none
+[14:08:19] [alert       ]   NGA: none
+[14:08:19] [alert       ]   POL: none
+[14:08:19] [alert       ]   SAU: none
+[14:08:19] [alert       ]   THA: none
+[14:08:19] [alert       ]   TUR: none
+[14:08:19] [alert       ]   ZAF: none
+2026-04-18 10:08:19 [info     ] dispatch.complete              n_alert=0 n_escalate=0 n_no_signal=15 n_watch=0
+[14:08:19] [alert       ]   E:0 A:0 W:0
+[14:08:19] [digest      ] Composing digest...
+[14:08:19] [digest      ]   15 scored, E:0 A:0 W:0
+
+======================================================================
+  RIDGE DAILY DIGEST
+  Generated: 2026-04-18 14:08 UTC
+  Run: 3e014e59aa254d8a
+======================================================================
+
+  Countries scored:  15
+  ESCALATE:          0
+  ALERT:             0
+  WATCH:             0
+  No signal:         15
+
+--- DATA QUALITY ---
+  30 warnings:
+    - [backfill] CHL: CHL: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] COL: COL: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] CZE: CZE: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] EGY: EGY: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] IDN: IDN: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] IND: IND: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] KEN: KEN: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] MEX: MEX: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] SAU: SAU: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] THA: THA: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] CHL: CHL: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] COL: COL: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] CZE: CZE: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] EGY: EGY: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] IDN: IDN: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] IND: IND: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] KEN: KEN: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] MEX: MEX: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] SAU: SAU: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    - [backfill] THA: THA: coverage jumped 25% -> 100% (gain 75%, threshold 25%)
+    ... and 10 more
+
+--- ESCALATE -- REQUIRES DEEP ANALYSIS ---
+  (none)
+
+--- ALERT -- REQUIRES HUMAN REVIEW ---
+  (none)
+
+--- WATCH -- LOGGED ---
+  (none)
+
+[14:08:19] [done        ] Pipeline complete.

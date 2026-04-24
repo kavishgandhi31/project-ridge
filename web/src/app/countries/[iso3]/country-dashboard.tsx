@@ -1,5 +1,5 @@
 /**
- * Country dashboard -- the core page of Hornet.
+ * Country dashboard -- the core page of Ridge.
  *
  * Density-aware:
  * - Overview: score gauge, tier, headline from narrative

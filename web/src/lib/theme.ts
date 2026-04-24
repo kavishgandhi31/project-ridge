@@ -31,7 +31,7 @@ export const THEMES: ThemeOption[] = [
   { id: "solarized-dark", label: "Solarized Dark", preview: ["#002b36", "#839496", "#073642"] },
 ];
 
-const THEME_KEY = "hornet-theme";
+const THEME_KEY = "ridge-theme";
 
 interface ThemeContextValue {
   theme: ThemeId;

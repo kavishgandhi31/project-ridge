@@ -15,8 +15,8 @@ Thumbs.db
 .env.*.local
 
 # Transient logs (pipeline runs, launchd output, ad-hoc tests)
-hornet/logs/*.log
-hornet/logs/launchd_*.log
+api/logs/*.log
+api/logs/launchd_*.log
 
 # Claude Code runtime state
 .claude/scheduled_tasks.lock
