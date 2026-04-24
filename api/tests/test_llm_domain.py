@@ -6,7 +6,7 @@ import datetime
 
 import pytest
 
-from hornet.domain.llm import (
+from ridge.domain.llm import (
     Citation,
     EvalQuestion,
     EvalResult,

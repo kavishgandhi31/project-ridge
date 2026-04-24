@@ -10,10 +10,10 @@ from datetime import UTC, datetime
 
 from sqlalchemy import text
 
-from hornet.db.repos.country import list_countries, load_iso2_to_iso3_map
-from hornet.db.repos.source_indicator import list_source_indicators
-from hornet.db.session import session_scope
-from hornet.seeds.loader import (
+from ridge.db.repos.country import list_countries, load_iso2_to_iso3_map
+from ridge.db.repos.source_indicator import list_source_indicators
+from ridge.db.session import session_scope
+from ridge.seeds.loader import (
     load_countries_from_yaml,
     load_source_indicators_from_yaml,
     seed_countries,

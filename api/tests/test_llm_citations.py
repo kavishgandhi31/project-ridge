@@ -6,8 +6,8 @@ import datetime
 
 import pytest
 
-from hornet.domain.llm import Citation, LLMResponse, TaskType
-from hornet.llm.citations import (
+from ridge.domain.llm import Citation, LLMResponse, TaskType
+from ridge.llm.citations import (
     compute_grounding_score,
     detect_ungrounded_claims,
     extract_citation_refs,

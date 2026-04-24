@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.domain.observation import Observation
-from hornet.quality.config import QualityConfig
-from hornet.quality.outlier import detect_outliers
+from ridge.domain.observation import Observation
+from ridge.quality.config import QualityConfig
+from ridge.quality.outlier import detect_outliers
 
 _NOW = datetime.datetime(2026, 4, 11, tzinfo=datetime.UTC)
 _TODAY = _NOW.date()

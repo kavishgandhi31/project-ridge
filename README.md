@@ -1,4 +1,4 @@
-# Project Hornet
+# Project Ridge
 
 Macro/country risk dashboard with LLM-powered analyst narratives. Ingests economic data from FRED, World Bank, IMF, OECD, BIS, yfinance, and news sources, scores countries across four risk dimensions, and generates analyst-grade narratives.
 
@@ -6,7 +6,7 @@ Macro/country risk dashboard with LLM-powered analyst narratives. Ingests econom
 
 ```
 api/             Python backend (FastAPI + async pipeline)
-  src/hornet/    Python package (imports as `hornet`)
+  src/ridge/    Python package (imports as `ridge`)
   migrations/    Alembic database migrations
   scripts/       One-off and scheduled pipeline scripts
   tests/         pytest test suite
@@ -36,7 +36,7 @@ cd api
 cp .env.example .env          # fill in API keys
 uv sync --all-groups           # install Python deps
 uv run alembic upgrade head    # run migrations
-uv run uvicorn hornet.api.main:app --port 8000
+uv run uvicorn ridge.api.main:app --port 8000
 ```
 
 ### 3. Start the frontend
@@ -68,7 +68,7 @@ Run the full data pipeline manually:
 
 ```bash
 cd api
-uv run python -m hornet.cli run
+uv run python -m ridge.cli run
 ```
 
 See `api/scripts/` for scheduled run scripts used by launchd.

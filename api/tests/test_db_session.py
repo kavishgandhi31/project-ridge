@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
-from hornet.db.session import get_engine, get_session_factory
+from ridge.db.session import get_engine, get_session_factory
 
 
 def test_engine_is_async_engine() -> None:
@@ -36,7 +36,7 @@ async def test_session_scope_yields_async_session() -> None:
     exit cleanly. No queries executed. This catches wiring bugs in the
     session factory without needing a live Postgres.
     """
-    from hornet.db.session import session_scope
+    from ridge.db.session import session_scope
 
     async with session_scope() as session:
         assert isinstance(session, AsyncSession)

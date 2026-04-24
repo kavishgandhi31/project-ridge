@@ -13,11 +13,11 @@ from datetime import UTC, date, datetime
 import pytest
 from sqlalchemy import select
 
-from hornet.adapters import HealthReport
-from hornet.db.models import ObservationRow
-from hornet.db.session import session_scope
-from hornet.domain import FetchRequest, Observation, SourceManifest
-from hornet.ingest.runner import run_ingest
+from ridge.adapters import HealthReport
+from ridge.db.models import ObservationRow
+from ridge.db.session import session_scope
+from ridge.domain import FetchRequest, Observation, SourceManifest
+from ridge.ingest.runner import run_ingest
 
 
 class _FakeAdapter:

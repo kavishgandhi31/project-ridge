@@ -15,13 +15,13 @@ import datetime
 import json
 import sys
 
-from hornet.domain.observation import Observation
-from hornet.domain.scoring import DimensionScore, ScoreResult
-from hornet.llm.citations import validate_response
-from hornet.llm.config import LLMConfig
-from hornet.llm.context import build_grounded_context
-from hornet.llm.providers.ollama import OllamaProvider
-from hornet.llm.templates.country_narrative import CountryNarrativeTemplate
+from ridge.domain.observation import Observation
+from ridge.domain.scoring import DimensionScore, ScoreResult
+from ridge.llm.citations import validate_response
+from ridge.llm.config import LLMConfig
+from ridge.llm.context import build_grounded_context
+from ridge.llm.providers.ollama import OllamaProvider
+from ridge.llm.templates.country_narrative import CountryNarrativeTemplate
 
 COUNTRY_DATA: dict[str, dict[str, object]] = {
     "NGA": {

@@ -13,7 +13,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from hornet.domain import (
+from ridge.domain import (
     FetchRequest,
     IndicatorSpec,
     Observation,

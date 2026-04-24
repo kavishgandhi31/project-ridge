@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.domain.source import SourceIndicatorSpec
-from hornet.quality.config import QualityConfig
-from hornet.quality.series_audit import audit_series_coverage
+from ridge.domain.source import SourceIndicatorSpec
+from ridge.quality.config import QualityConfig
+from ridge.quality.series_audit import audit_series_coverage
 
 _NOW = datetime.datetime(2026, 4, 11, tzinfo=datetime.UTC)
 _RUN_ID = "test-run-1"

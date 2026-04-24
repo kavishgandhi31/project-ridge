@@ -1,7 +1,7 @@
 """Live data validation: pull all FRED and yfinance indicators, report results.
 
 Requires:
-- HORNET_FRED_API_KEY set in .env
+- RIDGE_FRED_API_KEY set in .env
 - Postgres running (seeds the registry, stores observations)
 - Docker compose up for TimescaleDB
 
@@ -16,13 +16,13 @@ import datetime
 import sys
 import time
 
-from hornet.config import get_settings
-from hornet.db.session import dispose_engine, session_scope
-from hornet.derived.spreads import DEFAULT_SPREADS, compute_spreads
-from hornet.domain.observation import Observation
-from hornet.domain.source import FetchRequest, SourceIndicatorSpec
-from hornet.quality.liveness import check_series_liveness
-from hornet.seeds.loader import (
+from ridge.config import get_settings
+from ridge.db.session import dispose_engine, session_scope
+from ridge.derived.spreads import DEFAULT_SPREADS, compute_spreads
+from ridge.domain.observation import Observation
+from ridge.domain.source import FetchRequest, SourceIndicatorSpec
+from ridge.quality.liveness import check_series_liveness
+from ridge.seeds.loader import (
     load_source_indicators_from_yaml,
     seed_all,
 )
@@ -32,12 +32,12 @@ async def _fetch_fred(
     specs: list[SourceIndicatorSpec],
 ) -> tuple[list[Observation], list[dict[str, str]]]:
     """Pull all FRED indicators."""
-    from hornet.adapters.fred import FredAdapter
+    from ridge.adapters.fred import FredAdapter
 
     settings = get_settings()
     api_key = settings.fred_api_key
     if api_key is None:
-        print("ERROR: HORNET_FRED_API_KEY not set")
+        print("ERROR: RIDGE_FRED_API_KEY not set")
         return [], [{"source": "fred", "error": "no API key"}]
 
     # Build adapter with indicator specs
@@ -101,7 +101,7 @@ async def _fetch_yfinance(
     specs: list[SourceIndicatorSpec],
 ) -> tuple[list[Observation], list[dict[str, str]]]:
     """Pull all yfinance indicators."""
-    from hornet.adapters.yfinance_adapter import YFinanceAdapter
+    from ridge.adapters.yfinance_adapter import YFinanceAdapter
 
     yf_specs = [s for s in specs if s.source_id == "yfinance" and s.enabled]
     adapter = YFinanceAdapter(indicators=yf_specs)

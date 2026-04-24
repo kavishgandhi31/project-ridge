@@ -19,8 +19,8 @@ from collections.abc import Callable, Sequence
 
 import httpx
 
-from hornet.adapters.fred import FredAdapter
-from hornet.domain import FetchRequest, SourceIndicatorSpec
+from ridge.adapters.fred import FredAdapter
+from ridge.domain import FetchRequest, SourceIndicatorSpec
 
 _VALID_RESPONSE = {
     "observations": [

@@ -16,8 +16,8 @@ from collections.abc import Callable, Mapping, Sequence
 
 import httpx
 
-from hornet.adapters.worldbank import WorldBankAdapter
-from hornet.domain import FetchRequest, SourceIndicatorSpec
+from ridge.adapters.worldbank import WorldBankAdapter
+from ridge.domain import FetchRequest, SourceIndicatorSpec
 
 
 def _pilot_iso_map() -> dict[str, str]:

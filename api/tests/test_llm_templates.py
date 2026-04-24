@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.domain.llm import Citation, GroundedContext, TaskType
-from hornet.llm.templates.alert_rationale import AlertRationaleTemplate
-from hornet.llm.templates.country_narrative import CountryNarrativeTemplate
+from ridge.domain.llm import Citation, GroundedContext, TaskType
+from ridge.llm.templates.alert_rationale import AlertRationaleTemplate
+from ridge.llm.templates.country_narrative import CountryNarrativeTemplate
 
 
 def _sample_context() -> GroundedContext:

@@ -19,10 +19,10 @@ from textwrap import dedent
 import pytest
 from sqlalchemy import select, text
 
-from hornet.db.models.country import CountryRow
-from hornet.db.models.source_indicator import SourceIndicatorRow
-from hornet.db.session import session_scope
-from hornet.seeds.loader import (
+from ridge.db.models.country import CountryRow
+from ridge.db.models.source_indicator import SourceIndicatorRow
+from ridge.db.session import session_scope
+from ridge.seeds.loader import (
     load_countries_from_yaml,
     load_source_indicators_from_yaml,
     seed_all,

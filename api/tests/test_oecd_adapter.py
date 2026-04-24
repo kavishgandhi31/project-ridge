@@ -12,8 +12,8 @@ from typing import Any
 
 import httpx
 
-from hornet.adapters.oecd import OECDAdapter
-from hornet.domain import FetchRequest, SourceIndicatorSpec
+from ridge.adapters.oecd import OECDAdapter
+from ridge.domain import FetchRequest, SourceIndicatorSpec
 
 
 def _pilot_indicators() -> list[SourceIndicatorSpec]:

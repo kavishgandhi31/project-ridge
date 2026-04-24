@@ -1,7 +1,7 @@
 /**
- * TypeScript types matching the Hornet FastAPI response DTOs.
+ * TypeScript types matching the Ridge FastAPI response DTOs.
  *
- * Keep in sync with api/src/hornet/domain/ and api/src/hornet/api/routes/.
+ * Keep in sync with api/src/ridge/domain/ and api/src/ridge/api/routes/.
  */
 
 import type {

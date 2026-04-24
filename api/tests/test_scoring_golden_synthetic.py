@@ -13,10 +13,10 @@ from pathlib import Path
 
 import pytest
 
-from hornet.domain.observation import Observation
-from hornet.domain.scoring import ScoringConfig
-from hornet.domain.source import SourceIndicatorSpec
-from hornet.scoring.engine import ScoringEngine
+from ridge.domain.observation import Observation
+from ridge.domain.scoring import ScoringConfig
+from ridge.domain.source import SourceIndicatorSpec
+from ridge.scoring.engine import ScoringEngine
 
 _FIXTURES = Path(__file__).parent / "fixtures"
 _NOW = datetime.datetime(2026, 4, 11, tzinfo=datetime.UTC)

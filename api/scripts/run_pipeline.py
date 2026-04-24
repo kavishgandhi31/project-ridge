@@ -9,7 +9,7 @@ Usage:
 
 Requires:
     - Postgres running (docker-compose up)
-    - HORNET_FRED_API_KEY in .env
+    - RIDGE_FRED_API_KEY in .env
     - Ollama running locally (for LLM narratives)
 """
 
@@ -20,22 +20,22 @@ import datetime
 import sys
 import uuid
 
-from hornet.alerts.digest import compose_digest, render_digest_text
-from hornet.alerts.dispatcher import dispatch
-from hornet.alerts.tier import assign_tier
-from hornet.db.repos.alert_record import list_prior_records, upsert_alert_records
-from hornet.db.repos.country import list_countries
-from hornet.db.repos.event_record import list_events_for_scoring
-from hornet.db.repos.llm_response import upsert_llm_response
-from hornet.db.repos.observation import list_observations_for_scoring
-from hornet.db.repos.pipeline_run import mark_stage_completed, upsert_pipeline_run
-from hornet.db.repos.score_result import upsert_score_results
-from hornet.db.session import dispose_engine, session_scope
-from hornet.derived.spreads import DEFAULT_SPREADS, compute_spreads
-from hornet.domain.observation import Observation
-from hornet.domain.pipeline import PipelineRun, RunStatus, RunType
-from hornet.domain.source import FetchRequest
-from hornet.ingest.factory import (
+from ridge.alerts.digest import compose_digest, render_digest_text
+from ridge.alerts.dispatcher import dispatch
+from ridge.alerts.tier import assign_tier
+from ridge.db.repos.alert_record import list_prior_records, upsert_alert_records
+from ridge.db.repos.country import list_countries
+from ridge.db.repos.event_record import list_events_for_scoring
+from ridge.db.repos.llm_response import upsert_llm_response
+from ridge.db.repos.observation import list_observations_for_scoring
+from ridge.db.repos.pipeline_run import mark_stage_completed, upsert_pipeline_run
+from ridge.db.repos.score_result import upsert_score_results
+from ridge.db.session import dispose_engine, session_scope
+from ridge.derived.spreads import DEFAULT_SPREADS, compute_spreads
+from ridge.domain.observation import Observation
+from ridge.domain.pipeline import PipelineRun, RunStatus, RunType
+from ridge.domain.source import FetchRequest
+from ridge.ingest.factory import (
     build_bis_adapter,
     build_fred_adapter,
     build_gdelt_adapter,
@@ -45,10 +45,10 @@ from hornet.ingest.factory import (
     build_worldbank_adapter,
     build_yfinance_adapter,
 )
-from hornet.ingest.runner import run_event_ingest, run_ingest
-from hornet.quality.runner import run_quality_checks
-from hornet.scoring.engine import ScoringEngine
-from hornet.seeds.loader import (
+from ridge.ingest.runner import run_event_ingest, run_ingest
+from ridge.quality.runner import run_quality_checks
+from ridge.scoring.engine import ScoringEngine
+from ridge.seeds.loader import (
     load_alert_config_from_yaml,
     load_llm_config_from_yaml,
     load_scoring_config_from_yaml,
@@ -73,7 +73,7 @@ async def main() -> None:
     now = datetime.datetime.now(datetime.UTC)
 
     print("=" * 70)
-    print(f"HORNET PIPELINE  |  run_id: {run_id}  |  date: {today}")
+    print(f"RIDGE PIPELINE  |  run_id: {run_id}  |  date: {today}")
     print("=" * 70)
 
     # Create pipeline run record
@@ -186,7 +186,7 @@ async def main() -> None:
         if spread_obs:
             from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-            from hornet.db.models.observation import ObservationRow
+            from ridge.db.models.observation import ObservationRow
 
             values = [
                 {
@@ -336,19 +336,19 @@ async def main() -> None:
             pass
 
         if ollama_available:
-            from hornet.llm.providers.ollama import OllamaProvider
-            from hornet.llm.router import LLMRouter
-            from hornet.llm.runner import run_llm_stage
+            from ridge.llm.providers.ollama import OllamaProvider
+            from ridge.llm.router import LLMRouter
+            from ridge.llm.runner import run_llm_stage
 
             ollama_provider = OllamaProvider(llm_config.ollama)
             # Claude provider requires API key -- skip if not configured
             providers: dict[str, object] = {"ollama": ollama_provider}
 
-            from hornet.config import get_settings
+            from ridge.config import get_settings
 
             settings = get_settings()
             if settings.anthropic_api_key:
-                from hornet.llm.providers.claude import ClaudeProvider
+                from ridge.llm.providers.claude import ClaudeProvider
 
                 claude_provider = ClaudeProvider(
                     llm_config.claude,

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from hornet.domain.scoring import DimensionScore, ScoringConfig
-from hornet.scoring.composite import compute_composite
+from ridge.domain.scoring import DimensionScore, ScoringConfig
+from ridge.scoring.composite import compute_composite
 
 
 def _config(**overrides: object) -> ScoringConfig:

@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for the Hornet test suite."""
+"""Shared pytest fixtures for the Ridge test suite."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from collections.abc import AsyncIterator
 import pytest
 from sqlalchemy import delete
 
-from hornet.db.models import ObservationRow
-from hornet.db.session import session_scope
+from ridge.db.models import ObservationRow
+from ridge.db.session import session_scope
 
 PILOT_COUNTRIES: frozenset[str] = frozenset({"NGA", "TUR", "ZAF", "BRA", "POL"})
 """Fixed pilot country set for Phase 1.

@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from hornet.quality.config import QualityConfig
-from hornet.quality.issue import IssueSeverity, QualityIssue
-from hornet.seeds.loader import load_quality_config_from_yaml
+from ridge.quality.config import QualityConfig
+from ridge.quality.issue import IssueSeverity, QualityIssue
+from ridge.seeds.loader import load_quality_config_from_yaml
 
 
 class TestQualityConfig:

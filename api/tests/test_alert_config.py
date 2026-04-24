@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from hornet.alerts.config import AlertConfig
-from hornet.seeds.loader import load_alert_config_from_yaml
+from ridge.alerts.config import AlertConfig
+from ridge.seeds.loader import load_alert_config_from_yaml
 
 
 class TestAlertConfig:

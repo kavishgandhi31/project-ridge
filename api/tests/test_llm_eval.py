@@ -4,18 +4,18 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.domain.llm import (
+from ridge.domain.llm import (
     Citation,
     EvalQuestion,
     GroundedResponse,
     TaskType,
 )
-from hornet.llm.eval.harness import (
+from ridge.llm.eval.harness import (
     load_eval_questions,
     offline_eval,
     summarize_results,
 )
-from hornet.llm.eval.metrics import evaluate_response
+from ridge.llm.eval.metrics import evaluate_response
 
 
 def _citation(ref: int, indicator: str = "CPI_YOY") -> Citation:
@@ -204,7 +204,7 @@ def test_offline_eval_runs() -> None:
 
 
 def test_summarize_results() -> None:
-    from hornet.domain.llm import EvalResult
+    from ridge.domain.llm import EvalResult
 
     results = [
         EvalResult(

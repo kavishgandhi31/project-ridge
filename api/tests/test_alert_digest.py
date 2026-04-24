@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.alerts.digest import compose_digest, render_digest_text
-from hornet.domain.alerting import AlertTier, DispatchResult, TierAssignment
-from hornet.domain.scoring import DimensionScore, ScoreResult
-from hornet.quality.issue import IssueSeverity, QualityIssue
+from ridge.alerts.digest import compose_digest, render_digest_text
+from ridge.domain.alerting import AlertTier, DispatchResult, TierAssignment
+from ridge.domain.scoring import DimensionScore, ScoreResult
+from ridge.quality.issue import IssueSeverity, QualityIssue
 
 _NOW = datetime.datetime(2026, 4, 12, 6, 0, tzinfo=datetime.UTC)
 _RUN_ID = "digest-test-run"
@@ -102,7 +102,7 @@ class TestRenderDigestText:
         digest = compose_digest(dispatch_result, [], scores, _RUN_ID, generated_at=_NOW)
         text = render_digest_text(digest)
 
-        assert "HORNET DAILY DIGEST" in text
+        assert "RIDGE DAILY DIGEST" in text
         assert "ESCALATE" in text
         assert "Turkey" in text
 

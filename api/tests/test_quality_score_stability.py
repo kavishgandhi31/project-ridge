@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.domain.scoring import DimensionScore, ScoreResult
-from hornet.quality.config import QualityConfig
-from hornet.quality.score_stability import check_score_stability
+from ridge.domain.scoring import DimensionScore, ScoreResult
+from ridge.quality.config import QualityConfig
+from ridge.quality.score_stability import check_score_stability
 
 _NOW = datetime.datetime(2026, 4, 11, tzinfo=datetime.UTC)
 _RUN_ID = "test-run-1"

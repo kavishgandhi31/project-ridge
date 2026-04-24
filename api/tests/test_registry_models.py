@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from hornet.db.models.country import CountryRow
-from hornet.db.models.source_indicator import SourceIndicatorRow
-from hornet.domain.source import CountrySpec, SourceIndicatorSpec
+from ridge.db.models.country import CountryRow
+from ridge.db.models.source_indicator import SourceIndicatorRow
+from ridge.domain.source import CountrySpec, SourceIndicatorSpec
 
 _NOW = datetime(2026, 4, 11, tzinfo=UTC)
 

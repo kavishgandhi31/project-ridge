@@ -5,14 +5,14 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from hornet.domain.scoring import (
+from ridge.domain.scoring import (
     ALL_DIMENSIONS,
     DimensionScore,
     NewsHeat,
     ScoreResult,
     ScoringConfig,
 )
-from hornet.seeds.loader import load_scoring_config_from_yaml
+from ridge.seeds.loader import load_scoring_config_from_yaml
 
 
 class TestScoringConfig:

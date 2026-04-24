@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from hornet.config import Settings, get_settings
+from ridge.config import Settings, get_settings
 
 
 class TestSettings:
@@ -34,7 +34,7 @@ class TestSettings:
             Settings(api_port=99999)
 
     def test_env_var_override(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setenv("HORNET_LOG_LEVEL", "DEBUG")
+        monkeypatch.setenv("RIDGE_LOG_LEVEL", "DEBUG")
         get_settings.cache_clear()
         try:
             settings = get_settings()

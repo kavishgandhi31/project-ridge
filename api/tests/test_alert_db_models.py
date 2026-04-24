@@ -7,10 +7,10 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.db.models.alert_record import AlertRecordRow
-from hornet.db.models.pipeline_run import PipelineRunRow
-from hornet.domain.alerting import AlertTier, TierAssignment
-from hornet.domain.pipeline import PipelineRun, RunStatus, RunType
+from ridge.db.models.alert_record import AlertRecordRow
+from ridge.db.models.pipeline_run import PipelineRunRow
+from ridge.domain.alerting import AlertTier, TierAssignment
+from ridge.domain.pipeline import PipelineRun, RunStatus, RunType
 
 _NOW = datetime.datetime(2026, 4, 12, 6, 0, tzinfo=datetime.UTC)
 

@@ -18,14 +18,14 @@ import datetime
 
 import pytest
 
-from hornet.alerts.config import AlertConfig
-from hornet.alerts.tier import (
+from ridge.alerts.config import AlertConfig
+from ridge.alerts.tier import (
     assign_tier,
     compute_velocity,
     count_alert_streak,
 )
-from hornet.domain.alerting import AlertTier
-from hornet.domain.scoring import DimensionScore, ScoreResult
+from ridge.domain.alerting import AlertTier
+from ridge.domain.scoring import DimensionScore, ScoreResult
 
 # ------------------------------------------------------------------
 # Helpers

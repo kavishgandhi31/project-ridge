@@ -27,7 +27,7 @@ interface DensityContextValue {
   showAtLeast: (level: DensityMode) => boolean;
 }
 
-const DENSITY_KEY = "hornet-density-mode";
+const DENSITY_KEY = "ridge-density-mode";
 const DENSITY_LEVELS: Record<DensityMode, number> = {
   overview: 0,
   analyst: 1,

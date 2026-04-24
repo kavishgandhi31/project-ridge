@@ -1,7 +1,7 @@
 [project]
-name = "hornet"
+name = "ridge"
 version = "0.1.0"
-description = "Hornet — macro/country risk dashboard and LLM-powered analyst assistant"
+description = "Ridge — macro/country risk dashboard and LLM-powered analyst assistant"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",
@@ -39,7 +39,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/hornet"]
+packages = ["src/ridge"]
 
 [tool.ruff]
 line-length = 100
@@ -86,7 +86,7 @@ ignore_missing_imports = true
 # CLI orchestrator uses Any-typed args to avoid importing every domain type
 # at module level (slows startup). Domain modules remain strict.
 [[tool.mypy.overrides]]
-module = "hornet.cli"
+module = "ridge.cli"
 ignore_errors = true
 
 [tool.pytest.ini_options]

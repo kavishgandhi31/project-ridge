@@ -15,8 +15,8 @@ from unittest.mock import patch
 
 import pandas as pd
 
-from hornet.adapters.yfinance_adapter import YFinanceAdapter
-from hornet.domain import FetchRequest, SourceIndicatorSpec
+from ridge.adapters.yfinance_adapter import YFinanceAdapter
+from ridge.domain import FetchRequest, SourceIndicatorSpec
 
 
 def _pilot_indicators() -> list[SourceIndicatorSpec]:
@@ -171,7 +171,7 @@ class TestFetch:
             ticker="TRYUSD=X",
         )
 
-        with patch("hornet.adapters.yfinance_adapter.yf.download", return_value=ohlcv):
+        with patch("ridge.adapters.yfinance_adapter.yf.download", return_value=ohlcv):
             adapter = _adapter()
             result = await adapter.fetch(
                 FetchRequest(
@@ -191,7 +191,7 @@ class TestFetch:
 
     async def test_empty_download_returns_empty(self) -> None:
         with patch(
-            "hornet.adapters.yfinance_adapter.yf.download",
+            "ridge.adapters.yfinance_adapter.yf.download",
             return_value=pd.DataFrame(),
         ):
             adapter = _adapter()
@@ -207,7 +207,7 @@ class TestFetch:
 
     async def test_exception_returns_empty_gracefully(self) -> None:
         with patch(
-            "hornet.adapters.yfinance_adapter.yf.download",
+            "ridge.adapters.yfinance_adapter.yf.download",
             side_effect=Exception("network error"),
         ):
             adapter = _adapter()
@@ -222,7 +222,7 @@ class TestFetch:
         assert result == []
 
     async def test_unknown_country_is_skipped(self) -> None:
-        with patch("hornet.adapters.yfinance_adapter.yf.download") as mock_dl:
+        with patch("ridge.adapters.yfinance_adapter.yf.download") as mock_dl:
             adapter = _adapter()
             result = await adapter.fetch(
                 FetchRequest(
@@ -238,7 +238,7 @@ class TestFetch:
         ohlcv = _make_ohlcv_df(["2024-06-03"], [1.0])
 
         with patch(
-            "hornet.adapters.yfinance_adapter.yf.download",
+            "ridge.adapters.yfinance_adapter.yf.download",
             return_value=ohlcv,
         ):
             adapter = _adapter()
@@ -256,7 +256,7 @@ class TestFetch:
         ohlcv = _make_ohlcv_df(["2024-06-03"], [50000.0])
 
         with patch(
-            "hornet.adapters.yfinance_adapter.yf.download",
+            "ridge.adapters.yfinance_adapter.yf.download",
             return_value=ohlcv,
         ):
             adapter = _adapter()
@@ -275,7 +275,7 @@ class TestFetch:
         ohlcv = _make_ohlcv_df(["2024-06-03"], [1.0])
 
         with patch(
-            "hornet.adapters.yfinance_adapter.yf.download",
+            "ridge.adapters.yfinance_adapter.yf.download",
             return_value=ohlcv,
         ) as mock_dl:
             adapter = YFinanceAdapter(

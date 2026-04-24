@@ -1,7 +1,7 @@
 """Generate v2 countries.yaml from v1 reference data.
 
 Reads v1's config/countries.yaml and produces a v2-compatible
-countries.yaml with the fields the Hornet v2 CountrySpec needs,
+countries.yaml with the fields the Ridge v2 CountrySpec needs,
 plus metadata for source coverage filtering.
 
 Usage:
@@ -14,7 +14,7 @@ import yaml
 
 # v1-reference symlink removed; seed data already captured in seeds/data/countries.yaml
 V1_PATH = "../v1-reference/config/countries.yaml"  # historical — v1 data already imported
-V2_PATH = "src/hornet/seeds/data/countries.yaml"
+V2_PATH = "src/ridge/seeds/data/countries.yaml"
 
 # Sources and their approximate country coverage.
 # Used to set per-country source coverage flags.
@@ -187,7 +187,7 @@ def main() -> None:
     output = {"countries": v2_countries}
 
     header = (
-        "# Hornet v2 country registry -- 183 countries.\n"
+        "# Ridge v2 country registry -- 183 countries.\n"
         "#\n"
         "# Generated from v1-reference/config/countries.yaml by\n"
         "# scripts/generate_countries.py. Metadata in 'notes' field:\n"

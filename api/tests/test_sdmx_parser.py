@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from hornet.adapters.sdmx import (
+from ridge.adapters.sdmx import (
     parse_sdmx_csv,
     parse_sdmx_csv_multi,
     parse_sdmx_json,

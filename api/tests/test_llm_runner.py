@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.domain.alerting import DispatchResult, TierAssignment
-from hornet.domain.llm import LLMRequest, LLMResponse
-from hornet.domain.observation import Observation
-from hornet.domain.scoring import DimensionScore, ScoreResult
-from hornet.llm.config import LLMConfig
-from hornet.llm.protocol import ProviderCapabilities, ProviderHealth
-from hornet.llm.router import LLMRouter
-from hornet.llm.runner import run_llm_stage
+from ridge.domain.alerting import DispatchResult, TierAssignment
+from ridge.domain.llm import LLMRequest, LLMResponse
+from ridge.domain.observation import Observation
+from ridge.domain.scoring import DimensionScore, ScoreResult
+from ridge.llm.config import LLMConfig
+from ridge.llm.protocol import ProviderCapabilities, ProviderHealth
+from ridge.llm.router import LLMRouter
+from ridge.llm.runner import run_llm_stage
 
 
 class _MockProvider:
@@ -88,7 +88,7 @@ def _score(country: str = "NGA", composite: float = -1.5) -> ScoreResult:
 
 
 def _tier(country: str, tier_value: str) -> TierAssignment:
-    from hornet.domain.alerting import AlertTier
+    from ridge.domain.alerting import AlertTier
 
     return TierAssignment(
         country_iso3=country,

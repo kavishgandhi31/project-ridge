@@ -35,7 +35,7 @@ export function TopNav() {
       <div className="flex h-14 items-center px-4 gap-6">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <span className="text-lg">Hornet</span>
+          <span className="text-lg">Ridge</span>
         </Link>
 
         {/* Nav links */}

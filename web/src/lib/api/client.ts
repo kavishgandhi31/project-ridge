@@ -1,5 +1,5 @@
 /**
- * Typed API client for the Hornet FastAPI backend.
+ * Typed API client for the Ridge FastAPI backend.
  *
  * All requests go through Next.js Route Handlers (/api/proxy/...)
  * so the FastAPI URL stays internal. Server-side fetches go direct.
@@ -20,7 +20,7 @@ import type {
 
 // Server-side: hit FastAPI directly. Client-side: hit Next.js proxy.
 const BACKEND_URL =
-  process.env.HORNET_API_URL ?? "http://127.0.0.1:8000";
+  process.env.RIDGE_API_URL ?? "http://127.0.0.1:8000";
 
 function isServer(): boolean {
   return typeof window === "undefined";

@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import pytest
 
-from hornet.domain.llm import TaskType
-from hornet.llm.config import (
+from ridge.domain.llm import TaskType
+from ridge.llm.config import (
     CostGuard,
     LLMConfig,
     OllamaConfig,
     OpenAICompatConfig,
     RoutingConfig,
 )
-from hornet.seeds.loader import load_llm_config_from_yaml
+from ridge.seeds.loader import load_llm_config_from_yaml
 
 
 def test_default_llm_config() -> None:

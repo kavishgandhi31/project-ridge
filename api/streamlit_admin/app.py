@@ -1,4 +1,4 @@
-"""Hornet Admin Dashboard -- internal Streamlit app for visual validation.
+"""Ridge Admin Dashboard -- internal Streamlit app for visual validation.
 
 NOT customer-facing. This is the Phase 7 admin/debug tool that reads
 from the FastAPI API to validate all pipeline layers visually.
@@ -6,7 +6,7 @@ from the FastAPI API to validate all pipeline layers visually.
 Launch:
     cd api
     # Start the API first:
-    uv run uvicorn hornet.api.main:app --port 8000
+    uv run uvicorn ridge.api.main:app --port 8000
     # Then start Streamlit:
     uv run streamlit run streamlit_admin/app.py --server.port 8502
 """
@@ -15,7 +15,7 @@ import httpx
 import streamlit as st
 
 st.set_page_config(
-    page_title="Hornet Admin",
+    page_title="Ridge Admin",
     page_icon="🐝",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -23,10 +23,10 @@ st.set_page_config(
 
 API_BASE = "http://localhost:8000"
 
-st.sidebar.title("Hornet Admin")
+st.sidebar.title("Ridge Admin")
 st.sidebar.caption("Internal debug dashboard -- not customer-facing")
 
-st.title("Hornet Admin Dashboard")
+st.title("Ridge Admin Dashboard")
 st.markdown(
     """
     **Pages:**
@@ -48,4 +48,4 @@ try:
         st.warning(f"API: degraded | {data}")
 except Exception as e:
     st.error(f"Cannot reach API at {API_BASE}: {e}")
-    st.info("Start the API with: `uv run uvicorn hornet.api.main:app --port 8000`")
+    st.info("Start the API with: `uv run uvicorn ridge.api.main:app --port 8000`")

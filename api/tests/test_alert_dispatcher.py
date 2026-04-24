@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.alerts.config import AlertConfig
-from hornet.alerts.dispatcher import dispatch
-from hornet.domain.alerting import AlertTier, TierAssignment
+from ridge.alerts.config import AlertConfig
+from ridge.alerts.dispatcher import dispatch
+from ridge.domain.alerting import AlertTier, TierAssignment
 
 _NOW = datetime.datetime(2026, 4, 12, 6, 0, tzinfo=datetime.UTC)
 

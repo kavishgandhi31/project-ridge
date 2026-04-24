@@ -11,8 +11,8 @@ from collections.abc import Callable, Mapping, Sequence
 
 import httpx
 
-from hornet.adapters.googlenews import GoogleNewsAdapter
-from hornet.domain import FetchRequest, SourceIndicatorSpec
+from ridge.adapters.googlenews import GoogleNewsAdapter
+from ridge.domain import FetchRequest, SourceIndicatorSpec
 
 _ALL_PILOTS = frozenset({"NGA", "TUR", "ZAF", "BRA", "POL"})
 

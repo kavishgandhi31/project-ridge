@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from hornet.adapters import HealthReport, SourceAdapter
-from hornet.domain import FetchRequest, Observation, SourceManifest
+from ridge.adapters import HealthReport, SourceAdapter
+from ridge.domain import FetchRequest, Observation, SourceManifest
 
 
 class TestHealthReport:

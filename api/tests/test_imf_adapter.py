@@ -20,8 +20,8 @@ from typing import Any
 
 import httpx
 
-from hornet.adapters.imf import IMFAdapter
-from hornet.domain import FetchRequest, SourceIndicatorSpec
+from ridge.adapters.imf import IMFAdapter
+from ridge.domain import FetchRequest, SourceIndicatorSpec
 
 FIXTURES = Path(__file__).parent / "fixtures" / "imf_sdmx3"
 

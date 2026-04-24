@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.derived.spreads import (
+from ridge.derived.spreads import (
     DEFAULT_SPREADS,
     SpreadSpec,
     compute_spread,
     compute_spreads,
 )
-from hornet.domain.observation import Observation
+from ridge.domain.observation import Observation
 
 
 def _obs(

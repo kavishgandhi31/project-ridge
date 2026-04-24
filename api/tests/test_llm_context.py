@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.domain.observation import Observation
-from hornet.domain.scoring import DimensionScore, ScoreResult
-from hornet.llm.context import (
+from ridge.domain.observation import Observation
+from ridge.domain.scoring import DimensionScore, ScoreResult
+from ridge.llm.context import (
     build_grounded_context,
     build_observation_context,
     build_score_summary,

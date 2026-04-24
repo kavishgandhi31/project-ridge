@@ -3,7 +3,7 @@
 Retires the hardcoded ``_PILOT_SERIES`` / ``_INDICATORS`` dicts that
 shipped with the Phase 1 FRED and WorldBank adapters. After this
 migration the registry lives in Postgres; the seed loader populates
-it from YAML files under ``src/hornet/seeds/data/``.
+it from YAML files under ``src/ridge/seeds/data/``.
 
 Revision ID: 0002
 Revises: 0001
@@ -32,7 +32,7 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    # country: authoritative registry of every country Hornet tracks.
+    # country: authoritative registry of every country Ridge tracks.
     # iso3 is the canonical identity used everywhere else; iso2 is kept
     # as a unique secondary column so the WorldBank adapter can resolve
     # its native ISO2 responses without a hardcoded map.

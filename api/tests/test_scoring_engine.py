@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.domain.event import EventRecord
-from hornet.domain.observation import Observation
-from hornet.domain.scoring import ScoringConfig
-from hornet.domain.source import SourceIndicatorSpec
-from hornet.scoring.engine import ScoringEngine
+from ridge.domain.event import EventRecord
+from ridge.domain.observation import Observation
+from ridge.domain.scoring import ScoringConfig
+from ridge.domain.source import SourceIndicatorSpec
+from ridge.scoring.engine import ScoringEngine
 
 _NOW = datetime.datetime(2026, 4, 11, tzinfo=datetime.UTC)
 _TODAY = _NOW.date()

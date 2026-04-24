@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import datetime
 
-from hornet.domain.observation import Observation
-from hornet.domain.source import SourceIndicatorSpec
-from hornet.quality.liveness import check_series_liveness
+from ridge.domain.observation import Observation
+from ridge.domain.source import SourceIndicatorSpec
+from ridge.quality.liveness import check_series_liveness
 
 
 def _obs(

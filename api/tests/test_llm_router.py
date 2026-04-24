@@ -6,10 +6,10 @@ import datetime
 
 import pytest
 
-from hornet.domain.llm import LLMRequest, LLMResponse, TaskType
-from hornet.llm.config import LLMConfig, RoutingConfig
-from hornet.llm.protocol import ProviderCapabilities, ProviderHealth
-from hornet.llm.router import (
+from ridge.domain.llm import LLMRequest, LLMResponse, TaskType
+from ridge.llm.config import LLMConfig, RoutingConfig
+from ridge.llm.protocol import ProviderCapabilities, ProviderHealth
+from ridge.llm.router import (
     LLMRouter,
     NoProviderAvailableError,
 )

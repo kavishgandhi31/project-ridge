@@ -1,0 +1,71 @@
+# Scoring engine configuration for Ridge.
+#
+# Mirrors v1's setting.yaml scoring block exactly. All values here
+# are the production defaults. Phase 3 loads this at engine
+# construction time; a future phase will persist it in a DB table
+# so dimension weights and other knobs can be tuned at runtime.
+#
+# Dimension weights must sum to 1.0.
+
+scoring_config:
+
+  # --- Dimension weights ---
+  # Equal weights across all four dimensions.
+  dimension_weights:
+    growth_momentum: 0.25
+    external_balance: 0.25
+    monetary_stance: 0.25
+    risk_sentiment: 0.25
+
+  # --- Score scale ---
+  scale_min: -3.0
+  scale_max: 3.0
+
+  # --- Frequency-tiered weighting ---
+  # Within each dimension, series are grouped by reporting frequency.
+  # Each tier's z-scores are averaged internally, then tiers are
+  # combined using these weights (normalised to present tiers).
+  frequency_weights:
+    daily: 1.0                    # current market conditions
+    weekly: 1.0                   # near real-time
+    monthly: 0.8                  # recent macro signals (OECD, IFS)
+    quarterly: 0.5                # structural indicators (BIS, BOP)
+    annual: 0.3                   # slow-moving backdrop (World Bank)
+    forecast: 0.4                 # forward projections (IMF WEO)
+
+  # --- Z-score policy ---
+  # "ewm" uses exponentially-weighted mean/std with per-frequency
+  # halflife (in observations). "full" is the legacy whole-history
+  # calculation.
+  zscore_method: ewm
+
+  ewm_halflife:
+    daily: 252                    # ~1 year of trading days
+    weekly: 52                    # ~1 year
+    monthly: 12                   # ~1 year
+    quarterly: 8                  # ~2 years
+    annual: 5                     # ~5 years
+    forecast: 4                   # ~2 WEO releases
+
+  # --- Staleness gate ---
+  # Maximum age (in days) of a series' latest observation before it
+  # is excluded from scoring.
+  staleness_gates:
+    daily: 14
+    weekly: 30
+    monthly: 120                  # ~4 months
+    quarterly: 270                # ~9 months
+    annual: 730                   # ~2 years
+    forecast: 365                 # WEO updates April + October
+
+  # --- Composite aggregation ---
+  composite_strategy: renormalize    # renormalize | zero_pad
+  coverage_confidence: sqrt          # none | linear | sqrt
+  min_dimensions_for_composite: 2
+
+  # --- News heat ---
+  news_heat_sigma: 2.0              # GDELT volume sigma threshold
+
+  # --- Z-score minimums ---
+  min_observations: 12               # minimum obs for meaningful z-score
+  momentum_window: 30                # rolling window for price momentum

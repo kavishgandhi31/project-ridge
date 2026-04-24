@@ -11,10 +11,10 @@ from datetime import UTC, date, datetime
 import pytest
 from sqlalchemy import delete, select
 
-from hornet.db.models.event_record import EventRecordRow
-from hornet.db.session import session_scope
-from hornet.domain.event import EventRecord
-from hornet.ingest.runner import run_event_ingest
+from ridge.db.models.event_record import EventRecordRow
+from ridge.db.session import session_scope
+from ridge.domain.event import EventRecord
+from ridge.ingest.runner import run_event_ingest
 
 _NOW = datetime(2026, 4, 11, 12, 0, 0, tzinfo=UTC)
 

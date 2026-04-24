@@ -30,7 +30,7 @@ coverage.xml
 
 # Local data and generated outputs — but NOT packaged seed data
 /data/
-!/src/hornet/seeds/data/
+!/src/ridge/seeds/data/
 outputs/
 *.db
 *.db-journal

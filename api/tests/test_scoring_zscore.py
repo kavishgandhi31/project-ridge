@@ -7,7 +7,7 @@ import math
 import numpy as np
 import pytest
 
-from hornet.scoring.zscore import compute_momentum_zscore, compute_zscore
+from ridge.scoring.zscore import compute_momentum_zscore, compute_zscore
 
 
 class TestComputeZscoreFull:

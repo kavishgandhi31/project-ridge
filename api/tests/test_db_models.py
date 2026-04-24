@@ -10,8 +10,8 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime
 
-from hornet.db.models import ObservationRow
-from hornet.domain import Observation
+from ridge.db.models import ObservationRow
+from ridge.domain import Observation
 
 
 def _sample_obs(**overrides: object) -> Observation:

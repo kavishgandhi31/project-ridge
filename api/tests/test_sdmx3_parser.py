@@ -2,7 +2,7 @@
 
 Fixtures under ``tests/fixtures/imf_sdmx3/`` are real captured responses
 from ``api.imf.org/external/sdmx/3.0``, one per dataflow shape we rely on.
-Regenerate them with the capture script in ``hornet/scripts`` if IMF's
+Regenerate them with the capture script in ``ridge/scripts`` if IMF's
 response schema changes.
 """
 
@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from hornet.adapters.sdmx3 import (
+from ridge.adapters.sdmx3 import (
     _parse_period,
     parse_sdmx3_json,
 )

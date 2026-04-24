@@ -14,8 +14,8 @@ from typing import Any
 
 import httpx
 
-from hornet.adapters.gdelt import GDELTAdapter
-from hornet.domain import FetchRequest, SourceIndicatorSpec
+from ridge.adapters.gdelt import GDELTAdapter
+from ridge.domain import FetchRequest, SourceIndicatorSpec
 
 _ALL_PILOTS = frozenset({"NGA", "TUR", "ZAF", "BRA", "POL"})
 

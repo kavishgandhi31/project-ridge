@@ -1,6 +1,6 @@
 """Alembic environment script — async-compatible.
 
-Reads the database URL from Hornet settings (not alembic.ini) so
+Reads the database URL from Ridge settings (not alembic.ini) so
 there is one source of truth. Imports the models package so every
 mapped class registers on Base.metadata before autogenerate runs.
 """
@@ -16,13 +16,13 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from hornet.config import get_settings
+from ridge.config import get_settings
 
 # Importing the models package triggers the side-effect registration
 # of every ObservationRow-class on Base.metadata. Do NOT remove this
 # import even if a linter flags it as unused — it is load-bearing.
-from hornet.db import models  # noqa: F401
-from hornet.db.base import Base
+from ridge.db import models  # noqa: F401
+from ridge.db.base import Base
 
 # The Alembic Config object provides access to values in alembic.ini.
 config = context.config

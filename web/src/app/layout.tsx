@@ -17,7 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hornet",
+  title: "Ridge",
   description: "Macro risk intelligence dashboard",
 };
 

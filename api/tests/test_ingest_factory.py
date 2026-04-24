@@ -14,13 +14,13 @@ from unittest.mock import patch
 import pytest
 from sqlalchemy import text
 
-from hornet.db.session import session_scope
-from hornet.ingest.factory import (
+from ridge.db.session import session_scope
+from ridge.ingest.factory import (
     MissingCredentialError,
     build_fred_adapter,
     build_worldbank_adapter,
 )
-from hornet.seeds.loader import (
+from ridge.seeds.loader import (
     load_countries_from_yaml,
     load_source_indicators_from_yaml,
     seed_countries,
@@ -45,15 +45,15 @@ class TestBuildFredAdapter:
     async def test_raises_if_no_api_key(self) -> None:
         await _clean_and_seed()
         async with session_scope() as session:
-            with patch("hornet.ingest.factory.get_settings") as mock_settings:
+            with patch("ridge.ingest.factory.get_settings") as mock_settings:
                 mock_settings.return_value.fred_api_key = None
-                with pytest.raises(MissingCredentialError, match="HORNET_FRED_API_KEY"):
+                with pytest.raises(MissingCredentialError, match="RIDGE_FRED_API_KEY"):
                     await build_fred_adapter(session)
 
     async def test_builds_with_correct_indicators(self) -> None:
         await _clean_and_seed()
         async with session_scope() as session:
-            with patch("hornet.ingest.factory.get_settings") as mock_settings:
+            with patch("ridge.ingest.factory.get_settings") as mock_settings:
                 mock_settings.return_value.fred_api_key = type(
                     "FakeSecret", (), {"get_secret_value": lambda self: "test_key"}
                 )()

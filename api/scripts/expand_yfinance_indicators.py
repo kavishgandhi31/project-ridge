@@ -17,7 +17,7 @@ import yaml
 
 # v1-reference symlink removed; seed data already captured
 V1_PATH = "../v1-reference/config/countries.yaml"  # historical — v1 data already imported
-SI_PATH = "src/hornet/seeds/data/source_indicators.yaml"
+SI_PATH = "src/ridge/seeds/data/source_indicators.yaml"
 
 # Indicator codes that are global yfinance entries (not per-country)
 GLOBAL_YF_CODES = {

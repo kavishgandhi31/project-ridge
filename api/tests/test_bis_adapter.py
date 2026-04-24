@@ -12,8 +12,8 @@ from collections.abc import Callable, Mapping, Sequence
 
 import httpx
 
-from hornet.adapters.bis import BISAdapter
-from hornet.domain import FetchRequest, SourceIndicatorSpec
+from ridge.adapters.bis import BISAdapter
+from ridge.domain import FetchRequest, SourceIndicatorSpec
 
 
 def _pilot_iso_map() -> dict[str, str]:

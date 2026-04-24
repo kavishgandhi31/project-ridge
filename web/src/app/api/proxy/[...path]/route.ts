@@ -1,5 +1,5 @@
 /**
- * Catch-all API proxy to Hornet FastAPI backend.
+ * Catch-all API proxy to Ridge FastAPI backend.
  *
  * Client-side requests hit /api/proxy/scores?country_iso3=NGA
  * and this handler forwards to http://127.0.0.1:8000/scores?country_iso3=NGA.
@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL =
-  process.env.HORNET_API_URL ?? "http://127.0.0.1:8000";
+  process.env.RIDGE_API_URL ?? "http://127.0.0.1:8000";
 
 async function proxyRequest(
   req: NextRequest,

@@ -13,7 +13,7 @@ from collections.abc import Callable
 import httpx
 import pytest
 
-from hornet.adapters.base_client import BaseClient
+from ridge.adapters.base_client import BaseClient
 
 
 def _client(
