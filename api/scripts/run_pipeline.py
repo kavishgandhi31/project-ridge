@@ -225,9 +225,23 @@ async def main() -> None:
         # =============================================================
         # Stage 3: QUALITY
         # =============================================================
+        from ridge.db.repos.observation import list_all_observations_for_quality
+
+        _log("quality", "Loading observations for quality checks...")
+        async with session_scope() as session:
+            all_obs = await list_all_observations_for_quality(session)
+        _log("quality", f"  loaded {len(all_obs)} observations")
+
         _log("quality", "Running quality checks...")
         async with session_scope() as session:
-            quality_issues = await run_quality_checks(session, reference_date=today)
+            quality_issues = await run_quality_checks(
+                session,
+                observations=all_obs,
+                reference_date=today,
+            )
+        # Free the big list before score stage per-country loads start.
+        del all_obs
+
         n_critical = sum(1 for i in quality_issues if i.severity == "critical")
         n_warning = sum(1 for i in quality_issues if i.severity == "warning")
         _log(
@@ -241,44 +255,39 @@ async def main() -> None:
         # =============================================================
         # Stage 4: SCORE
         # =============================================================
+        import time as _time
+
         _log("score", "Scoring pilot countries...")
         scoring_config = load_scoring_config_from_yaml()
         indicator_specs = load_source_indicators_from_yaml()
         engine = ScoringEngine(scoring_config, indicator_specs)
-
-        # Fetch observations and events per country
-        observations_by_country: dict[str, list[Observation]] = {}
-        events_by_country: dict[str, list[object]] = {}
 
         async with session_scope() as session:
             countries = await list_countries(session)
             country_names = {c.iso3: c.name for c in countries}
             country_regions = {c.iso3: c.region for c in countries}
 
-            for iso3 in PILOT_COUNTRIES:
+        # Per-country loop: load, score, log, discard. Bounds peak memory to
+        # ~30-50MB (one country's obs) instead of holding all 183 in RAM.
+        score_results = []
+        for iso3 in PILOT_COUNTRIES:
+            async with session_scope() as session:
                 obs = await list_observations_for_scoring(session, country_iso3=iso3)
-                observations_by_country[iso3] = obs
                 evts = await list_events_for_scoring(session, country_iso3=iso3)
-                events_by_country[iso3] = evts
-
-        score_results = engine.score_all(
-            countries=PILOT_COUNTRIES,
-            observations_by_country=observations_by_country,
-            events_by_country=events_by_country,
-            reference_date=today,
-        )
-
-        # Persist scores
-        async with session_scope() as session:
-            n_scores = await upsert_score_results(session, score_results)
-        _log("score", f"  {n_scores} countries scored")
-
-        for sr in score_results:
+            t0 = _time.perf_counter()
+            sr = engine.score_country(iso3, obs, evts, today)
+            elapsed = _time.perf_counter() - t0
+            score_results.append(sr)
             comp = f"{sr.composite:+.2f}" if sr.composite is not None else "N/A"
             _log(
                 "score",
-                f"  {sr.country_iso3}: composite={comp}, coverage={sr.coverage_fraction:.0%}",
+                f"  {sr.country_iso3}: composite={comp}, coverage={sr.coverage_fraction:.0%}, {elapsed:.2f}s",
             )
+
+        # Single bulk upsert at end
+        async with session_scope() as session:
+            n_scores = await upsert_score_results(session, score_results)
+        _log("score", f"  {n_scores} countries scored")
 
         async with session_scope() as session:
             await mark_stage_completed(session, run_id, "score")
@@ -339,6 +348,30 @@ async def main() -> None:
             from ridge.llm.providers.ollama import OllamaProvider
             from ridge.llm.router import LLMRouter
             from ridge.llm.runner import run_llm_stage
+
+            # Reload obs/events only for dispatched countries (escalate/alert/
+            # watch). Score stage no longer pre-builds these dicts; we fetch
+            # on-demand for the (typically small) dispatched set.
+            dispatched_iso3s = {
+                a.country_iso3
+                for tier_list in (
+                    dispatch_result.escalate,
+                    dispatch_result.alert,
+                    dispatch_result.watch,
+                )
+                for a in tier_list
+            }
+            observations_by_country: dict[str, list[Observation]] = {}
+            events_by_country: dict[str, list[object]] = {}
+            if dispatched_iso3s:
+                async with session_scope() as session:
+                    for iso3 in dispatched_iso3s:
+                        observations_by_country[iso3] = await list_observations_for_scoring(
+                            session, country_iso3=iso3
+                        )
+                        events_by_country[iso3] = await list_events_for_scoring(
+                            session, country_iso3=iso3
+                        )
 
             ollama_provider = OllamaProvider(llm_config.ollama)
             # Claude provider requires API key -- skip if not configured
