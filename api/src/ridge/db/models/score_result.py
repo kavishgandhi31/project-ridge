@@ -35,6 +35,31 @@ class ScoreResultRow(Base):
 
     Composite PK ``(country_iso3, scored_at)`` — TimescaleDB requires
     the partitioning column in all unique constraints.
+
+    JSONB schema contract:
+
+    ``dimensions`` is a mapping of dimension name to serialized
+    ``DimensionScore``. ``DimensionScore`` is a Pydantic model, and
+    ``from_domain`` writes its ``model_dump()``. If a field is added,
+    renamed, or removed on ``DimensionScore``, historic rows will
+    silently fail ``to_domain()`` -- the historic-row test in
+    ``tests/test_score_result_db_models.py`` pins the current shape
+    so the breakage is caught at PR time, not in production::
+
+        {
+          "<dimension_name>": {
+            "dimension":      str,           # e.g. "growth_momentum"
+            "value":          float | None,  # clamped score or None
+            "n_series_used":  int,
+            "n_series_stale": int,
+            "n_concepts":     int,
+          },
+          ...
+        }
+
+    ``news_heat`` is either NULL or a serialized ``NewsHeat``::
+
+        {"sigma": float, "volume_ratio": float}
     """
 
     __tablename__ = "score_result"

@@ -75,9 +75,3 @@ async def list_llm_responses(
     return list(result.scalars().all())
 
 
-async def list_responses_for_run(
-    session: AsyncSession,
-    run_id: str,
-) -> list[LLMResponseRow]:
-    """All LLM responses for a specific pipeline run."""
-    return await list_llm_responses(session, run_id=run_id, limit=500)
