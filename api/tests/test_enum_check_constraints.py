@@ -116,8 +116,8 @@ def _alert_record_insert(column: str, bad_value: str) -> tuple[str, dict[str, ob
         "evaluated_at": _NOW,
         "composite": None,
         "coverage_fraction": 0.0,
-        "raw_tier": "WATCH",
-        "effective_tier": "WATCH",
+        "raw_tier": "watch",
+        "effective_tier": "watch",
         "streak_length": 0,
         "velocity": None,
         "modifiers_applied": [],
@@ -149,12 +149,12 @@ _CASES = [
         "llm_response", "task_type", "bogus", _llm_response_insert, id="llm_response.task_type"
     ),
     pytest.param(
-        "alert_record", "raw_tier", "watch", _alert_record_insert, id="alert_record.raw_tier"
+        "alert_record", "raw_tier", "WATCH", _alert_record_insert, id="alert_record.raw_tier"
     ),
     pytest.param(
         "alert_record",
         "effective_tier",
-        "watch",
+        "WATCH",
         _alert_record_insert,
         id="alert_record.effective_tier",
     ),

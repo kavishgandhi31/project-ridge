@@ -27,9 +27,9 @@ class AlertTier(StrEnum):
     ESCALATE: digest + queued for Claude API deep analysis.
     """
 
-    WATCH = "WATCH"
-    ALERT = "ALERT"
-    ESCALATE = "ESCALATE"
+    WATCH = "watch"
+    ALERT = "alert"
+    ESCALATE = "escalate"
 
 
 # Ordered weakest-to-strongest for promotion/comparison logic.

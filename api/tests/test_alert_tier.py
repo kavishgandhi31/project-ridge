@@ -186,7 +186,7 @@ class TestStreak:
     def test_blocks_escalate_insufficient_runs(self) -> None:
         """1 prior ALERT run < required 2 -> cap at ALERT."""
         config = _default_config(streak_required=2)
-        history = _make_history([(-1.6, "ALERT")])
+        history = _make_history([(-1.6, "alert")])
         score = _make_score(composite=-2.5)
         result = assign_tier(
             score,
@@ -201,7 +201,7 @@ class TestStreak:
     def test_allows_escalate_after_enough_runs(self) -> None:
         """2 prior ALERT runs >= required 2 -> allow ESCALATE."""
         config = _default_config(streak_required=2)
-        history = _make_history([(-1.8, "ALERT"), (-1.6, "ALERT")])
+        history = _make_history([(-1.8, "alert"), (-1.6, "alert")])
         score = _make_score(composite=-2.5)
         result = assign_tier(
             score,
@@ -215,7 +215,7 @@ class TestStreak:
     def test_escalate_counts_as_alert_plus(self) -> None:
         """Prior ESCALATE entries count toward the ALERT+ streak."""
         config = _default_config(streak_required=2)
-        history = _make_history([(-2.5, "ESCALATE"), (-2.1, "ESCALATE")])
+        history = _make_history([(-2.5, "escalate"), (-2.1, "escalate")])
         score = _make_score(composite=-2.8)
         result = assign_tier(
             score,
@@ -229,7 +229,7 @@ class TestStreak:
     def test_broken_by_watch(self) -> None:
         """A WATCH entry breaks the streak."""
         config = _default_config(streak_required=2)
-        history = _make_history([(-1.0, "WATCH"), (-1.8, "ALERT")])
+        history = _make_history([(-1.0, "watch"), (-1.8, "alert")])
         score = _make_score(composite=-2.5)
         result = assign_tier(
             score,
@@ -243,7 +243,7 @@ class TestStreak:
     def test_broken_by_no_signal(self) -> None:
         """None tier in history breaks the streak."""
         config = _default_config(streak_required=2)
-        history = _make_history([(-0.5, None), (-1.8, "ALERT")])
+        history = _make_history([(-0.5, None), (-1.8, "alert")])
         score = _make_score(composite=-2.5)
         result = assign_tier(
             score,
@@ -307,7 +307,7 @@ class TestVelocityBoost:
     def test_promotes_alert_to_escalate(self) -> None:
         """Fast-moving ALERT -> ESCALATE (streak disabled)."""
         config = _default_config(velocity_threshold=0.5, streak_required=0)
-        history = _make_history([(-1.0, "WATCH")])
+        history = _make_history([(-1.0, "watch")])
         score = _make_score(composite=-1.7)
         result = assign_tier(
             score,
@@ -321,7 +321,7 @@ class TestVelocityBoost:
     def test_no_effect_below_threshold(self) -> None:
         """Small move should not trigger velocity boost."""
         config = _default_config(velocity_threshold=0.5)
-        history = _make_history([(-1.0, "WATCH")])
+        history = _make_history([(-1.0, "watch")])
         score = _make_score(composite=-1.2)
         result = assign_tier(
             score,
@@ -335,7 +335,7 @@ class TestVelocityBoost:
     def test_does_not_exceed_escalate(self) -> None:
         """ESCALATE is the ceiling."""
         config = _default_config(velocity_threshold=0.5, streak_required=0)
-        history = _make_history([(-1.5, "ALERT")])
+        history = _make_history([(-1.5, "alert")])
         score = _make_score(composite=-2.5)
         result = assign_tier(
             score,
@@ -353,7 +353,7 @@ class TestVelocityBoost:
             streak_required=0,
             min_coverage_for_escalate=0.5,
         )
-        history = _make_history([(-1.0, "WATCH")])
+        history = _make_history([(-1.0, "watch")])
         score = _make_score(composite=-1.7, coverage=0.25)
         result = assign_tier(
             score,
@@ -387,7 +387,7 @@ class TestVelocityBoost:
             min_coverage_for_escalate=0.5,
         )
         # Large velocity but raw tier is ESCALATE (demoted by streak)
-        history = _make_history([(-1.5, "ALERT")])  # streak=1 < required=2
+        history = _make_history([(-1.5, "alert")])  # streak=1 < required=2
         score = _make_score(composite=-2.5)  # raw ESCALATE
         result = assign_tier(
             score,
@@ -413,7 +413,7 @@ class TestCombinedModifiers:
             velocity_threshold=0.5,
             min_coverage_for_escalate=0.5,
         )
-        history = _make_history([(-1.9, "ALERT"), (-1.6, "ALERT")])
+        history = _make_history([(-1.9, "alert"), (-1.6, "alert")])
         score = _make_score(composite=-2.5, coverage=0.75)
         result = assign_tier(
             score,
@@ -431,7 +431,7 @@ class TestCombinedModifiers:
             velocity_threshold=0.5,
             min_coverage_for_escalate=0.5,
         )
-        history = _make_history([(-1.9, "ALERT"), (-1.6, "ALERT")])
+        history = _make_history([(-1.9, "alert"), (-1.6, "alert")])
         score = _make_score(composite=-2.5, coverage=0.75)
         result = assign_tier(
             score,
@@ -453,21 +453,21 @@ class TestHelpers:
         assert count_alert_streak([]) == 0
 
     def test_count_alert_streak_mixed(self) -> None:
-        history = _make_history([(-2.0, "ESCALATE"), (-1.8, "ALERT"), (-1.0, "WATCH")])
+        history = _make_history([(-2.0, "escalate"), (-1.8, "alert"), (-1.0, "watch")])
         assert count_alert_streak(history) == 2
 
     def test_count_alert_streak_broken_at_start(self) -> None:
-        history = _make_history([(-1.0, "WATCH"), (-1.8, "ALERT")])
+        history = _make_history([(-1.0, "watch"), (-1.8, "alert")])
         assert count_alert_streak(history) == 0
 
     def test_compute_velocity_basic(self) -> None:
-        history = _make_history([(-1.5, "ALERT")])
+        history = _make_history([(-1.5, "alert")])
         assert compute_velocity(-2.0, history) == pytest.approx(0.5)
 
     def test_compute_velocity_skips_none(self) -> None:
         history: list[dict[str, object]] = [
             {"composite": None, "effective_tier": None},
-            {"composite": -1.0, "effective_tier": "WATCH"},
+            {"composite": -1.0, "effective_tier": "watch"},
         ]
         assert compute_velocity(-2.0, history) == pytest.approx(1.0)
 
@@ -497,7 +497,7 @@ class TestTierAssignmentFields:
 
     def test_streak_length_recorded(self) -> None:
         config = _default_config(streak_required=2)
-        history = _make_history([(-1.8, "ALERT"), (-1.6, "ALERT"), (-1.5, "ALERT")])
+        history = _make_history([(-1.8, "alert"), (-1.6, "alert"), (-1.5, "alert")])
         score = _make_score(composite=-2.5)
         result = assign_tier(
             score,
@@ -510,7 +510,7 @@ class TestTierAssignmentFields:
 
     def test_velocity_recorded(self) -> None:
         config = _default_config(streak_required=0)
-        history = _make_history([(-1.0, "WATCH")])
+        history = _make_history([(-1.0, "watch")])
         score = _make_score(composite=-2.5)
         result = assign_tier(
             score,

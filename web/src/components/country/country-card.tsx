@@ -47,7 +47,7 @@ export function CountryCard({ country }: CountryCardProps) {
                 variant="secondary"
                 className={cn("text-[10px] shrink-0", tierBgColor(tier))}
               >
-                {tier}
+                {tier.toUpperCase()}
               </Badge>
             )}
           </div>

@@ -110,7 +110,7 @@ export function CountryDashboard({ iso3 }: CountryDashboardProps) {
             variant="secondary"
             className={cn("text-sm px-3 py-1", tierBgColor(tier))}
           >
-            {tier}
+            {tier.toUpperCase()}
           </Badge>
         )}
       </div>
@@ -202,7 +202,7 @@ export function CountryDashboard({ iso3 }: CountryDashboardProps) {
           {latestNarrative && (
             <NarrativeBlock narrative={latestNarrative} density={density} />
           )}
-          {showAtLeast("analyst") && latestRationale && tier === "ESCALATE" && (
+          {showAtLeast("analyst") && latestRationale && tier === "escalate" && (
             <>
               <Separator />
               <NarrativeBlock
@@ -216,7 +216,7 @@ export function CountryDashboard({ iso3 }: CountryDashboardProps) {
 
         {/* Ask panel */}
         <div className="lg:col-span-1">
-          <AskPanel countryIso3={iso3} countryName={country?.name ?? iso3} />
+          <AskPanel key={iso3} countryIso3={iso3} countryName={country?.name ?? iso3} />
         </div>
       </div>
 

@@ -11,13 +11,7 @@
 
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useState } from "react";
 import type { DensityMode } from "@/lib/types";
 
 interface DensityContextValue {
@@ -44,15 +38,14 @@ export function useDensity(): DensityContextValue {
   return useContext(DensityContext);
 }
 
-export function useDensityProvider(): DensityContextValue {
-  const [density, setDensityState] = useState<DensityMode>("analyst");
+function readStoredDensity(): DensityMode {
+  if (typeof window === "undefined") return "analyst";
+  const stored = localStorage.getItem(DENSITY_KEY);
+  return stored && stored in DENSITY_LEVELS ? (stored as DensityMode) : "analyst";
+}
 
-  useEffect(() => {
-    const stored = localStorage.getItem(DENSITY_KEY);
-    if (stored && stored in DENSITY_LEVELS) {
-      setDensityState(stored as DensityMode);
-    }
-  }, []);
+export function useDensityProvider(): DensityContextValue {
+  const [density, setDensityState] = useState<DensityMode>(readStoredDensity);
 
   const setDensity = useCallback((mode: DensityMode) => {
     setDensityState(mode);

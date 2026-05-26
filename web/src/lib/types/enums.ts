@@ -1,4 +1,4 @@
-export type AlertTier = "WATCH" | "ALERT" | "ESCALATE";
+export type AlertTier = "watch" | "alert" | "escalate";
 
 export type DensityMode = "overview" | "analyst" | "research";
 

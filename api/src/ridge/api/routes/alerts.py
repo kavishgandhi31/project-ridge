@@ -14,7 +14,7 @@ router = APIRouter(prefix="/alerts", tags=["alerts"])
 async def get_alerts(
     country_iso3: str | None = Query(None, description="Filter by country ISO3"),
     run_id: str | None = Query(None, description="Filter by pipeline run ID"),
-    effective_tier: str | None = Query(None, description="Filter by tier (WATCH, ALERT, ESCALATE)"),
+    effective_tier: str | None = Query(None, description="Filter by tier (watch, alert, escalate)"),
     limit: int = Query(100, ge=1, le=500),
 ) -> list[dict[str, object]]:
     """List alert records with optional filters."""

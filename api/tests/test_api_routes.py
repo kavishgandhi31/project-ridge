@@ -56,7 +56,7 @@ async def test_alerts_endpoint(client: AsyncClient) -> None:
 
 
 async def test_alerts_tier_filter(client: AsyncClient) -> None:
-    resp = await client.get("/alerts", params={"effective_tier": "ESCALATE"})
+    resp = await client.get("/alerts", params={"effective_tier": "escalate"})
     assert resp.status_code == 200
 
 

@@ -18,7 +18,7 @@ with col2:
 
 params: dict[str, object] = {"limit": limit}
 if tier_filter != "All":
-    params["effective_tier"] = tier_filter
+    params["effective_tier"] = tier_filter.lower()
 
 try:
     alerts = httpx.get(f"{API_BASE}/alerts", params=params, timeout=30).json()
@@ -38,11 +38,11 @@ for a in alerts:
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    st.metric("ESCALATE", tier_counts.get("ESCALATE", 0))
+    st.metric("ESCALATE", tier_counts.get("escalate", 0))
 with col2:
-    st.metric("ALERT", tier_counts.get("ALERT", 0))
+    st.metric("ALERT", tier_counts.get("alert", 0))
 with col3:
-    st.metric("WATCH", tier_counts.get("WATCH", 0))
+    st.metric("WATCH", tier_counts.get("watch", 0))
 with col4:
     st.metric("Total", len(alerts))
 
@@ -53,8 +53,8 @@ for a in alerts:
     rows.append(
         {
             "Country": a.get("country_iso3"),
-            "Effective Tier": a.get("effective_tier") or "-",
-            "Raw Tier": a.get("raw_tier") or "-",
+            "Effective Tier": (a.get("effective_tier") or "").upper() or "-",
+            "Raw Tier": (a.get("raw_tier") or "").upper() or "-",
             "Composite": a.get("composite"),
             "Coverage": f"{a['coverage_fraction']:.0%}" if a.get("coverage_fraction") else "-",
             "Streak": a.get("streak_length", 0),

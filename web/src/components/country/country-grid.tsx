@@ -17,9 +17,9 @@ type SortKey = "name" | "score" | "tier";
 
 const TIER_FILTERS: { value: AlertTier | "ALL"; label: string }[] = [
   { value: "ALL", label: "All" },
-  { value: "ESCALATE", label: "Escalate" },
-  { value: "ALERT", label: "Alert" },
-  { value: "WATCH", label: "Watch" },
+  { value: "escalate", label: "Escalate" },
+  { value: "alert", label: "Alert" },
+  { value: "watch", label: "Watch" },
 ];
 
 export function CountryGrid() {

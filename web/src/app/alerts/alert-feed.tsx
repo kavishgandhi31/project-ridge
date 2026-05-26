@@ -10,7 +10,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAlerts, useCountries, useNarratives } from "@/lib/api/hooks";
+import { useAlerts, useCountries } from "@/lib/api/hooks";
 import { useDensity } from "@/lib/density";
 import { formatRelativeTime, formatScore, tierBgColor } from "@/lib/format";
 import type { AlertRecord, AlertTier } from "@/lib/types";
@@ -18,12 +18,12 @@ import { cn } from "@/lib/utils";
 import { ChevronRight, TrendingUp, Zap, Eye } from "lucide-react";
 
 const TIER_CONFIG: Record<AlertTier, { icon: typeof Zap; label: string }> = {
-  ESCALATE: { icon: Zap, label: "Escalate" },
-  ALERT: { icon: TrendingUp, label: "Alert" },
-  WATCH: { icon: Eye, label: "Watch" },
+  escalate: { icon: Zap, label: "Escalate" },
+  alert: { icon: TrendingUp, label: "Alert" },
+  watch: { icon: Eye, label: "Watch" },
 };
 
-const TIER_ORDER: AlertTier[] = ["ESCALATE", "ALERT", "WATCH"];
+const TIER_ORDER: AlertTier[] = ["escalate", "alert", "watch"];
 
 export function AlertFeed() {
   const { data: alerts, isLoading } = useAlerts({ limit: 500 });
@@ -169,7 +169,7 @@ function AlertCard({
             variant="secondary"
             className={cn("text-[10px] shrink-0", tierBgColor(alert.effective_tier))}
           >
-            {alert.effective_tier}
+            {alert.effective_tier?.toUpperCase()}
           </Badge>
 
           {/* Timestamp */}

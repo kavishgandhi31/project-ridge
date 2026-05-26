@@ -23,7 +23,7 @@ export const DIMENSION_LABELS: Record<string, string> = {
 };
 
 export const TIER_SEVERITY: Record<AlertTier, number> = {
-  WATCH: 0,
-  ALERT: 1,
-  ESCALATE: 2,
+  watch: 0,
+  alert: 1,
+  escalate: 2,
 };

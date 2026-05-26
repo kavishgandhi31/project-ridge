@@ -78,9 +78,9 @@ export function AskPanel({ countryIso3, countryName }: AskPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [contextReady, setContextReady] = useState(false);
 
-  // Pre-fetch context when the country page loads
+  // Pre-fetch context on mount. The parent passes key={iso3} so the
+  // component remounts on country change -- no separate reset effect needed.
   useEffect(() => {
-    setContextReady(false);
     fetch(`/api/proxy/ask/warmup/${countryIso3}`)
       .then((res) => {
         if (res.ok) setContextReady(true);
@@ -88,12 +88,6 @@ export function AskPanel({ countryIso3, countryName }: AskPanelProps) {
       .catch(() => {
         // Warmup failed -- ask endpoint will build context on demand
       });
-  }, [countryIso3]);
-
-  // Clear messages when navigating to a different country
-  useEffect(() => {
-    setMessages([]);
-    setError(null);
   }, [countryIso3]);
 
   const handleSubmit = useCallback(async () => {
