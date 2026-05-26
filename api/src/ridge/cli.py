@@ -204,7 +204,11 @@ async def _run_pipeline(
     """Async pipeline execution."""
     # Import here to avoid circular imports and slow CLI startup
     from ridge.db.repos.country import list_countries
-    from ridge.db.repos.pipeline_run import mark_stage_completed, upsert_pipeline_run
+    from ridge.db.repos.pipeline_run import (
+        fail_orphan_runs,
+        mark_stage_completed,
+        upsert_pipeline_run,
+    )
     from ridge.db.session import dispose_engine, session_scope
     from ridge.domain.pipeline import PipelineRun, RunStatus, RunType
     from ridge.seeds.loader import seed_all
@@ -217,7 +221,8 @@ async def _run_pipeline(
         ts = datetime.datetime.now(datetime.UTC).strftime("%H:%M:%S")
         typer.echo(f"[{ts}] [{stage:12s}] {msg}")
 
-    # Create run record
+    # Sweep any pipeline_run rows stuck in 'running' from a prior crash,
+    # then create this run's record.
     pipeline_run = PipelineRun(
         run_id=run_id,
         run_type=RunType.MANUAL,
@@ -225,6 +230,9 @@ async def _run_pipeline(
         status=RunStatus.RUNNING,
     )
     async with session_scope() as session:
+        orphaned = await fail_orphan_runs(session)
+        if orphaned:
+            _log("startup", f"Marked {len(orphaned)} orphaned run(s) as failed: {orphaned}")
         await upsert_pipeline_run(session, pipeline_run)
 
     try:

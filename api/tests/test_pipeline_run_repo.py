@@ -17,6 +17,9 @@ from sqlalchemy import delete, select, text
 
 from ridge.db.models.pipeline_run import PipelineRunRow
 from ridge.db.repos.pipeline_run import (
+    ORPHAN_THRESHOLD,
+    fail_orphan_runs,
+    get_pipeline_run,
     mark_stage_completed,
     upsert_pipeline_run,
 )
@@ -121,3 +124,79 @@ class TestMarkStageCompleted:
                 text("SELECT 1 FROM information_schema.tables WHERE table_name = 'pipeline_run'")
             )
             assert result.scalar() == 1
+
+
+class TestFailOrphanRuns:
+    async def _seed_run_at(self, run_id: str, started_at: datetime.datetime) -> None:
+        run = PipelineRun(
+            run_id=run_id,
+            run_type=RunType.MANUAL,
+            started_at=started_at,
+            status=RunStatus.RUNNING,
+        )
+        async with session_scope() as session:
+            await upsert_pipeline_run(session, run)
+
+    async def test_marks_stale_running_run_as_failed(
+        self,
+        clean_test_runs: None,
+    ) -> None:
+        run_id = f"{_TEST_RUN_ID_PREFIX}{uuid.uuid4().hex[:8]}"
+        stale_start = datetime.datetime.now(datetime.UTC) - ORPHAN_THRESHOLD - datetime.timedelta(minutes=1)
+        await self._seed_run_at(run_id, stale_start)
+
+        async with session_scope() as session:
+            orphaned = await fail_orphan_runs(session)
+
+        assert run_id in orphaned
+        async with session_scope() as session:
+            run = await get_pipeline_run(session, run_id)
+        assert run is not None
+        assert run.status == RunStatus.FAILED
+        assert run.error_message == "orphaned: process did not finish before next run started"
+        assert run.completed_at is not None
+
+    async def test_leaves_fresh_running_run_untouched(
+        self,
+        clean_test_runs: None,
+    ) -> None:
+        run_id = f"{_TEST_RUN_ID_PREFIX}{uuid.uuid4().hex[:8]}"
+        fresh_start = datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=5)
+        await self._seed_run_at(run_id, fresh_start)
+
+        async with session_scope() as session:
+            orphaned = await fail_orphan_runs(session)
+
+        assert run_id not in orphaned
+        async with session_scope() as session:
+            run = await get_pipeline_run(session, run_id)
+        assert run is not None
+        assert run.status == RunStatus.RUNNING
+
+    async def test_leaves_completed_runs_untouched(
+        self,
+        clean_test_runs: None,
+    ) -> None:
+        """A long-ago run that already transitioned out of `running`
+        must never be touched, no matter how old its started_at is.
+        """
+        run_id = f"{_TEST_RUN_ID_PREFIX}{uuid.uuid4().hex[:8]}"
+        long_ago = datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=30)
+        completed = PipelineRun(
+            run_id=run_id,
+            run_type=RunType.MANUAL,
+            started_at=long_ago,
+            completed_at=long_ago + datetime.timedelta(minutes=5),
+            status=RunStatus.COMPLETED,
+        )
+        async with session_scope() as session:
+            await upsert_pipeline_run(session, completed)
+
+        async with session_scope() as session:
+            orphaned = await fail_orphan_runs(session)
+
+        assert run_id not in orphaned
+        async with session_scope() as session:
+            run = await get_pipeline_run(session, run_id)
+        assert run is not None
+        assert run.status == RunStatus.COMPLETED
