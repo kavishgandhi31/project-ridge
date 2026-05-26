@@ -59,10 +59,6 @@ async def mark_stage_completed(
 
     Uses Postgres array_append to atomically add the stage without
     re-reading the row.
-
-    ``stage_name`` is passed as a bound parameter, not interpolated
-    into SQL. Safe against injection even if a future caller pipes
-    user input through.
     """
     from sqlalchemy import func, literal
 
