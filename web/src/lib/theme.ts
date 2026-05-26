@@ -7,13 +7,7 @@
 
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 export type ThemeId = "light" | "dark" | "solarized-light" | "solarized-dark";
 
@@ -47,21 +41,22 @@ export function useTheme(): ThemeContextValue {
   return useContext(ThemeContext);
 }
 
+function readStoredTheme(): ThemeId {
+  if (typeof window === "undefined") return "light";
+  const stored = localStorage.getItem(THEME_KEY);
+  return stored && THEMES.some((t) => t.id === stored) ? (stored as ThemeId) : "light";
+}
+
 export function useThemeProvider(): ThemeContextValue {
-  const [theme, setThemeState] = useState<ThemeId>("light");
+  const [theme, setThemeState] = useState<ThemeId>(readStoredTheme);
 
   useEffect(() => {
-    const stored = localStorage.getItem(THEME_KEY);
-    if (stored && THEMES.some((t) => t.id === stored)) {
-      setThemeState(stored as ThemeId);
-      document.documentElement.setAttribute("data-theme", stored);
-    }
-  }, []);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   const setTheme = useCallback((id: ThemeId) => {
     setThemeState(id);
     localStorage.setItem(THEME_KEY, id);
-    document.documentElement.setAttribute("data-theme", id);
   }, []);
 
   return { theme, setTheme };

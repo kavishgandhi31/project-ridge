@@ -24,28 +24,13 @@ async def upsert_llm_response(
 
     Uses INSERT ... ON CONFLICT DO UPDATE on response_id so that
     re-running the same generation (e.g. during eval) overwrites
-    rather than duplicating.
+    rather than duplicating. Relies on LLMResponseRow.from_domain
+    producing a deterministic id for the same natural key.
     """
     row = LLMResponseRow.from_domain(response)
 
-    stmt = pg_insert(LLMResponseRow).values(
-        response_id=row.response_id,
-        run_id=row.run_id,
-        country_iso3=row.country_iso3,
-        template_name=row.template_name,
-        task_type=row.task_type,
-        provider_id=row.provider_id,
-        model_id=row.model_id,
-        content=row.content,
-        citations_used=row.citations_used,
-        citations_available_count=row.citations_available_count,
-        ungrounded_claims=row.ungrounded_claims,
-        grounding_score=row.grounding_score,
-        tokens_in=row.tokens_in,
-        tokens_out=row.tokens_out,
-        latency_ms=row.latency_ms,
-        generated_at=row.generated_at,
-    )
+    values = {col.name: getattr(row, col.name) for col in LLMResponseRow.__table__.columns}
+    stmt = pg_insert(LLMResponseRow).values(**values)
     stmt = stmt.on_conflict_do_update(
         index_elements=["response_id"],
         set_={
@@ -73,12 +58,7 @@ async def list_llm_responses(
     since: datetime.datetime | None = None,
     limit: int = 100,
 ) -> list[LLMResponseRow]:
-    """Query LLM responses with optional filters.
-
-    Returns rows (not domain objects) since GroundedResponse requires
-    the full citation table which we don't store back in domain form.
-    Consumers that need structured citations can parse the JSONB.
-    """
+    """Query LLM responses with optional filters."""
     stmt = select(LLMResponseRow).order_by(LLMResponseRow.generated_at.desc())
 
     if run_id is not None:
@@ -95,9 +75,3 @@ async def list_llm_responses(
     return list(result.scalars().all())
 
 
-async def list_responses_for_run(
-    session: AsyncSession,
-    run_id: str,
-) -> list[LLMResponseRow]:
-    """All LLM responses for a specific pipeline run."""
-    return await list_llm_responses(session, run_id=run_id, limit=500)

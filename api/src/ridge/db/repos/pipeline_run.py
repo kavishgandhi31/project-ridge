@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import datetime
+
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ridge.db.models.pipeline_run import PipelineRunRow
-from ridge.domain.pipeline import PipelineRun
+from ridge.domain.pipeline import PipelineRun, RunStatus
+
+ORPHAN_THRESHOLD = datetime.timedelta(hours=2)
 
 
 async def upsert_pipeline_run(
@@ -60,7 +64,7 @@ async def mark_stage_completed(
     Uses Postgres array_append to atomically add the stage without
     re-reading the row.
     """
-    from sqlalchemy import func, literal_column
+    from sqlalchemy import func, literal
 
     stmt = (
         update(PipelineRunRow)
@@ -68,7 +72,7 @@ async def mark_stage_completed(
         .values(
             stages_completed=func.array_append(
                 PipelineRunRow.stages_completed,
-                literal_column(f"'{stage_name}'"),
+                literal(stage_name),
             ),
         )
     )
@@ -84,6 +88,36 @@ async def get_pipeline_run(
     result = await session.execute(stmt)
     row = result.scalar_one_or_none()
     return row.to_domain() if row else None
+
+
+async def fail_orphan_runs(
+    session: AsyncSession,
+    *,
+    threshold: datetime.timedelta = ORPHAN_THRESHOLD,
+) -> list[str]:
+    """Mark stale `running` rows as `failed`. Returns the run_ids touched.
+
+    A pipeline run row only transitions out of `running` at the end of
+    the CLI's try/except. A crash (OOM, SIGKILL, host reboot) leaves it
+    stuck. This helper sweeps any `running` row older than ``threshold``
+    on startup so the dashboard never shows phantom in-flight runs.
+    """
+    cutoff = datetime.datetime.now(datetime.UTC) - threshold
+    stmt = (
+        update(PipelineRunRow)
+        .where(
+            PipelineRunRow.status == RunStatus.RUNNING.value,
+            PipelineRunRow.started_at < cutoff,
+        )
+        .values(
+            status=RunStatus.FAILED.value,
+            completed_at=datetime.datetime.now(datetime.UTC),
+            error_message="orphaned: process did not finish before next run started",
+        )
+        .returning(PipelineRunRow.run_id)
+    )
+    result = await session.execute(stmt)
+    return [row for row in result.scalars().all()]
 
 
 async def list_pipeline_runs(

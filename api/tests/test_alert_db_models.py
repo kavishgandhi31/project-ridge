@@ -97,8 +97,8 @@ class TestAlertRecordRow:
         row = AlertRecordRow.from_domain(assignment)
 
         assert row.country_iso3 == "TUR"
-        assert row.raw_tier == "ESCALATE"
-        assert row.effective_tier == "ALERT"
+        assert row.raw_tier == "escalate"
+        assert row.effective_tier == "alert"
         assert row.streak_length == 1
         assert row.velocity == 0.8
         assert row.modifiers_applied == ["streak_hold"]
@@ -110,8 +110,8 @@ class TestAlertRecordRow:
             evaluated_at=_NOW,
             composite=-1.6,
             coverage_fraction=1.0,
-            raw_tier="ALERT",
-            effective_tier="ALERT",
+            raw_tier="alert",
+            effective_tier="alert",
             streak_length=3,
             velocity=0.2,
             modifiers_applied=[],
@@ -119,7 +119,7 @@ class TestAlertRecordRow:
         d = row.to_domain_dict()
 
         assert d["country_iso3"] == "NGA"
-        assert d["effective_tier"] == "ALERT"
+        assert d["effective_tier"] == "alert"
         assert d["composite"] == -1.6
         assert d["streak_length"] == 3
 

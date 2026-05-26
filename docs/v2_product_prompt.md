@@ -65,3 +65,66 @@ v1's biggest weakness is hardcoding disguised as config. Country lists, indicato
 5. **Monetization architecture** — auth, user management, subscription tiers, what's free vs paid. Just the technical architecture, not business strategy.
 
 Be direct. Tell me where my instincts are wrong. I'd rather hear "that's overengineered for a solo dev" than build something I can't maintain.
+
+---
+
+## Glossary
+
+### Data sources
+
+- **FRED** — Federal Reserve Economic Data, the St. Louis Fed's free public database of US and international macro time series (rates, inflation, output, FX, etc.). Accessed via the FRED API with an API key.
+- **yfinance** — Open-source Python library that scrapes Yahoo Finance for market data (FX pairs, equity indices, commodities, individual tickers). Free, unofficial, rate-limited; used here for near-real-time price data.
+- **World Bank** — World Bank Open Data API, free access to development indicators across ~200 countries (GDP, trade, debt, demographics). Returns paginated JSON; first page is regional aggregates, country rows start on later pages.
+- **BIS** — Bank for International Settlements, the "central bank for central banks" in Basel. Publishes credit-to-GDP gaps, residential property prices, debt service ratios, effective exchange rates. Bulk CSV downloads are more reliable than the API.
+- **IMF** — International Monetary Fund. Three datasets used here:
+  - **WEO** (World Economic Outlook) — biannual macro forecasts (GDP, CPI, fiscal, current account) for ~190 countries.
+  - **IFS** (International Financial Statistics) — monthly monetary, FX, and reserve data.
+  - **BOP** (Balance of Payments) — quarterly external accounts (current account, capital flows).
+- **OECD** — Organisation for Economic Co-operation and Development. Used here for:
+  - **CLI** (Composite Leading Indicator) — monthly index designed to anticipate turning points in economic activity 6–9 months ahead.
+  - **BCI** (Business Confidence Indicator) — monthly survey-based gauge of business sentiment.
+
+### Paid sources mentioned
+
+- **Bloomberg B-PIPE** — Bloomberg's enterprise market-data feed (Bloomberg Professional - PIPE). Institutional pricing.
+- **Haver** — Haver Analytics, a paid macro time-series database widely used by sell-side and buy-side macro shops.
+- **Refinitiv** — LSEG's market and reference data platform (formerly Thomson Reuters Eikon/DataScope).
+
+### Finance / market acronyms
+
+- **AUM** — Assets Under Management. Total capital the firm manages.
+- **PM** — Portfolio Manager.
+- **FX** — Foreign Exchange (currencies).
+- **EM / FM** — Emerging Markets / Frontier Markets. Asset-class buckets for less-developed economies; FM is the smaller, less-liquid tier below EM.
+- **CDS** — Credit Default Swap. Insurance-like derivative whose spread reflects perceived default risk; sovereign CDS spreads are a real-time gauge of country credit risk.
+- **Sovereign credit** — Bonds issued by national governments; the asset class this analyst covers alongside FX, rates, and equities.
+- **Rates** — Interest-rate markets (government bond yields, swaps, central-bank policy rates).
+- **GDP / CPI** — Gross Domestic Product / Consumer Price Index. Output and inflation, respectively.
+- **BRL / PEN** — ISO 4217 currency codes: Brazilian Real / Peruvian Sol. Cited as cases where FRED and yfinance disagree on quoting convention.
+- **USD/X vs X/USD** — FX quoting convention. "USD/X" means "how many units of currency X per 1 USD"; "X/USD" is the inverse. Mixing the two silently inverts everything downstream.
+- **RUS / IRN / PRK / SYR** — ISO 3166-1 alpha-3 country codes: Russia / Iran / North Korea / Syria. Sanctioned markets with no investable market data but relevant for spillover.
+
+### Methodology terms
+
+- **z-score** — Number of standard deviations a value sits from its historical mean. Used here to normalize indicators across countries before combining into a composite.
+- **Composite score** — Weighted average of the four scoring dimensions; bounded roughly -3 to +3 in z-score space.
+- **Tier thresholds (1.0 / 1.5 / 2.0)** — Composite-score cutoffs that map to alert tiers WATCH / ALERT / ESCALATE.
+- **Peer-relative scoring** — Z-scoring a country against a peer group (e.g., EM Europe) instead of the global universe, so regional outliers stand out.
+- **Contagion scoring** — Measure of how stress in one country is propagating to correlated peers.
+- **4-sigma gate** — Outlier filter that flags observations more than 4 standard deviations from the rolling mean.
+- **Backfill detection** — Catching when a source retroactively rewrites historical values (common with FRED revisions).
+- **Coverage gate** — Minimum fraction of indicators that must be present for a composite to be computed (here, 50%).
+
+### Tech / infra terms
+
+- **launchd** — macOS's native service manager (the systemd equivalent). Used to run the daily pipeline on the Mac Mini.
+- **Streamlit** — Python framework for building data-app UIs from scripts. Fast to prototype, opinionated, looks like a data-science notebook.
+- **SQLite** — File-based SQL database, no server. Used for both the API response cache and the historical store.
+- **Postgres** — PostgreSQL, server-based relational database; the typical "graduate from SQLite" choice.
+- **Celery / APScheduler** — Python task schedulers. Celery is a distributed task queue (needs a broker like Redis); APScheduler is in-process and lighter.
+- **React / Next.js** — JavaScript/TypeScript frontend frameworks; Next.js is the production-grade React meta-framework.
+- **YAML** — Human-readable config-file format. Used pejoratively here ("hardcoding disguised as config") to mean static files that require a redeploy to change.
+- **LLM** — Large Language Model (e.g., Claude, GPT). Used here for narrative analysis on top of the scored data.
+- **API** — Application Programming Interface; HTTP endpoints exposed by data providers.
+- **Adapter / pluggable source** — Design pattern where each external source implements a common interface so it can be swapped without touching the pipeline.
+- **Multi-tenant** — Single deployment serves many independent users, each with isolated data/config.

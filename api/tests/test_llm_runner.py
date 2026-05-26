@@ -110,7 +110,7 @@ async def test_runner_generates_narratives() -> None:
     router = LLMRouter(config, {"ollama": ollama, "claude": claude})
 
     dispatch = DispatchResult(
-        watch=(_tier("NGA", "WATCH"),),
+        watch=(_tier("NGA", "watch"),),
     )
 
     result = await run_llm_stage(
@@ -141,7 +141,7 @@ async def test_runner_generates_rationales_for_escalate() -> None:
     router = LLMRouter(config, {"ollama": ollama, "claude": claude})
 
     dispatch = DispatchResult(
-        escalate=(_tier("NGA", "ESCALATE"),),
+        escalate=(_tier("NGA", "escalate"),),
     )
 
     result = await run_llm_stage(

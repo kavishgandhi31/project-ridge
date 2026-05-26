@@ -62,7 +62,7 @@ def count_alert_streak(prior_records: Sequence[dict[str, Any]]) -> int:
     streak = 0
     for record in prior_records:
         tier = record.get("effective_tier")
-        if tier in (AlertTier.ALERT, AlertTier.ESCALATE, "ALERT", "ESCALATE"):
+        if tier in (AlertTier.ALERT, AlertTier.ESCALATE, "alert", "escalate"):
             streak += 1
         else:
             break

@@ -81,11 +81,11 @@ export function formatRelativeTime(iso: string | null | undefined): string {
 /** Get a CSS color class for an alert tier. */
 export function tierColor(tier: string | null | undefined): string {
   switch (tier) {
-    case "ESCALATE":
+    case "escalate":
       return "text-red-600 dark:text-red-400";
-    case "ALERT":
+    case "alert":
       return "text-amber-600 dark:text-amber-400";
-    case "WATCH":
+    case "watch":
       return "text-blue-600 dark:text-blue-400";
     default:
       return "text-muted-foreground";
@@ -95,11 +95,11 @@ export function tierColor(tier: string | null | undefined): string {
 /** Get a CSS background class for an alert tier badge. */
 export function tierBgColor(tier: string | null | undefined): string {
   switch (tier) {
-    case "ESCALATE":
+    case "escalate":
       return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-    case "ALERT":
+    case "alert":
       return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300";
-    case "WATCH":
+    case "watch":
       return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
     default:
       return "bg-muted text-muted-foreground";

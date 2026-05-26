@@ -26,7 +26,25 @@ _session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
 def get_engine() -> AsyncEngine:
-    """Return the shared async engine, constructing it on first call."""
+    """Return the shared async engine, constructing it on first call.
+
+    Pool sizing leaves comfortable headroom for the FastAPI app, the CLI
+    pipeline, and the streamlit admin running side-by-side without
+    saturating Postgres (defaults 5+10=15; bumped to 10+20=30).
+
+    ``pool_recycle=1800`` recycles connections after 30 min so we don't
+    hand out stale ones that an upstream proxy or NAT has silently
+    dropped.
+
+    ``statement_timeout=30s`` is a production guardrail — a runaway
+    query (e.g. accidental cross join) won't hold a connection open
+    forever. Long analytical work that legitimately exceeds 30s should
+    raise the bar explicitly rather than rely on the default infinity.
+
+    ``application_name=ridge`` makes ridge connections identifiable in
+    pg_stat_activity (the default "psycopg" is useless for debugging
+    which process is holding a long-running transaction).
+    """
     global _engine
     if _engine is None:
         settings = get_settings()
@@ -34,6 +52,12 @@ def get_engine() -> AsyncEngine:
             settings.db_url,
             echo=False,
             pool_pre_ping=True,
+            pool_size=10,
+            max_overflow=20,
+            pool_recycle=1800,
+            connect_args={
+                "options": "-c statement_timeout=30s -c application_name=ridge",
+            },
         )
     return _engine
 
