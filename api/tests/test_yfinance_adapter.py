@@ -303,6 +303,37 @@ class TestFetch:
         assert call_kwargs.kwargs["start"] == "2024-01-01"
         assert call_kwargs.kwargs["end"] == "2024-06-30"
 
+    async def test_shared_ticker_is_fetched_once_and_fanned_out(self) -> None:
+        """One ticker registered to N countries hits yf.download once, not N times."""
+        shared_spec = SourceIndicatorSpec(
+            source_id="yfinance",
+            source_native_code="EURUSD=X",
+            indicator_code="FX_USD",
+            frequency="daily",
+            countries_iso3=frozenset({"DEU", "FRA", "ITA", "ESP"}),
+        )
+        ohlcv = _make_ohlcv_df(["2024-06-03", "2024-06-04"], [1.08, 1.09], ticker="EURUSD=X")
+
+        with patch(
+            "ridge.adapters.yfinance_adapter.yf.download",
+            return_value=ohlcv,
+        ) as mock_dl:
+            adapter = YFinanceAdapter(indicators=[shared_spec])
+            result = await adapter.fetch(FetchRequest(source_id="yfinance"))
+
+        # One ticker, one fetch -- even though 4 countries share it.
+        assert mock_dl.call_count == 1
+        # Each country gets the full row set (4 countries x 2 rows = 8 observations).
+        assert len(result) == 8
+        assert {obs.country_iso3 for obs in result} == {"DEU", "FRA", "ITA", "ESP"}
+        # Same close price across all countries since they share the ticker.
+        for country in ("DEU", "FRA", "ITA", "ESP"):
+            country_obs = sorted(
+                (o for o in result if o.country_iso3 == country),
+                key=lambda o: o.date,
+            )
+            assert [o.value for o in country_obs] == [1.08, 1.09]
+
 
 class TestDiscover:
     async def test_manifest_covers_all_pilot_series(self) -> None:

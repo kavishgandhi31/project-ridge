@@ -114,36 +114,50 @@ class YFinanceAdapter:
     async def fetch(self, request: FetchRequest) -> list[Observation]:
         """Fetch observations for the requested country/indicator scope.
 
-        Each registered ticker is fetched independently via
-        ``yf.download`` wrapped in ``asyncio.to_thread``. Failed tickers
-        return an empty DataFrame and contribute zero observations --
-        same graceful-degradation pattern as FRED and WorldBank.
+        Tickers are deduplicated before fetching: a ticker registered to
+        N countries (e.g. ``EURUSD=X`` for the EUR-zone bloc) is downloaded
+        once and the resulting rows are fanned out to all N slots. yfinance
+        has no rate limit, so distinct tickers fetch concurrently via
+        ``asyncio.gather``. Failed tickers return an empty DataFrame and
+        contribute zero observations -- same graceful-degradation pattern
+        as FRED and WorldBank.
         """
         ingested_at = datetime.datetime.now(datetime.UTC)
         countries = request.countries_iso3 or frozenset(self._by_country.keys())
 
-        results: list[Observation] = []
+        # Group every (iso3, spec) slot under its source_native_code so each
+        # unique ticker is downloaded once and broadcast to every slot.
+        slots_by_ticker: dict[str, list[tuple[str, SourceIndicatorSpec]]] = defaultdict(list)
         for iso3 in countries:
             specs = self._by_country.get(iso3)
             if specs is None:
                 logger.debug("yfinance.fetch.unknown_country", iso3=iso3)
                 continue
-
             for spec in specs:
                 if request.indicator_codes and spec.indicator_code not in request.indicator_codes:
                     continue
+                slots_by_ticker[spec.source_native_code].append((iso3, spec))
 
-                df = await self._fetch_ticker(
-                    spec.source_native_code,
-                    start=request.start,
-                    end=request.end,
-                )
+        if not slots_by_ticker:
+            return []
 
+        tickers = list(slots_by_ticker.keys())
+        dfs = await asyncio.gather(
+            *(
+                self._fetch_ticker(t, start=request.start, end=request.end)
+                for t in tickers
+            )
+        )
+
+        results: list[Observation] = []
+        for ticker, df in zip(tickers, dfs, strict=True):
+            if df.empty:
+                continue
+            for iso3, spec in slots_by_ticker[ticker]:
                 for _, row in df.iterrows():
                     obs_date = row["date"]
                     if isinstance(obs_date, pd.Timestamp):
                         obs_date = obs_date.date()
-
                     results.append(
                         Observation(
                             country_iso3=iso3,
