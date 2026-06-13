@@ -59,11 +59,8 @@ async def run_ingest(
             observations_written=0,
         )
 
-    # Convert to value dicts for bulk insert. We deliberately use a raw
-    # INSERT ... ON CONFLICT DO NOTHING rather than session.add_all()
-    # so that re-runs skip existing rows silently. session.add_all()
-    # would try to INSERT every row and raise IntegrityError on the
-    # first primary-key collision.
+    # Raw INSERT ... ON CONFLICT DO NOTHING instead of session.add_all()
+    # so re-runs skip existing rows silently rather than raising IntegrityError.
     #
     # Postgres has a parameter limit of ~32,767. Each observation has
     # 9 columns, so we chunk at 3,000 rows (27,000 params) to stay
@@ -87,9 +84,12 @@ async def run_ingest(
     _CHUNK_SIZE = 3000
     written = 0
 
-    async with session_scope() as session:
-        for i in range(0, len(values), _CHUNK_SIZE):
-            chunk = values[i : i + _CHUNK_SIZE]
+    # Each chunk gets its own transaction so a failure in chunk N does not
+    # roll back chunks 1..N-1. ON CONFLICT DO NOTHING already makes each
+    # chunk independently idempotent, so committing them separately is safe.
+    for i in range(0, len(values), _CHUNK_SIZE):
+        chunk = values[i : i + _CHUNK_SIZE]
+        async with session_scope() as session:
             stmt = (
                 pg_insert(ObservationRow)
                 .values(chunk)
@@ -160,9 +160,10 @@ async def run_event_ingest(
     _CHUNK_SIZE = 3000
     written = 0
 
-    async with session_scope() as session:
-        for i in range(0, len(values), _CHUNK_SIZE):
-            chunk = values[i : i + _CHUNK_SIZE]
+    # Per-chunk transactions: see the corresponding note in ``run_ingest``.
+    for i in range(0, len(values), _CHUNK_SIZE):
+        chunk = values[i : i + _CHUNK_SIZE]
+        async with session_scope() as session:
             stmt = (
                 pg_insert(EventRecordRow)
                 .values(chunk)
