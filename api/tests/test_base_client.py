@@ -13,7 +13,7 @@ from collections.abc import Callable
 import httpx
 import pytest
 
-from ridge.adapters.base_client import BaseClient
+from ridge.adapters.base_client import BaseClient, CircuitOpenError
 
 
 def _client(
@@ -22,6 +22,7 @@ def _client(
     requests_per_minute: int = 600000,  # effectively disable rate limit in tests
     max_retries: int = 3,
     timeout_seconds: float = 5.0,
+    circuit_breaker_threshold: int = 5,
 ) -> BaseClient:
     """Build a BaseClient whose transport is a mock routing via handler."""
     return BaseClient(
@@ -30,6 +31,7 @@ def _client(
         requests_per_minute=requests_per_minute,
         timeout_seconds=timeout_seconds,
         max_retries=max_retries,
+        circuit_breaker_threshold=circuit_breaker_threshold,
         transport=httpx.MockTransport(handler),
     )
 
@@ -150,6 +152,61 @@ class TestGetJson429RateLimited:
         finally:
             await client.close()
         assert call_count == 2
+
+
+class TestCircuitBreaker:
+    async def test_persistent_5xx_trips_breaker(self) -> None:
+        """Repeated 503s exhaust retries and trip the breaker; next request fast-fails."""
+        call_count = 0
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal call_count
+            call_count += 1
+            return httpx.Response(503, json={"error": "always broken"})
+
+        client = _client(
+            handler,
+            max_retries=3,
+            circuit_breaker_threshold=3,
+        )
+        try:
+            with pytest.raises(httpx.HTTPStatusError):
+                await client.get_json("http://mock/endpoint")
+            # First request exhausted 3 retries, so the counter hit the threshold
+            # and the breaker is open. The second call must not reach the handler.
+            with pytest.raises(CircuitOpenError):
+                await client.get_json("http://mock/endpoint")
+        finally:
+            await client.close()
+        assert call_count == 3
+
+    async def test_successful_response_resets_failure_counter(self) -> None:
+        """A 200 between failures resets the counter so the breaker stays closed."""
+        # If failures accumulated across the 200s, threshold=3 would trip after
+        # request 2 (1 + 1 = 2 fails, plus a third 503 anywhere = 3). With the
+        # reset-on-200 semantic the counter goes 1 -> 0 -> 1 -> 0 and never trips.
+        responses = [503, 200, 503, 200]
+        call_count = 0
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal call_count
+            status = responses[call_count]
+            call_count += 1
+            if status == 200:
+                return httpx.Response(200, json={"ok": True})
+            return httpx.Response(503, json={"error": "burp"})
+
+        client = _client(
+            handler,
+            max_retries=2,
+            circuit_breaker_threshold=3,
+        )
+        try:
+            assert await client.get_json("http://mock/endpoint") == {"ok": True}
+            assert await client.get_json("http://mock/endpoint") == {"ok": True}
+        finally:
+            await client.close()
+        assert call_count == 4
 
 
 class TestContextManager:
