@@ -43,6 +43,10 @@ logger = structlog.get_logger(__name__)
 
 OECD_BASE_URL = "https://sdmx.oecd.org/public/rest"
 
+# Ported verbatim from v1's OECD adapter. Don't shrink without re-checking
+# scoring's z-score lookback assumptions against the resulting history depth.
+_OECD_START_YEAR = "2010"
+
 # OECD SDMX dataflow configuration. Maps canonical indicator code ->
 # SDMX endpoint details. The key_pattern uses {country} as a placeholder
 # that gets resolved at fetch time (single country) or joined with "+"
@@ -234,7 +238,7 @@ class OECDAdapter(BaseClient):
             f"/{data_key}"
         )
         params: dict[str, str] = {
-            "startPeriod": "2010",
+            "startPeriod": _OECD_START_YEAR,
             "format": "jsondata",
         }
 

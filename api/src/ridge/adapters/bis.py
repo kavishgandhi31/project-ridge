@@ -54,6 +54,10 @@ logger = structlog.get_logger(__name__)
 
 BIS_BASE_URL = "https://stats.bis.org/api/v1"
 
+# Ported verbatim from v1's BIS adapter. Don't shrink without re-checking
+# scoring's z-score lookback assumptions against the resulting history depth.
+_BIS_START_YEAR = "2000"
+
 # BIS SDMX data key patterns. Maps canonical indicator code ->
 # (dataset_id, key_pattern). The {country} placeholder is resolved
 # at fetch time with the ISO2 code from the country registry.
@@ -217,7 +221,7 @@ class BISAdapter(BaseClient):
         data_key = config["key_pattern"].format(country=iso2)
         url = f"{BIS_BASE_URL}/data/{config['dataset_id']}/{data_key}/all"
         params: dict[str, str] = {
-            "startPeriod": "2000",
+            "startPeriod": _BIS_START_YEAR,
             "detail": "dataonly",
             "format": "csv",
         }
