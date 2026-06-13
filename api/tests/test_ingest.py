@@ -9,6 +9,7 @@ real source so the tests are deterministic.
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from sqlalchemy import select
@@ -146,3 +147,60 @@ class TestRunIngest:
         assert len(stored) == 2
         values = sorted(row.value for row in stored)
         assert values == [10.0, 10.5]
+
+
+class _CloseTracker:
+    """Stand-in adapter for testing close() cleanup in cli._run_ingest.
+
+    Records whether close() was called and can be configured to raise
+    on fetch to simulate a failed source mid-run.
+    """
+
+    def __init__(self, source_id: str, raise_on_fetch: bool = False) -> None:
+        self.source_id = source_id
+        self._raise = raise_on_fetch
+        self.close_called = False
+
+    async def fetch(self, request: FetchRequest) -> list[Observation]:
+        if self._raise:
+            raise RuntimeError(f"{self.source_id} simulated failure")
+        return []
+
+    async def fetch_events(self, request: FetchRequest) -> list[object]:
+        if self._raise:
+            raise RuntimeError(f"{self.source_id} simulated failure")
+        return []
+
+    async def close(self) -> None:
+        self.close_called = True
+
+
+class TestRunIngestAdapterCleanup:
+    async def test_close_runs_for_every_built_adapter_even_when_one_fetch_raises(
+        self,
+    ) -> None:
+        """AsyncExitStack must run close() on every registered adapter even if
+        one source's fetch raises -- otherwise httpx sessions leak across runs."""
+        from ridge.cli import _run_ingest
+
+        fred = _CloseTracker("fred", raise_on_fetch=True)
+        worldbank = _CloseTracker("worldbank", raise_on_fetch=False)
+
+        with (
+            patch(
+                "ridge.ingest.factory.build_fred_adapter",
+                AsyncMock(return_value=fred),
+            ),
+            patch(
+                "ridge.ingest.factory.build_worldbank_adapter",
+                AsyncMock(return_value=worldbank),
+            ),
+        ):
+            await _run_ingest(
+                sources=["fred", "worldbank"],
+                countries=["NGA"],
+                _log=lambda *_a, **_k: None,
+            )
+
+        assert fred.close_called, "fred.close() must run despite its fetch raising"
+        assert worldbank.close_called, "worldbank.close() must still run"
