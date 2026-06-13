@@ -32,14 +32,14 @@ adapter doesn't need a hardcoded mapping:
 from __future__ import annotations
 
 import datetime
-from collections import defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 import httpx
 import pandas as pd
 import structlog
 
+from ridge.adapters._dispatch import group_by_country, validate_indicators
 from ridge.adapters.base import HealthReport
 from ridge.adapters.base_client import BaseClient
 from ridge.adapters.sdmx3 import parse_sdmx3_json
@@ -108,10 +108,21 @@ class IMFAdapter(BaseClient):
             transport=transport,
             default_headers=IMF_SDMX3_HEADERS,
         )
-        self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(
-            self._validate_indicators(indicators)
-        )
-        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = self._group_by_country(
+        # Apply the shared source_id filter, then drop any series whose
+        # native_code prefix isn't one we know how to route (WEO or SDMX 3.0).
+        kept: list[SourceIndicatorSpec] = []
+        for spec in validate_indicators(self.source_id, indicators):
+            prefix = self._get_prefix(spec.source_native_code)
+            if prefix != "weo" and prefix not in SDMX3_PREFIXES:
+                logger.warning(
+                    "imf.indicator.unknown_prefix",
+                    native_code=spec.source_native_code,
+                    prefix=prefix,
+                )
+                continue
+            kept.append(spec)
+        self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(kept)
+        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = group_by_country(
             self._indicators
         )
         self._weo_specs: list[SourceIndicatorSpec] = [
@@ -136,41 +147,6 @@ class IMFAdapter(BaseClient):
         if ":" in native_code:
             return native_code.split(":", 1)[1]
         return native_code
-
-    @classmethod
-    def _validate_indicators(
-        cls,
-        indicators: Iterable[SourceIndicatorSpec],
-    ) -> list[SourceIndicatorSpec]:
-        kept: list[SourceIndicatorSpec] = []
-        for spec in indicators:
-            if spec.source_id != cls.source_id:
-                logger.warning(
-                    "imf.indicator.wrong_source",
-                    source_id=spec.source_id,
-                    native_code=spec.source_native_code,
-                )
-                continue
-            prefix = cls._get_prefix(spec.source_native_code)
-            if prefix != "weo" and prefix not in SDMX3_PREFIXES:
-                logger.warning(
-                    "imf.indicator.unknown_prefix",
-                    native_code=spec.source_native_code,
-                    prefix=prefix,
-                )
-                continue
-            kept.append(spec)
-        return kept
-
-    @staticmethod
-    def _group_by_country(
-        indicators: Sequence[SourceIndicatorSpec],
-    ) -> dict[str, tuple[SourceIndicatorSpec, ...]]:
-        by_country: dict[str, list[SourceIndicatorSpec]] = defaultdict(list)
-        for spec in indicators:
-            for iso3 in spec.countries_iso3:
-                by_country[iso3].append(spec)
-        return {iso3: tuple(specs) for iso3, specs in by_country.items()}
 
     # ------------------------------------------------------------------
     # SourceAdapter protocol

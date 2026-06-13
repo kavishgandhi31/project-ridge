@@ -21,13 +21,13 @@ partner). The seed data reflects this -- NGA has no OECD entries.
 from __future__ import annotations
 
 import datetime
-from collections import defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 import httpx
 import structlog
 
+from ridge.adapters._dispatch import group_by_country, validate_indicators
 from ridge.adapters.base import HealthReport
 from ridge.adapters.base_client import BaseClient
 from ridge.adapters.sdmx import parse_sdmx_json_multi
@@ -112,28 +112,10 @@ class OECDAdapter(BaseClient):
             max_retries=max_retries,
             transport=transport,
         )
-        self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(
-            self._validate_indicators(indicators)
-        )
-        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = self._group_by_country(
-            self._indicators
-        )
-
-    @classmethod
-    def _validate_indicators(
-        cls,
-        indicators: Iterable[SourceIndicatorSpec],
-    ) -> list[SourceIndicatorSpec]:
-        """Drop any non-OECD rows and log a warning if found."""
+        # Apply the shared source_id filter, then drop any series whose
+        # indicator_code isn't one of the OECD dataflows we know how to fetch.
         kept: list[SourceIndicatorSpec] = []
-        for spec in indicators:
-            if spec.source_id != cls.source_id:
-                logger.warning(
-                    "oecd.indicator.wrong_source",
-                    source_id=spec.source_id,
-                    native_code=spec.source_native_code,
-                )
-                continue
+        for spec in validate_indicators(self.source_id, indicators):
             if spec.indicator_code not in _DATAFLOWS:
                 logger.warning(
                     "oecd.indicator.unknown_dataflow",
@@ -141,18 +123,10 @@ class OECDAdapter(BaseClient):
                 )
                 continue
             kept.append(spec)
-        return kept
-
-    @staticmethod
-    def _group_by_country(
-        indicators: Sequence[SourceIndicatorSpec],
-    ) -> dict[str, tuple[SourceIndicatorSpec, ...]]:
-        """Produce a (country_iso3 -> specs) map for fast fetch() lookup."""
-        by_country: dict[str, list[SourceIndicatorSpec]] = defaultdict(list)
-        for spec in indicators:
-            for iso3 in spec.countries_iso3:
-                by_country[iso3].append(spec)
-        return {iso3: tuple(specs) for iso3, specs in by_country.items()}
+        self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(kept)
+        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = group_by_country(
+            self._indicators
+        )
 
     async def discover(self) -> SourceManifest:
         """Return a SourceManifest listing every registered series."""

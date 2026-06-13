@@ -18,13 +18,14 @@ indicator/country fixture.
 from __future__ import annotations
 
 import datetime
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 import httpx
 import pandas as pd
 import structlog
 
+from ridge.adapters._dispatch import validate_indicators
 from ridge.adapters.base import HealthReport
 from ridge.adapters.base_client import BaseClient
 from ridge.domain import (
@@ -88,30 +89,12 @@ class WorldBankAdapter(BaseClient):
             transport=transport,
         )
         self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(
-            self._validate_indicators(indicators)
+            validate_indicators(self.source_id, indicators)
         )
         # Store as a plain dict for O(1) lookup in the parse hot path.
         self._iso2_to_iso3: dict[str, str] = {
             iso2.upper(): iso3.upper() for iso2, iso3 in iso2_to_iso3.items()
         }
-
-    @classmethod
-    def _validate_indicators(
-        cls,
-        indicators: Iterable[SourceIndicatorSpec],
-    ) -> list[SourceIndicatorSpec]:
-        """Drop any non-WB rows and log a warning if found."""
-        kept: list[SourceIndicatorSpec] = []
-        for spec in indicators:
-            if spec.source_id != cls.source_id:
-                logger.warning(
-                    "worldbank.indicator.wrong_source",
-                    source_id=spec.source_id,
-                    native_code=spec.source_native_code,
-                )
-                continue
-            kept.append(spec)
-        return kept
 
     async def discover(self) -> SourceManifest:
         """Return a SourceManifest listing every registered indicator."""
