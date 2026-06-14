@@ -18,8 +18,10 @@ from ridge.db.models.source_indicator import SourceIndicatorRow
 from ridge.db.repos.observation import (
     list_all_observations_for_quality,
     list_observations_for_scoring,
+    upsert_observations,
 )
 from ridge.db.session import session_scope
+from ridge.domain.observation import Observation
 
 _TEST_COUNTRY = "ZZZ"
 _TEST_SOURCE = "fake-obs-test"
@@ -193,3 +195,77 @@ class TestListAllObservationsForQuality:
         relevant = [o for o in obs if o.source_id == _TEST_SOURCE]
         assert len(relevant) == 1
         assert relevant[0].value == 20.0
+
+
+def _make_domain_obs(
+    *,
+    date: datetime.date,
+    value: float,
+    vintage: datetime.datetime,
+    quality_flags: tuple[str, ...] = (),
+) -> Observation:
+    return Observation(
+        country_iso3=_TEST_COUNTRY,
+        indicator_code=_TEST_INDICATOR,
+        source_id=_TEST_SOURCE,
+        date=date,
+        value=value,
+        frequency="daily",
+        vintage=vintage,
+        ingested_at=vintage,
+        quality_flags=quality_flags,
+    )
+
+
+class TestUpsertObservations:
+    """Covers the helper used by the derived-spread persist path.
+
+    Load-bearing assertion is ``test_round_trip_preserves_all_columns``:
+    if a future ObservationRow column is added without threading it
+    through ``from_domain``, the round-trip read would lose it and
+    this test would fail.
+    """
+
+    async def test_empty_list_is_a_noop(self, observation_repo_setup: None) -> None:
+        async with session_scope() as session:
+            written = await upsert_observations(session, [])
+        assert written == 0
+
+    async def test_idempotent_rerun_writes_zero(
+        self, observation_repo_setup: None
+    ) -> None:
+        obs = [
+            _make_domain_obs(date=datetime.date(2026, 3, 1), value=1.0, vintage=_NOW),
+            _make_domain_obs(date=datetime.date(2026, 3, 2), value=2.0, vintage=_NOW),
+        ]
+        async with session_scope() as session:
+            first = await upsert_observations(session, obs)
+        async with session_scope() as session:
+            second = await upsert_observations(session, obs)
+
+        assert first == 2
+        assert second == 0
+
+    async def test_round_trip_preserves_all_columns(
+        self, observation_repo_setup: None
+    ) -> None:
+        obs = _make_domain_obs(
+            date=datetime.date(2026, 3, 1),
+            value=42.5,
+            vintage=_NOW,
+            quality_flags=("test-flag",),
+        )
+        async with session_scope() as session:
+            await upsert_observations(session, [obs])
+
+        async with session_scope() as session:
+            read = await list_observations_for_scoring(
+                session, country_iso3=_TEST_COUNTRY
+            )
+
+        match = [o for o in read if o.source_id == _TEST_SOURCE]
+        assert len(match) == 1
+        assert match[0].value == 42.5
+        assert match[0].quality_flags == ("test-flag",)
+        assert match[0].frequency == "daily"
+        assert match[0].vintage == _NOW

@@ -29,11 +29,11 @@ from ridge.db.repos.event_record import list_events_for_scoring
 from ridge.db.repos.llm_response import upsert_llm_response
 from ridge.db.repos.observation import list_observations_for_scoring
 from ridge.db.repos.pipeline_run import mark_stage_completed, upsert_pipeline_run
-from ridge.db.repos.score_result import upsert_score_results
 from ridge.db.session import dispose_engine, session_scope
 from ridge.derived.spreads import DEFAULT_SPREADS, compute_spreads
 from ridge.domain.observation import Observation
 from ridge.domain.pipeline import PipelineRun, RunStatus, RunType
+from ridge.domain.scoring import ScoreResult
 from ridge.domain.source import FetchRequest
 from ridge.ingest.factory import (
     build_bis_adapter,
@@ -47,12 +47,10 @@ from ridge.ingest.factory import (
 )
 from ridge.ingest.runner import run_event_ingest, run_ingest
 from ridge.quality.runner import run_quality_checks
-from ridge.scoring.engine import ScoringEngine
+from ridge.scoring.runner import run_scoring
 from ridge.seeds.loader import (
     load_alert_config_from_yaml,
     load_llm_config_from_yaml,
-    load_scoring_config_from_yaml,
-    load_source_indicators_from_yaml,
     seed_all,
 )
 
@@ -255,39 +253,28 @@ async def main() -> None:
         # =============================================================
         # Stage 4: SCORE
         # =============================================================
-        import time as _time
-
         _log("score", "Scoring pilot countries...")
-        scoring_config = load_scoring_config_from_yaml()
-        indicator_specs = load_source_indicators_from_yaml()
-        engine = ScoringEngine(scoring_config, indicator_specs)
 
         async with session_scope() as session:
             countries = await list_countries(session)
             country_names = {c.iso3: c.name for c in countries}
             country_regions = {c.iso3: c.region for c in countries}
 
-        # Per-country loop: load, score, log, discard. Bounds peak memory to
-        # ~30-50MB (one country's obs) instead of holding all 183 in RAM.
-        score_results = []
-        for iso3 in PILOT_COUNTRIES:
-            async with session_scope() as session:
-                obs = await list_observations_for_scoring(session, country_iso3=iso3)
-                evts = await list_events_for_scoring(session, country_iso3=iso3)
-            t0 = _time.perf_counter()
-            sr = engine.score_country(iso3, obs, evts, today)
-            elapsed = _time.perf_counter() - t0
-            score_results.append(sr)
+        def _log_score(sr: ScoreResult, elapsed: float) -> None:
             comp = f"{sr.composite:+.2f}" if sr.composite is not None else "N/A"
             _log(
                 "score",
-                f"  {sr.country_iso3}: composite={comp}, coverage={sr.coverage_fraction:.0%}, {elapsed:.2f}s",
+                f"  {sr.country_iso3}: composite={comp}, "
+                f"coverage={sr.coverage_fraction:.0%}, {elapsed:.2f}s",
             )
 
-        # Single bulk upsert at end
-        async with session_scope() as session:
-            n_scores = await upsert_score_results(session, score_results)
-        _log("score", f"  {n_scores} countries scored")
+        score_results = await run_scoring(
+            pipeline_run_id=run_id,
+            reference_date=today,
+            countries_iso3=PILOT_COUNTRIES,
+            progress_callback=_log_score,
+        )
+        _log("score", f"  {len(score_results)} countries scored")
 
         async with session_scope() as session:
             await mark_stage_completed(session, run_id, "score")

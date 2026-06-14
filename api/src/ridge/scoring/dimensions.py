@@ -38,6 +38,11 @@ from ridge.scoring.zscore import compute_momentum_zscore, compute_zscore
 
 logger = structlog.get_logger(__name__)
 
+# v1 design (scorer.py lines 666-676): in risk_sentiment, the fundamental
+# blend gets a dedicated tier weighted equal to the sum of daily market
+# signals, so neither component swamps the other in the final score.
+_FUNDAMENTAL_TIER_WEIGHT: float = 1.0
+
 
 class Dimension(ABC):
     """Abstract base for a scoring dimension."""
@@ -322,6 +327,14 @@ class RiskSentimentDimension(Dimension):
     yfinance and GDELT are daily-frequency signals. All components are
     combined using tier-weighted logic where the fundamental blend gets
     a dedicated '_fundamental' tier at weight 1.0.
+
+    Conflation risk — known limitation flagged in HANDOFF.md. When the
+    GDELT tone channel is absent (rate-limit drop, source disabled),
+    the daily tier collapses to FX/equity momentum alone and the score
+    is still produced. Consumers see a single risk_sentiment value with
+    no signal that "market sentiment" has silently become "FX move".
+    Surfacing channel-availability in DimensionScore is deferred to
+    Pass 4 (alerts), where the consumer that needs the flag lives.
     """
 
     @property
@@ -411,14 +424,17 @@ class RiskSentimentDimension(Dimension):
                 n_series_stale=total_stale,
             )
 
-        # Tier-weighted combination
-        # "_fundamental" gets weight 1.0 so fundamentals and market
-        # signals are balanced (v1 scorer.py lines 666-676).
+        # Tier-weighted combination: _fundamental tier balances against
+        # the sum of daily market signals (see _FUNDAMENTAL_TIER_WEIGHT).
         weighted_sum = 0.0
         weight_sum = 0.0
         for freq, z_list in tier_zscores.items():
             tier_avg = sum(z_list) / len(z_list)
-            w = 1.0 if freq == "_fundamental" else config.frequency_weights.get(freq, 0.5)
+            w = (
+                _FUNDAMENTAL_TIER_WEIGHT
+                if freq == "_fundamental"
+                else config.frequency_weights.get(freq, 0.5)
+            )
             weighted_sum += w * tier_avg
             weight_sum += w
 
