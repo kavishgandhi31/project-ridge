@@ -12,13 +12,17 @@ their actual origin country (USA) but apply to all countries.
 from __future__ import annotations
 
 import datetime
+from collections.abc import Sequence
 
 from sqlalchemy import and_, literal, or_, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ridge.db.models.observation import ObservationRow
 from ridge.db.models.source_indicator import SourceIndicatorRow
 from ridge.domain.observation import Observation
+
+_UPSERT_CHUNK_SIZE = 3000
 
 
 async def list_observations_for_scoring(
@@ -117,6 +121,48 @@ async def list_observations_for_scoring(
 
     result = await session.execute(stmt)
     return [row.to_domain() for row in result.scalars().all()]
+
+
+async def upsert_observations(
+    session: AsyncSession,
+    observations: Sequence[Observation],
+) -> int:
+    """Idempotent insert of observations on the composite PK.
+
+    The row built by ``ObservationRow.from_domain`` is the single source
+    of truth for the column set — adding a column on ObservationRow does
+    not require updating this helper.
+
+    Chunked at 3000 rows to stay under Postgres' ~32k parameter limit
+    (matches ``ingest.runner.run_ingest``). Caller owns the transaction.
+    """
+    if not observations:
+        return 0
+
+    rows = [ObservationRow.from_domain(o) for o in observations]
+    cols = [col.name for col in ObservationRow.__table__.columns]
+    values = [{name: getattr(r, name) for name in cols} for r in rows]
+
+    written = 0
+    for i in range(0, len(values), _UPSERT_CHUNK_SIZE):
+        chunk = values[i : i + _UPSERT_CHUNK_SIZE]
+        stmt = (
+            pg_insert(ObservationRow)
+            .values(chunk)
+            .on_conflict_do_nothing(
+                index_elements=[
+                    "country_iso3",
+                    "indicator_code",
+                    "source_id",
+                    "date",
+                    "vintage",
+                ],
+            )
+            .returning(ObservationRow.country_iso3)
+        )
+        result = await session.execute(stmt)
+        written += len(result.all())
+    return written
 
 
 async def list_all_observations_for_quality(

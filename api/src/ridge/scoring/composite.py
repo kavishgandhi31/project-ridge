@@ -15,11 +15,7 @@ from __future__ import annotations
 
 import math
 
-import structlog
-
 from ridge.domain.scoring import DimensionScore, ScoringConfig
-
-logger = structlog.get_logger(__name__)
 
 
 def compute_composite(
@@ -84,14 +80,8 @@ def compute_composite(
         confidence = 1.0
     elif config.coverage_confidence == "linear":
         confidence = coverage_fraction
-    elif config.coverage_confidence == "sqrt":
+    else:  # "sqrt" — Literal exhausted at type-check time
         confidence = math.sqrt(coverage_fraction)
-    else:
-        logger.debug(
-            "composite.unknown_coverage_confidence",
-            value=config.coverage_confidence,
-        )
-        confidence = 1.0
 
     composite = renormalised * confidence
     return round(_clamp(composite, config), 2)

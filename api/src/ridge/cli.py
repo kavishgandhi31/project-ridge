@@ -306,46 +306,25 @@ async def _run_pipeline(
 
         # --- SCORE ---
         if "score" in stages:
-            import time as _time
-
-            from ridge.db.repos.event_record import list_events_for_scoring
-            from ridge.db.repos.observation import list_observations_for_scoring
-            from ridge.db.repos.score_result import upsert_score_results
-            from ridge.domain.observation import Observation
-            from ridge.scoring.engine import ScoringEngine
-            from ridge.seeds.loader import (
-                load_scoring_config_from_yaml,
-                load_source_indicators_from_yaml,
-            )
+            from ridge.domain.scoring import ScoreResult
+            from ridge.scoring.runner import run_scoring
 
             _log("score", f"Scoring {len(score_countries)} countries...")
-            config = load_scoring_config_from_yaml()
-            specs = load_source_indicators_from_yaml()
-            engine = ScoringEngine(config, specs)
 
-            # Per-country loop: load observations, score, discard. This bounds
-            # peak memory to ~30-50MB (one country's obs) instead of the ~14GB
-            # dict-of-all-countries we had before; and gives the operator
-            # incremental per-country feedback in the log.
-            score_results = []
-            for iso3 in score_countries:
-                async with session_scope() as session:
-                    obs = await list_observations_for_scoring(session, country_iso3=iso3)
-                    events = await list_events_for_scoring(session, country_iso3=iso3)
-                t0 = _time.perf_counter()
-                sr = engine.score_country(iso3, obs, events, today)
-                elapsed = _time.perf_counter() - t0
-                score_results.append(sr)
+            def _log_score(sr: ScoreResult, elapsed: float) -> None:
                 comp = f"{sr.composite:+.2f}" if sr.composite is not None else "N/A"
                 _log(
                     "score",
-                    f"  {sr.country_iso3}: composite={comp}, coverage={sr.coverage_fraction:.0%}, {elapsed:.2f}s",
+                    f"  {sr.country_iso3}: composite={comp}, "
+                    f"coverage={sr.coverage_fraction:.0%}, {elapsed:.2f}s",
                 )
-                # obs and events go out of scope here -- GC eligible
 
-            # Single bulk upsert at end (1 round-trip, not 183)
-            async with session_scope() as session:
-                await upsert_score_results(session, score_results)
+            score_results = await run_scoring(
+                pipeline_run_id=run_id,
+                reference_date=today,
+                countries_iso3=score_countries,
+                progress_callback=_log_score,
+            )
 
             # Append scores to CSV history for analysis
             _export_score_history(score_results, run_id, today)
@@ -617,47 +596,22 @@ async def _run_ingest(
 
         # Spreads
         if "fred" in sources:
-            from ridge.db.repos.observation import list_observations_for_scoring
+            from ridge.db.repos.observation import (
+                list_observations_for_scoring,
+                upsert_observations,
+            )
 
             log("ingest", "Computing yield spreads...")  # type: ignore[operator]
             async with session_scope() as session:
                 usa_obs = await list_observations_for_scoring(session, country_iso3="USA")
             spread_obs = compute_spreads(usa_obs, DEFAULT_SPREADS)
             if spread_obs:
-                from sqlalchemy.dialects.postgresql import insert as pg_insert
-
-                from ridge.db.models.observation import ObservationRow
-
-                values = [
-                    {
-                        "country_iso3": o.country_iso3,
-                        "indicator_code": o.indicator_code,
-                        "source_id": o.source_id,
-                        "date": o.date,
-                        "value": o.value,
-                        "frequency": o.frequency,
-                        "vintage": o.vintage,
-                        "ingested_at": o.ingested_at,
-                        "quality_flags": list(o.quality_flags),
-                    }
-                    for o in spread_obs
-                ]
                 async with session_scope() as session:
-                    stmt = (
-                        pg_insert(ObservationRow)
-                        .values(values)
-                        .on_conflict_do_nothing(
-                            index_elements=[
-                                "country_iso3",
-                                "indicator_code",
-                                "source_id",
-                                "date",
-                                "vintage",
-                            ],
-                        )
-                    )
-                    await session.execute(stmt)
-                log("ingest", f"  Spreads: {len(spread_obs)} computed")  # type: ignore[operator]
+                    written = await upsert_observations(session, spread_obs)
+                log(  # type: ignore[operator]
+                    "ingest",
+                    f"  Spreads: {len(spread_obs)} computed, {written} written",
+                )
 
 
 async def _run_llm(
