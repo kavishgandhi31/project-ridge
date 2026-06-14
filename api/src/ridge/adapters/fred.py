@@ -16,14 +16,14 @@ trivially unit-testable with ``httpx.MockTransport``.
 from __future__ import annotations
 
 import datetime
-from collections import defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 import httpx
 import pandas as pd
 import structlog
 
+from ridge.adapters._dispatch import group_by_country, validate_indicators
 from ridge.adapters.base import HealthReport
 from ridge.adapters.base_client import BaseClient
 from ridge.domain import (
@@ -84,50 +84,11 @@ class FredAdapter(BaseClient):
         )
         self._api_key = api_key
         self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(
-            self._validate_indicators(indicators)
+            validate_indicators(self.source_id, indicators)
         )
-        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = self._group_by_country(
+        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = group_by_country(
             self._indicators
         )
-
-    @classmethod
-    def _validate_indicators(
-        cls,
-        indicators: Iterable[SourceIndicatorSpec],
-    ) -> list[SourceIndicatorSpec]:
-        """Drop any non-FRED rows and log a warning if found.
-
-        This is defensive — the ingest runner should only ever pass
-        FRED rows here, but the adapter shouldn't trust its caller.
-        """
-        kept: list[SourceIndicatorSpec] = []
-        for spec in indicators:
-            if spec.source_id != cls.source_id:
-                logger.warning(
-                    "fred.indicator.wrong_source",
-                    source_id=spec.source_id,
-                    native_code=spec.source_native_code,
-                )
-                continue
-            kept.append(spec)
-        return kept
-
-    @staticmethod
-    def _group_by_country(
-        indicators: Sequence[SourceIndicatorSpec],
-    ) -> dict[str, tuple[SourceIndicatorSpec, ...]]:
-        """Produce a (country_iso3 -> specs) map for fast fetch() lookup.
-
-        Each FRED series is country-specific, but a spec with multiple
-        countries in ``countries_iso3`` (unusual but legal) is expanded
-        into one entry per country so fetch() can iterate countries
-        without re-scanning the full list.
-        """
-        by_country: dict[str, list[SourceIndicatorSpec]] = defaultdict(list)
-        for spec in indicators:
-            for iso3 in spec.countries_iso3:
-                by_country[iso3].append(spec)
-        return {iso3: tuple(specs) for iso3, specs in by_country.items()}
 
     async def discover(self) -> SourceManifest:
         """Return a SourceManifest listing every registered series.

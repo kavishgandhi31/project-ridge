@@ -7,6 +7,7 @@ to persist them). This module is the hinge between them.
 
 from __future__ import annotations
 
+import structlog
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -16,6 +17,8 @@ from ridge.db.session import session_scope
 from ridge.domain import FetchRequest
 from ridge.domain.event import EventRecord
 
+logger = structlog.get_logger(__name__)
+
 
 class IngestResult(BaseModel):
     """Summary of a single ingest invocation.
@@ -23,7 +26,9 @@ class IngestResult(BaseModel):
     ``observations_fetched`` is how many the adapter produced.
     ``observations_written`` is how many Postgres actually accepted —
     the delta is duplicates skipped by the ``ON CONFLICT DO NOTHING``
-    clause, which is how idempotent re-runs work.
+    clause, which is how idempotent re-runs work. ``error`` is set to
+    a short description if a chunk failed mid-loop; prior chunks remain
+    committed and ``observations_written`` reports what actually landed.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -31,6 +36,7 @@ class IngestResult(BaseModel):
     source_id: str
     observations_fetched: int
     observations_written: int
+    error: str | None = None
 
 
 async def run_ingest(
@@ -59,11 +65,8 @@ async def run_ingest(
             observations_written=0,
         )
 
-    # Convert to value dicts for bulk insert. We deliberately use a raw
-    # INSERT ... ON CONFLICT DO NOTHING rather than session.add_all()
-    # so that re-runs skip existing rows silently. session.add_all()
-    # would try to INSERT every row and raise IntegrityError on the
-    # first primary-key collision.
+    # Raw INSERT ... ON CONFLICT DO NOTHING instead of session.add_all()
+    # so re-runs skip existing rows silently rather than raising IntegrityError.
     #
     # Postgres has a parameter limit of ~32,767. Each observation has
     # 9 columns, so we chunk at 3,000 rows (27,000 params) to stay
@@ -86,42 +89,59 @@ async def run_ingest(
 
     _CHUNK_SIZE = 3000
     written = 0
+    error: str | None = None
 
-    async with session_scope() as session:
-        for i in range(0, len(values), _CHUNK_SIZE):
-            chunk = values[i : i + _CHUNK_SIZE]
-            stmt = (
-                pg_insert(ObservationRow)
-                .values(chunk)
-                .on_conflict_do_nothing(
-                    index_elements=[
-                        "country_iso3",
-                        "indicator_code",
-                        "source_id",
-                        "date",
-                        "vintage",
-                    ],
+    # Each chunk gets its own transaction so a failure in chunk N does not
+    # roll back chunks 1..N-1. ON CONFLICT DO NOTHING already makes each
+    # chunk independently idempotent, so committing them separately is safe.
+    for i in range(0, len(values), _CHUNK_SIZE):
+        chunk = values[i : i + _CHUNK_SIZE]
+        try:
+            async with session_scope() as session:
+                stmt = (
+                    pg_insert(ObservationRow)
+                    .values(chunk)
+                    .on_conflict_do_nothing(
+                        index_elements=[
+                            "country_iso3",
+                            "indicator_code",
+                            "source_id",
+                            "date",
+                            "vintage",
+                        ],
+                    )
+                    .returning(ObservationRow.country_iso3)
                 )
-                .returning(ObservationRow.country_iso3)
+                result = await session.execute(stmt)
+                written += len(result.all())
+        except Exception as exc:
+            error = f"{type(exc).__name__}: {exc!s:.200}"
+            logger.warning(
+                "ingest.chunk_failed",
+                source_id=request.source_id,
+                chunk_start=i,
+                committed_so_far=written,
+                error=str(exc),
             )
-            result = await session.execute(stmt)
-            written += len(result.all())
+            break
 
     return IngestResult(
         source_id=request.source_id,
         observations_fetched=len(observations),
         observations_written=written,
+        error=error,
     )
 
 
 class EventIngestResult(BaseModel):
-    """Summary of an event ingest invocation."""
+    """Summary of an event ingest invocation. See ``IngestResult.error``."""
 
     model_config = ConfigDict(frozen=True)
 
     source_id: str
     events_received: int
     events_written: int
+    error: str | None = None
 
 
 async def run_event_ingest(
@@ -159,23 +179,37 @@ async def run_event_ingest(
 
     _CHUNK_SIZE = 3000
     written = 0
+    error: str | None = None
 
-    async with session_scope() as session:
-        for i in range(0, len(values), _CHUNK_SIZE):
-            chunk = values[i : i + _CHUNK_SIZE]
-            stmt = (
-                pg_insert(EventRecordRow)
-                .values(chunk)
-                .on_conflict_do_nothing(
-                    index_elements=["date", "dedup_key"],
+    # Per-chunk transactions: see the corresponding note in ``run_ingest``.
+    for i in range(0, len(values), _CHUNK_SIZE):
+        chunk = values[i : i + _CHUNK_SIZE]
+        try:
+            async with session_scope() as session:
+                stmt = (
+                    pg_insert(EventRecordRow)
+                    .values(chunk)
+                    .on_conflict_do_nothing(
+                        index_elements=["date", "dedup_key"],
+                    )
+                    .returning(EventRecordRow.dedup_key)
                 )
-                .returning(EventRecordRow.dedup_key)
+                result = await session.execute(stmt)
+                written += len(result.all())
+        except Exception as exc:
+            error = f"{type(exc).__name__}: {exc!s:.200}"
+            logger.warning(
+                "ingest.chunk_failed",
+                source_id=source_id,
+                chunk_start=i,
+                committed_so_far=written,
+                error=str(exc),
             )
-            result = await session.execute(stmt)
-            written += len(result.all())
+            break
 
     return EventIngestResult(
         source_id=source_id,
         events_received=len(events),
         events_written=written,
+        error=error,
     )

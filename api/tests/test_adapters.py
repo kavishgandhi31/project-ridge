@@ -46,6 +46,9 @@ class _StubAdapter:
     async def health(self) -> HealthReport:
         return HealthReport(source_id=self.source_id, healthy=True)
 
+    async def close(self) -> None:
+        return None
+
 
 class TestSourceAdapterProtocol:
     def test_stub_satisfies_protocol(self) -> None:

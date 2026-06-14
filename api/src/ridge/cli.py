@@ -26,6 +26,7 @@ Launch:
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import datetime
 import sys
 import uuid
@@ -508,139 +509,155 @@ async def _run_ingest(
     log = _log  # type: ignore[assignment]
     country_set = frozenset(countries)
 
-    # Build adapters for requested sources
+    # AsyncExitStack registers each adapter's close() so the underlying
+    # httpx.AsyncClient sessions are torn down even if a later fetch raises.
     adapters: dict[str, object] = {}
-    async with session_scope() as session:
-        if "fred" in sources:
-            from ridge.ingest.factory import build_fred_adapter
-
-            adapters["fred"] = await build_fred_adapter(session)
-        if "worldbank" in sources:
-            from ridge.ingest.factory import build_worldbank_adapter
-
-            adapters["worldbank"] = await build_worldbank_adapter(session)
-        if "yfinance" in sources:
-            from ridge.ingest.factory import build_yfinance_adapter
-
-            adapters["yfinance"] = await build_yfinance_adapter(session)
-        if "oecd" in sources:
-            from ridge.ingest.factory import build_oecd_adapter
-
-            adapters["oecd"] = await build_oecd_adapter(session)
-        if "bis" in sources:
-            from ridge.ingest.factory import build_bis_adapter
-
-            adapters["bis"] = await build_bis_adapter(session)
-        if "imf" in sources:
-            from ridge.ingest.factory import build_imf_adapter
-
-            adapters["imf"] = await build_imf_adapter(session)
-        if "gdelt" in sources:
-            from ridge.ingest.factory import build_gdelt_adapter
-
-            adapters["gdelt"] = await build_gdelt_adapter(session)
-        if "googlenews" in sources:
-            from ridge.ingest.factory import build_googlenews_adapter
-
-            adapters["googlenews"] = await build_googlenews_adapter(session)
-
-    # Adapters run concurrently: each has its own rate limiter, HTTP session,
-    # and DB session, so wall time is max() not sum().
-    numeric_sources = ["fred", "worldbank", "yfinance", "oecd", "bis", "imf"]
-    event_sources = ["gdelt", "googlenews"]
-
-    async def _fetch_numeric(src: str, adapter: object) -> int:
-        filtered = filter_countries_for_source(src, countries)
-        log("ingest", f"Fetching {src} ({len(filtered)} countries)...")  # type: ignore[operator]
-        try:
-            req = FetchRequest(
-                source_id=src,
-                countries_iso3=frozenset(filtered),
-                start=datetime.date(2020, 1, 1),
-            )
-            result = await run_ingest(adapter, req)  # type: ignore[arg-type]
-            log(
-                "ingest",
-                f"  {src}: {result.observations_fetched} fetched, {result.observations_written} written",
-            )  # type: ignore[operator]
-            return result.observations_written
-        except Exception as e:
-            log("ingest", f"  {src}: FAILED -- {type(e).__name__}: {e!s:.100}")  # type: ignore[operator]
-            return 0
-
-    async def _fetch_event(src: str, adapter: object) -> int:
-        log("ingest", f"Fetching {src}...")  # type: ignore[operator]
-        try:
-            req = FetchRequest(
-                source_id=src,
-                countries_iso3=country_set,
-            )
-            events = await adapter.fetch_events(req)  # type: ignore[attr-defined]
-            result = await run_event_ingest(src, events)
-            log(
-                "ingest",
-                f"  {src}: {result.events_received} received, {result.events_written} written",
-            )  # type: ignore[operator]
-            return result.events_written
-        except Exception as e:
-            log("ingest", f"  {src}: FAILED -- {type(e).__name__}: {e!s:.100}")  # type: ignore[operator]
-            return 0
-
-    numeric_task = asyncio.gather(
-        *(_fetch_numeric(src, adapters[src]) for src in numeric_sources if src in adapters)
-    )
-    event_task = asyncio.gather(
-        *(_fetch_event(src, adapters[src]) for src in event_sources if src in adapters)
-    )
-    numeric_counts, event_counts = await asyncio.gather(numeric_task, event_task)
-    total_obs = sum(numeric_counts)
-    total_events = sum(event_counts)
-
-    log("ingest", f"Total: {total_obs} observations, {total_events} events")  # type: ignore[operator]
-
-    # Spreads
-    if "fred" in sources:
-        from ridge.db.repos.observation import list_observations_for_scoring
-
-        log("ingest", "Computing yield spreads...")  # type: ignore[operator]
+    async with contextlib.AsyncExitStack() as stack:
         async with session_scope() as session:
-            usa_obs = await list_observations_for_scoring(session, country_iso3="USA")
-        spread_obs = compute_spreads(usa_obs, DEFAULT_SPREADS)
-        if spread_obs:
-            from sqlalchemy.dialects.postgresql import insert as pg_insert
+            if "fred" in sources:
+                from ridge.ingest.factory import build_fred_adapter
 
-            from ridge.db.models.observation import ObservationRow
+                adapters["fred"] = await build_fred_adapter(session)
+                stack.push_async_callback(adapters["fred"].close)
+            if "worldbank" in sources:
+                from ridge.ingest.factory import build_worldbank_adapter
 
-            values = [
-                {
-                    "country_iso3": o.country_iso3,
-                    "indicator_code": o.indicator_code,
-                    "source_id": o.source_id,
-                    "date": o.date,
-                    "value": o.value,
-                    "frequency": o.frequency,
-                    "vintage": o.vintage,
-                    "ingested_at": o.ingested_at,
-                    "quality_flags": list(o.quality_flags),
-                }
-                for o in spread_obs
-            ]
-            async with session_scope() as session:
-                stmt = (
-                    pg_insert(ObservationRow)
-                    .values(values)
-                    .on_conflict_do_nothing(
-                        index_elements=[
-                            "country_iso3",
-                            "indicator_code",
-                            "source_id",
-                            "date",
-                            "vintage",
-                        ],
-                    )
+                adapters["worldbank"] = await build_worldbank_adapter(session)
+                stack.push_async_callback(adapters["worldbank"].close)
+            if "yfinance" in sources:
+                from ridge.ingest.factory import build_yfinance_adapter
+
+                adapters["yfinance"] = await build_yfinance_adapter(session)
+                stack.push_async_callback(adapters["yfinance"].close)
+            if "oecd" in sources:
+                from ridge.ingest.factory import build_oecd_adapter
+
+                adapters["oecd"] = await build_oecd_adapter(session)
+                stack.push_async_callback(adapters["oecd"].close)
+            if "bis" in sources:
+                from ridge.ingest.factory import build_bis_adapter
+
+                adapters["bis"] = await build_bis_adapter(session)
+                stack.push_async_callback(adapters["bis"].close)
+            if "imf" in sources:
+                from ridge.ingest.factory import build_imf_adapter
+
+                adapters["imf"] = await build_imf_adapter(session)
+                stack.push_async_callback(adapters["imf"].close)
+            if "gdelt" in sources:
+                from ridge.ingest.factory import build_gdelt_adapter
+
+                adapters["gdelt"] = await build_gdelt_adapter(session)
+                stack.push_async_callback(adapters["gdelt"].close)
+            if "googlenews" in sources:
+                from ridge.ingest.factory import build_googlenews_adapter
+
+                adapters["googlenews"] = await build_googlenews_adapter(session)
+                stack.push_async_callback(adapters["googlenews"].close)
+
+        # Adapters run concurrently: each has its own rate limiter, HTTP session,
+        # and DB session, so wall time is max() not sum().
+        numeric_sources = ["fred", "worldbank", "yfinance", "oecd", "bis", "imf"]
+        event_sources = ["gdelt", "googlenews"]
+
+        async def _fetch_numeric(src: str, adapter: object) -> int:
+            filtered = filter_countries_for_source(src, countries)
+            log("ingest", f"Fetching {src} ({len(filtered)} countries)...")  # type: ignore[operator]
+            try:
+                req = FetchRequest(
+                    source_id=src,
+                    countries_iso3=frozenset(filtered),
+                    start=datetime.date(2020, 1, 1),
                 )
-                await session.execute(stmt)
-            log("ingest", f"  Spreads: {len(spread_obs)} computed")  # type: ignore[operator]
+                result = await run_ingest(adapter, req)  # type: ignore[arg-type]
+                line = (
+                    f"  {src}: {result.observations_fetched} fetched, "
+                    f"{result.observations_written} written"
+                )
+                if result.error:
+                    line += f" (PARTIAL: {result.error})"
+                log("ingest", line)  # type: ignore[operator]
+                return result.observations_written
+            except Exception as e:
+                log("ingest", f"  {src}: FAILED -- {type(e).__name__}: {e!s:.100}")  # type: ignore[operator]
+                return 0
+
+        async def _fetch_event(src: str, adapter: object) -> int:
+            log("ingest", f"Fetching {src}...")  # type: ignore[operator]
+            try:
+                req = FetchRequest(
+                    source_id=src,
+                    countries_iso3=country_set,
+                )
+                events = await adapter.fetch_events(req)  # type: ignore[attr-defined]
+                result = await run_event_ingest(src, events)
+                line = (
+                    f"  {src}: {result.events_received} received, "
+                    f"{result.events_written} written"
+                )
+                if result.error:
+                    line += f" (PARTIAL: {result.error})"
+                log("ingest", line)  # type: ignore[operator]
+                return result.events_written
+            except Exception as e:
+                log("ingest", f"  {src}: FAILED -- {type(e).__name__}: {e!s:.100}")  # type: ignore[operator]
+                return 0
+
+        numeric_task = asyncio.gather(
+            *(_fetch_numeric(src, adapters[src]) for src in numeric_sources if src in adapters)
+        )
+        event_task = asyncio.gather(
+            *(_fetch_event(src, adapters[src]) for src in event_sources if src in adapters)
+        )
+        numeric_counts, event_counts = await asyncio.gather(numeric_task, event_task)
+        total_obs = sum(numeric_counts)
+        total_events = sum(event_counts)
+
+        log("ingest", f"Total: {total_obs} observations, {total_events} events")  # type: ignore[operator]
+
+        # Spreads
+        if "fred" in sources:
+            from ridge.db.repos.observation import list_observations_for_scoring
+
+            log("ingest", "Computing yield spreads...")  # type: ignore[operator]
+            async with session_scope() as session:
+                usa_obs = await list_observations_for_scoring(session, country_iso3="USA")
+            spread_obs = compute_spreads(usa_obs, DEFAULT_SPREADS)
+            if spread_obs:
+                from sqlalchemy.dialects.postgresql import insert as pg_insert
+
+                from ridge.db.models.observation import ObservationRow
+
+                values = [
+                    {
+                        "country_iso3": o.country_iso3,
+                        "indicator_code": o.indicator_code,
+                        "source_id": o.source_id,
+                        "date": o.date,
+                        "value": o.value,
+                        "frequency": o.frequency,
+                        "vintage": o.vintage,
+                        "ingested_at": o.ingested_at,
+                        "quality_flags": list(o.quality_flags),
+                    }
+                    for o in spread_obs
+                ]
+                async with session_scope() as session:
+                    stmt = (
+                        pg_insert(ObservationRow)
+                        .values(values)
+                        .on_conflict_do_nothing(
+                            index_elements=[
+                                "country_iso3",
+                                "indicator_code",
+                                "source_id",
+                                "date",
+                                "vintage",
+                            ],
+                        )
+                    )
+                    await session.execute(stmt)
+                log("ingest", f"  Spreads: {len(spread_obs)} computed")  # type: ignore[operator]
 
 
 async def _run_llm(

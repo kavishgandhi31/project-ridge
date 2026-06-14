@@ -8,8 +8,9 @@ reusable base class that handles:
 - Exponential-backoff retry (1s -> 2s -> 4s, max 3 attempts by default)
 - 429 Retry-After header respect
 - Fail-fast on 4xx (except 429); retry on 5xx and network errors
-- Circuit breaker: trips after N consecutive connection failures,
-  fails fast for remaining requests until reset
+- Circuit breaker: trips after N consecutive failed attempts
+  (transport errors, 5xx, or 429); counter resets only on a 200.
+  No auto-reset once open -- rebuild the adapter to clear.
 """
 
 from __future__ import annotations
@@ -96,10 +97,12 @@ class BaseClient:
                 to 60 because its API is slow.
             max_retries: Maximum retry attempts on 5xx / timeouts /
                 network errors. Default 3.
-            circuit_breaker_threshold: Number of consecutive connection
-                failures before the circuit breaker trips. Once tripped,
-                all subsequent requests fail immediately with
-                CircuitOpenError. Default 5. Set to 0 to disable.
+            circuit_breaker_threshold: Number of consecutive failed
+                attempts (transport errors, 5xx, or 429) before the
+                circuit breaker trips. Once tripped, all subsequent
+                requests fail immediately with CircuitOpenError.
+                Counter resets on any 200. Default 5. Set to 0 to
+                disable.
             transport: Optional httpx transport override. Tests inject
                 ``httpx.MockTransport`` here to avoid real network
                 calls. Production code should leave this as ``None``.
@@ -145,6 +148,23 @@ class BaseClient:
                 headers=self._default_headers,
             )
         return self._client
+
+    def _record_failure(self, url: str) -> None:
+        """Bump the consecutive-failure counter and trip the breaker if it crosses
+        the threshold. Called per failed attempt for transport errors, 5xx, or 429."""
+        self._consecutive_failures += 1
+        if (
+            self._circuit_threshold > 0
+            and self._consecutive_failures >= self._circuit_threshold
+            and not self._circuit_open
+        ):
+            self._circuit_open = True
+            logger.warning(
+                "base_client.circuit_open",
+                source=self.source_id,
+                failures=self._consecutive_failures,
+                url=url,
+            )
 
     async def _rate_limit(self) -> None:
         """Block until the minimum spacing since the last request has elapsed.
@@ -199,31 +219,20 @@ class BaseClient:
                 response = await client.get(url, params=params)
             except (httpx.TimeoutException, httpx.NetworkError) as exc:
                 last_exception = exc
-                self._consecutive_failures += 1
-                if (
-                    self._circuit_threshold > 0
-                    and self._consecutive_failures >= self._circuit_threshold
-                    and not self._circuit_open
-                ):
-                    self._circuit_open = True
-                    logger.warning(
-                        "base_client.circuit_open",
-                        source=self.source_id,
-                        failures=self._consecutive_failures,
-                        url=url,
-                    )
+                self._record_failure(url)
                 if attempt == self._max_retries - 1:
                     raise
                 await asyncio.sleep(2**attempt)
                 continue
 
-            # Successful response -- reset failure counter
-            self._consecutive_failures = 0
-
             if response.status_code == 200:
+                # Only a successful response resets the breaker counter; any
+                # other status (5xx/429) is treated as a failed attempt below.
+                self._consecutive_failures = 0
                 return response
 
             if response.status_code == 429:
+                self._record_failure(url)
                 if attempt == self._max_retries - 1:
                     response.raise_for_status()
                 retry_after = response.headers.get("Retry-After")
@@ -232,6 +241,7 @@ class BaseClient:
                 continue
 
             if 500 <= response.status_code < 600:
+                self._record_failure(url)
                 if attempt == self._max_retries - 1:
                     response.raise_for_status()
                 await asyncio.sleep(2**attempt)

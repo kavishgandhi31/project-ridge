@@ -168,7 +168,10 @@ class TestEventIngest:
         async with session_scope() as session:
             row = (
                 await session.execute(
-                    select(EventRecordRow).where(EventRecordRow.event_type == "headline")
+                    select(EventRecordRow).where(
+                        EventRecordRow.source_id == "gdelt",
+                        EventRecordRow.event_type == "headline",
+                    )
                 )
             ).scalar_one()
         assert row.title == "Oil prices surge"

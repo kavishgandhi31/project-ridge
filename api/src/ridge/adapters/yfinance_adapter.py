@@ -24,13 +24,14 @@ from __future__ import annotations
 import asyncio
 import datetime
 from collections import defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 import pandas as pd
 import structlog
 import yfinance as yf
 
+from ridge.adapters._dispatch import group_by_country, validate_indicators
 from ridge.adapters.base import HealthReport
 from ridge.domain import (
     FetchRequest,
@@ -68,40 +69,11 @@ class YFinanceAdapter:
         indicators: Sequence[SourceIndicatorSpec],
     ) -> None:
         self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(
-            self._validate_indicators(indicators)
+            validate_indicators(self.source_id, indicators)
         )
-        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = self._group_by_country(
+        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = group_by_country(
             self._indicators
         )
-
-    @classmethod
-    def _validate_indicators(
-        cls,
-        indicators: Iterable[SourceIndicatorSpec],
-    ) -> list[SourceIndicatorSpec]:
-        """Drop any non-yfinance rows and log a warning if found."""
-        kept: list[SourceIndicatorSpec] = []
-        for spec in indicators:
-            if spec.source_id != cls.source_id:
-                logger.warning(
-                    "yfinance.indicator.wrong_source",
-                    source_id=spec.source_id,
-                    native_code=spec.source_native_code,
-                )
-                continue
-            kept.append(spec)
-        return kept
-
-    @staticmethod
-    def _group_by_country(
-        indicators: Sequence[SourceIndicatorSpec],
-    ) -> dict[str, tuple[SourceIndicatorSpec, ...]]:
-        """Produce a (country_iso3 -> specs) map for fast fetch() lookup."""
-        by_country: dict[str, list[SourceIndicatorSpec]] = defaultdict(list)
-        for spec in indicators:
-            for iso3 in spec.countries_iso3:
-                by_country[iso3].append(spec)
-        return {iso3: tuple(specs) for iso3, specs in by_country.items()}
 
     async def discover(self) -> SourceManifest:
         """Return a SourceManifest listing every registered series."""
@@ -114,36 +86,50 @@ class YFinanceAdapter:
     async def fetch(self, request: FetchRequest) -> list[Observation]:
         """Fetch observations for the requested country/indicator scope.
 
-        Each registered ticker is fetched independently via
-        ``yf.download`` wrapped in ``asyncio.to_thread``. Failed tickers
-        return an empty DataFrame and contribute zero observations --
-        same graceful-degradation pattern as FRED and WorldBank.
+        Tickers are deduplicated before fetching: a ticker registered to
+        N countries (e.g. ``EURUSD=X`` for the EUR-zone bloc) is downloaded
+        once and the resulting rows are fanned out to all N slots. yfinance
+        has no rate limit, so distinct tickers fetch concurrently via
+        ``asyncio.gather``. Failed tickers return an empty DataFrame and
+        contribute zero observations -- same graceful-degradation pattern
+        as FRED and WorldBank.
         """
         ingested_at = datetime.datetime.now(datetime.UTC)
         countries = request.countries_iso3 or frozenset(self._by_country.keys())
 
-        results: list[Observation] = []
+        # Group every (iso3, spec) slot under its source_native_code so each
+        # unique ticker is downloaded once and broadcast to every slot.
+        slots_by_ticker: dict[str, list[tuple[str, SourceIndicatorSpec]]] = defaultdict(list)
         for iso3 in countries:
             specs = self._by_country.get(iso3)
             if specs is None:
                 logger.debug("yfinance.fetch.unknown_country", iso3=iso3)
                 continue
-
             for spec in specs:
                 if request.indicator_codes and spec.indicator_code not in request.indicator_codes:
                     continue
+                slots_by_ticker[spec.source_native_code].append((iso3, spec))
 
-                df = await self._fetch_ticker(
-                    spec.source_native_code,
-                    start=request.start,
-                    end=request.end,
-                )
+        if not slots_by_ticker:
+            return []
 
+        tickers = list(slots_by_ticker.keys())
+        dfs = await asyncio.gather(
+            *(
+                self._fetch_ticker(t, start=request.start, end=request.end)
+                for t in tickers
+            )
+        )
+
+        results: list[Observation] = []
+        for ticker, df in zip(tickers, dfs, strict=True):
+            if df.empty:
+                continue
+            for iso3, spec in slots_by_ticker[ticker]:
                 for _, row in df.iterrows():
                     obs_date = row["date"]
                     if isinstance(obs_date, pd.Timestamp):
                         obs_date = obs_date.date()
-
                     results.append(
                         Observation(
                             country_iso3=iso3,
@@ -216,7 +202,11 @@ class YFinanceAdapter:
             logger.debug("yfinance.fetch.empty", ticker=ticker)
             return self._empty_df()
 
-        return self._parse_ohlcv(raw)
+        try:
+            return self._parse_ohlcv(raw)
+        except Exception as exc:
+            logger.warning("yfinance.parse.failed", ticker=ticker, error=str(exc))
+            return self._empty_df()
 
     @staticmethod
     def _parse_ohlcv(df: pd.DataFrame) -> pd.DataFrame:

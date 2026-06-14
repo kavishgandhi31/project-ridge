@@ -32,14 +32,14 @@ Three datasets:
 from __future__ import annotations
 
 import datetime
-from collections import defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from io import StringIO
 
 import httpx
 import pandas as pd
 import structlog
 
+from ridge.adapters._dispatch import group_by_country, validate_indicators
 from ridge.adapters.base import HealthReport
 from ridge.adapters.base_client import BaseClient
 from ridge.domain import (
@@ -53,6 +53,10 @@ logger = structlog.get_logger(__name__)
 
 
 BIS_BASE_URL = "https://stats.bis.org/api/v1"
+
+# Ported verbatim from v1's BIS adapter. Don't shrink without re-checking
+# scoring's z-score lookback assumptions against the resulting history depth.
+_BIS_START_YEAR = "2000"
 
 # BIS SDMX data key patterns. Maps canonical indicator code ->
 # (dataset_id, key_pattern). The {country} placeholder is resolved
@@ -103,31 +107,10 @@ class BISAdapter(BaseClient):
             max_retries=max_retries,
             transport=transport,
         )
-        self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(
-            self._validate_indicators(indicators)
-        )
-        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = self._group_by_country(
-            self._indicators
-        )
-        self._iso3_to_iso2: dict[str, str] = {
-            iso3.upper(): iso2.upper() for iso3, iso2 in iso3_to_iso2.items()
-        }
-
-    @classmethod
-    def _validate_indicators(
-        cls,
-        indicators: Iterable[SourceIndicatorSpec],
-    ) -> list[SourceIndicatorSpec]:
-        """Drop any non-BIS rows and log a warning if found."""
+        # First apply the shared source_id filter, then drop any series whose
+        # indicator_code isn't one of the BIS datasets we know how to fetch.
         kept: list[SourceIndicatorSpec] = []
-        for spec in indicators:
-            if spec.source_id != cls.source_id:
-                logger.warning(
-                    "bis.indicator.wrong_source",
-                    source_id=spec.source_id,
-                    native_code=spec.source_native_code,
-                )
-                continue
+        for spec in validate_indicators(self.source_id, indicators):
             if spec.indicator_code not in _DATASETS:
                 logger.warning(
                     "bis.indicator.unknown_dataset",
@@ -135,17 +118,13 @@ class BISAdapter(BaseClient):
                 )
                 continue
             kept.append(spec)
-        return kept
-
-    @staticmethod
-    def _group_by_country(
-        indicators: Sequence[SourceIndicatorSpec],
-    ) -> dict[str, tuple[SourceIndicatorSpec, ...]]:
-        by_country: dict[str, list[SourceIndicatorSpec]] = defaultdict(list)
-        for spec in indicators:
-            for iso3 in spec.countries_iso3:
-                by_country[iso3].append(spec)
-        return {iso3: tuple(specs) for iso3, specs in by_country.items()}
+        self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(kept)
+        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = group_by_country(
+            self._indicators
+        )
+        self._iso3_to_iso2: dict[str, str] = {
+            iso3.upper(): iso2.upper() for iso3, iso2 in iso3_to_iso2.items()
+        }
 
     async def discover(self) -> SourceManifest:
         return SourceManifest(
@@ -217,7 +196,7 @@ class BISAdapter(BaseClient):
         data_key = config["key_pattern"].format(country=iso2)
         url = f"{BIS_BASE_URL}/data/{config['dataset_id']}/{data_key}/all"
         params: dict[str, str] = {
-            "startPeriod": "2000",
+            "startPeriod": _BIS_START_YEAR,
             "detail": "dataonly",
             "format": "csv",
         }

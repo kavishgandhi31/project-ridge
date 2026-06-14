@@ -27,8 +27,7 @@ from __future__ import annotations
 
 import datetime
 import hashlib
-from collections import defaultdict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any
 from xml.etree import ElementTree
 
@@ -36,6 +35,7 @@ import httpx
 import pandas as pd
 import structlog
 
+from ridge.adapters._dispatch import group_by_country, validate_indicators
 from ridge.adapters.base import HealthReport
 from ridge.adapters.base_client import BaseClient
 from ridge.domain.event import EventRecord
@@ -78,39 +78,13 @@ class GoogleNewsAdapter(BaseClient):
             transport=transport,
         )
         self._indicators: tuple[SourceIndicatorSpec, ...] = tuple(
-            self._validate_indicators(indicators)
+            validate_indicators(self.source_id, indicators)
         )
-        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = self._group_by_country(
+        self._by_country: Mapping[str, tuple[SourceIndicatorSpec, ...]] = group_by_country(
             self._indicators
         )
         self._country_names = dict(country_names)
         self._max_articles = max_articles
-
-    @classmethod
-    def _validate_indicators(
-        cls,
-        indicators: Iterable[SourceIndicatorSpec],
-    ) -> list[SourceIndicatorSpec]:
-        kept: list[SourceIndicatorSpec] = []
-        for spec in indicators:
-            if spec.source_id != cls.source_id:
-                logger.warning(
-                    "googlenews.indicator.wrong_source",
-                    source_id=spec.source_id,
-                )
-                continue
-            kept.append(spec)
-        return kept
-
-    @staticmethod
-    def _group_by_country(
-        indicators: Sequence[SourceIndicatorSpec],
-    ) -> dict[str, tuple[SourceIndicatorSpec, ...]]:
-        by_country: dict[str, list[SourceIndicatorSpec]] = defaultdict(list)
-        for spec in indicators:
-            for iso3 in spec.countries_iso3:
-                by_country[iso3].append(spec)
-        return {iso3: tuple(specs) for iso3, specs in by_country.items()}
 
     async def fetch_events(self, request: FetchRequest) -> list[EventRecord]:
         """Fetch headline EventRecords for the requested countries."""
