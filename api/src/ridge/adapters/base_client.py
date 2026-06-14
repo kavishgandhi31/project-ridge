@@ -9,7 +9,8 @@ reusable base class that handles:
 - 429 Retry-After header respect
 - Fail-fast on 4xx (except 429); retry on 5xx and network errors
 - Circuit breaker: trips after N consecutive failed attempts
-  (transport errors, 5xx, or 429), fails fast until reset
+  (transport errors, 5xx, or 429); counter resets only on a 200.
+  No auto-reset once open -- rebuild the adapter to clear.
 """
 
 from __future__ import annotations

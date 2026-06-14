@@ -518,42 +518,42 @@ async def _run_ingest(
                 from ridge.ingest.factory import build_fred_adapter
 
                 adapters["fred"] = await build_fred_adapter(session)
-                stack.push_async_callback(adapters["fred"].close)  # type: ignore[attr-defined]
+                stack.push_async_callback(adapters["fred"].close)
             if "worldbank" in sources:
                 from ridge.ingest.factory import build_worldbank_adapter
 
                 adapters["worldbank"] = await build_worldbank_adapter(session)
-                stack.push_async_callback(adapters["worldbank"].close)  # type: ignore[attr-defined]
+                stack.push_async_callback(adapters["worldbank"].close)
             if "yfinance" in sources:
                 from ridge.ingest.factory import build_yfinance_adapter
 
                 adapters["yfinance"] = await build_yfinance_adapter(session)
-                stack.push_async_callback(adapters["yfinance"].close)  # type: ignore[attr-defined]
+                stack.push_async_callback(adapters["yfinance"].close)
             if "oecd" in sources:
                 from ridge.ingest.factory import build_oecd_adapter
 
                 adapters["oecd"] = await build_oecd_adapter(session)
-                stack.push_async_callback(adapters["oecd"].close)  # type: ignore[attr-defined]
+                stack.push_async_callback(adapters["oecd"].close)
             if "bis" in sources:
                 from ridge.ingest.factory import build_bis_adapter
 
                 adapters["bis"] = await build_bis_adapter(session)
-                stack.push_async_callback(adapters["bis"].close)  # type: ignore[attr-defined]
+                stack.push_async_callback(adapters["bis"].close)
             if "imf" in sources:
                 from ridge.ingest.factory import build_imf_adapter
 
                 adapters["imf"] = await build_imf_adapter(session)
-                stack.push_async_callback(adapters["imf"].close)  # type: ignore[attr-defined]
+                stack.push_async_callback(adapters["imf"].close)
             if "gdelt" in sources:
                 from ridge.ingest.factory import build_gdelt_adapter
 
                 adapters["gdelt"] = await build_gdelt_adapter(session)
-                stack.push_async_callback(adapters["gdelt"].close)  # type: ignore[attr-defined]
+                stack.push_async_callback(adapters["gdelt"].close)
             if "googlenews" in sources:
                 from ridge.ingest.factory import build_googlenews_adapter
 
                 adapters["googlenews"] = await build_googlenews_adapter(session)
-                stack.push_async_callback(adapters["googlenews"].close)  # type: ignore[attr-defined]
+                stack.push_async_callback(adapters["googlenews"].close)
 
         # Adapters run concurrently: each has its own rate limiter, HTTP session,
         # and DB session, so wall time is max() not sum().
@@ -570,10 +570,13 @@ async def _run_ingest(
                     start=datetime.date(2020, 1, 1),
                 )
                 result = await run_ingest(adapter, req)  # type: ignore[arg-type]
-                log(
-                    "ingest",
-                    f"  {src}: {result.observations_fetched} fetched, {result.observations_written} written",
-                )  # type: ignore[operator]
+                line = (
+                    f"  {src}: {result.observations_fetched} fetched, "
+                    f"{result.observations_written} written"
+                )
+                if result.error:
+                    line += f" (PARTIAL: {result.error})"
+                log("ingest", line)  # type: ignore[operator]
                 return result.observations_written
             except Exception as e:
                 log("ingest", f"  {src}: FAILED -- {type(e).__name__}: {e!s:.100}")  # type: ignore[operator]
@@ -588,10 +591,13 @@ async def _run_ingest(
                 )
                 events = await adapter.fetch_events(req)  # type: ignore[attr-defined]
                 result = await run_event_ingest(src, events)
-                log(
-                    "ingest",
-                    f"  {src}: {result.events_received} received, {result.events_written} written",
-                )  # type: ignore[operator]
+                line = (
+                    f"  {src}: {result.events_received} received, "
+                    f"{result.events_written} written"
+                )
+                if result.error:
+                    line += f" (PARTIAL: {result.error})"
+                log("ingest", line)  # type: ignore[operator]
                 return result.events_written
             except Exception as e:
                 log("ingest", f"  {src}: FAILED -- {type(e).__name__}: {e!s:.100}")  # type: ignore[operator]

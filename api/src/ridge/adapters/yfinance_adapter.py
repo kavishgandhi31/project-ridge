@@ -202,7 +202,11 @@ class YFinanceAdapter:
             logger.debug("yfinance.fetch.empty", ticker=ticker)
             return self._empty_df()
 
-        return self._parse_ohlcv(raw)
+        try:
+            return self._parse_ohlcv(raw)
+        except Exception as exc:
+            logger.warning("yfinance.parse.failed", ticker=ticker, error=str(exc))
+            return self._empty_df()
 
     @staticmethod
     def _parse_ohlcv(df: pd.DataFrame) -> pd.DataFrame:

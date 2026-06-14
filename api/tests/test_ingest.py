@@ -8,7 +8,9 @@ real source so the tests are deterministic.
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
+from contextlib import asynccontextmanager
+from datetime import UTC, date, datetime, timedelta
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -19,6 +21,9 @@ from ridge.db.models import ObservationRow
 from ridge.db.session import session_scope
 from ridge.domain import FetchRequest, Observation, SourceManifest
 from ridge.ingest.runner import run_ingest
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
 
 
 class _FakeAdapter:
@@ -45,6 +50,9 @@ class _FakeAdapter:
 
     async def health(self) -> HealthReport:
         return HealthReport(source_id=self.source_id, healthy=True)
+
+    async def close(self) -> None:
+        return None
 
 
 def _obs(
@@ -147,6 +155,52 @@ class TestRunIngest:
         assert len(stored) == 2
         values = sorted(row.value for row in stored)
         assert values == [10.0, 10.5]
+
+    async def test_partial_commit_reports_count_and_error_on_chunk_failure(
+        self,
+    ) -> None:
+        """A second-chunk failure must leave chunk 1 committed and surface a
+        non-empty error + the partial observations_written count."""
+        observations = [
+            _obs("TEST_PART", date(2010, 1, 1) + timedelta(days=i), float(i))
+            for i in range(6000)
+        ]
+        adapter = _FakeAdapter(observations)
+
+        call_count = 0
+
+        @asynccontextmanager
+        async def flaky_scope() -> AsyncIterator[object]:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 2:
+                raise RuntimeError("simulated DB failure on chunk 2")
+            async with session_scope() as session:
+                yield session
+
+        with patch("ridge.ingest.runner.session_scope", flaky_scope):
+            result = await run_ingest(adapter, FetchRequest(source_id="fake"))
+
+        assert call_count == 2
+        assert result.observations_fetched == 6000
+        assert result.observations_written == 3000
+        assert result.error is not None
+        assert "simulated DB failure" in result.error
+
+        async with session_scope() as session:
+            stored = (
+                (
+                    await session.execute(
+                        select(ObservationRow).where(
+                            ObservationRow.source_id == "fake",
+                            ObservationRow.indicator_code == "TEST_PART",
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        assert len(stored) == 3000
 
 
 class _CloseTracker:
